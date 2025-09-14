@@ -27,3 +27,16 @@
         </div>
     </div>
 </header>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        if (toggleBtn && sidebar && mainContent) {
+            toggleBtn.addEventListener('click', function () {
+                sidebar.classList.toggle('active');
+                mainContent.classList.toggle('active');
+            });
+        }
+    });
+</script>

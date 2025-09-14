@@ -17,7 +17,7 @@ Il permet la gestion des étudiants, enseignants, cours et mentions, avec une in
 
 1. Cloner le dépôt :
    ```bash
-   git clone <url-du-repo>
+   git clone https://github.com/rHaryLala/registrarClone
    cd registrarClone
    ```
 2. Installer les dépendances :
