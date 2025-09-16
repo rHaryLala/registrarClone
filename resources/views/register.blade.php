@@ -7,6 +7,7 @@
     <title>Inscription - Université Adventiste Zurcher</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/favicon.png">
     
     <style>
         /* Adding harmonized step styling */
@@ -95,32 +96,32 @@
 </head>
 <body class="bg-gray-50 font-montserrat">
 
-<!-- Header -->
-<header class="bg-white shadow-sm border-b border-gray-200">
-    <div class="max-w-4xl mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
-            <!-- Logo + Texte -->
-            <div class="flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
-                    <img src="https://yt3.googleusercontent.com/ytc/AGIKgqMrYnDBtikTA3sE31ur77qAnb56zLrCpKXqfFCB=s900-c-k-c0x00ffffff-no-rj"
-                         alt="Logo UAZ"
-                         class="w-full h-full object-cover rounded-lg">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo + Texte -->
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
+                        <img src="https://yt3.googleusercontent.com/ytc/AGIKgqMrYnDBtikTA3sE31ur77qAnb56zLrCpKXqfFCB=s900-c-k-c0x00ffffff-no-rj"
+                            alt="Logo UAZ"
+                            class="w-full h-full object-cover rounded-lg">
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold text-gray-900">Université Adventiste Zurcher</h1>
+                        <p class="text-sm text-gray-600">Formulaire d'inscription</p>
+                    </div>
                 </div>
+                <!-- Bouton Retour à l'accueil -->
                 <div>
-                    <h1 class="text-xl font-semibold text-gray-900">Université Adventiste Zurcher</h1>
-                    <p class="text-sm text-gray-600">Formulaire d'inscription</p>
+                    <a href="/"
+                        class="px-4 py-2 bg-[#1e3a8a] text-white rounded-lg shadow hover:bg-blue-700 transition">
+                        Retour
+                    </a>
                 </div>
-            </div>
-            <!-- Bouton Retour à l'accueil -->
-            <div>
-                <a href="/"
-                    class="px-4 py-2 bg-[#1e3a8a] text-white rounded-lg shadow hover:bg-blue-700 transition">
-                    Retour
-                </a>
             </div>
         </div>
-    </div>
-</header>
+    </header>
 
     <!-- Progress Bar -->
     <div class="bg-white border-b border-gray-200">
@@ -175,6 +176,10 @@
                                 <label for="nom" class="block text-sm font-medium text-gray-700">Nom *</label>
                                 <input type="text" id="nom" name="nom" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent mention-select"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus-border-transparent parcours-select"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent mention-select"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent parcours-select"
                                        placeholder="Nom de famille">
                             </div>
                             <div class="space-y-2">
@@ -245,6 +250,18 @@
                                     <option value="veuf">Veuf/Veuve</option>
                                 </select>
                             </div>
+
+                            <div class="space-y-2">
+                                <label for="statut_interne" class="block text-sm font-medium text-gray-700">Statut étudiant *</label>
+                                <select id="statut_interne" name="statut_interne" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent">
+                                    <option value="">Sélectionnez le statut</option>
+                                    <option value="interne">Interne</option>
+                                    <option value="externe">Externe</option>
+                                </select>
+                            </div>
+
+                            <!-- Suppression du champ code d'accès -->
 
                             <!-- Adding passport checkbox and form in first step -->
                             <div class="md:col-span-2 mt-6">
@@ -517,16 +534,29 @@
                                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent">
                                         <option value="">Sélectionnez une région</option>
                                         <option value="Analamanga">Analamanga</option>
-                                        <option value="Vakinankaratra">Vakinankaratra</option>
-                                        <option value="Itasy">Itasy</option>
                                         <option value="Bongolava">Bongolava</option>
-                                        <option value="Menabe">Menabe</option>
+                                        <option value="Itasy">Itasy</option>
+                                        <option value="Vakinankaratra">Vakinankaratra</option>
+                                        <option value="Diana">Diana</option>
+                                        <option value="Sava">Sava</option>
+                                        <option value="Amoron'i Mania">Amoron'i Mania</option>
+                                        <option value="Atsimo-Atsinanana">Atsimo-Atsinanana</option>
+                                        <option value="Fitovinany">Fitovinany</option>
+                                        <option value="Haute Matsiatra">Haute Matsiatra</option>
+                                        <option value="Ihorombe">Ihorombe</option>
+                                        <option value="Vatovavy">Vatovavy</option>
+                                        <option value="Betsiboka">Betsiboka</option>
+                                        <option value="Boeny">Boeny</option>
                                         <option value="Melaky">Melaky</option>
-                                        <option value="Atsimo-Andrefana">Atsimo-Andrefana</option>
+                                        <option value="Sofia">Sofia</option>
+                                        <option value="Alaotra-Mangoro">Alaotra-Mangoro</option>
+                                        <option value="Ambatosoa">Ambatosoa</option>
+                                        <option value="Analanjirofoa">Analanjirofo</option>
+                                        <option value="Atsinanana">Atsinanana</option>
                                         <option value="Androy">Androy</option>
                                         <option value="Anosy">Anosy</option>
-                                        <option value="Ihorombe">Ihorombe</option>
-                                        <option value="Haute Matsiatra">Haute Matsiatra</option>
+                                        <option value="Atsimo-Andrefana">Atsimo-Andrefana</option>
+                                        <option value="Menabe">Menabe</option>
 
                                     </select>
                                 </div>
@@ -664,19 +694,15 @@
                             </h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
-                                    <label for="annee_etude" class="block text-sm font-medium text-gray-700">Niveau d'étude *</label>
-                                    <select id="annee_etude" name="annee_etude" required
-                                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent">
+                                    <label for="year_level_id" class="block text-sm font-medium text-gray-700">Niveau d'étude *</label>
+                                    <select id="year_level_id" name="year_level_id" required
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent">
                                         <option value="">Sélectionnez l'année</option>
-                                        <option value="L1">Licence 1</option>
-                                        <option value="L2">Licence 2</option>
-                                        <option value="L3">Licence 3</option>
-                                        <option value="M1">Master 1</option>
-                                        <option value="M2">Master 2</option>
+                                        @foreach($yearLevels as $level)
+                                            <option value="{{ $level->id }}">{{ $level->label }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
-
-                                <!-- Removed status field (actif, inactif, diplomé, abandon) -->
 
                                 <div class="space-y-2 md:col-span-2">
                                     <label for="mention_id" class="block text-sm font-medium text-gray-700">Mention *</label>
@@ -689,25 +715,11 @@
                                     </select>
                                 </div>
 
-                                <div class="space-y-2">
-                                    <label for="academic_year_id" class="block text-sm font-medium text-gray-700">Année académique</label>
-                                    <select id="academic_year_id" name="academic_year_id"
+                                <div class="space-y-2 md:col-span-2">
+                                    <label for="parcours_id" class="block text-sm font-medium text-gray-700">Parcours</label>
+                                    <select id="parcours_id" name="parcours_id"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent">
-                                        <option value="">Sélectionnez l'année académique</option>
-                                        @foreach($academicYears as $year)
-                                            <option value="{{ $year->id }}">{{ $year->libelle }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div class="space-y-2">
-                                    <label for="semester_id" class="block text-sm font-medium text-gray-700">Semestre</label>
-                                    <select id="semester_id" name="semester_id"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent">
-                                        <option value="">Sélectionnez le semestre</option>
-                                        @foreach($semesters as $semestre)
-                                            <option value="{{ $semestre->id }}">{{ $semestre->nom }} ({{ $semestre->annee }})</option>
-                                        @endforeach
+                                        <option value="">Sélectionnez le parcours</option>
                                     </select>
                                 </div>
                             </div>
@@ -748,400 +760,460 @@
         </form>
     </main>
 
-    <script>
-        // Variables globales
-        let currentStep = 1;
-        const totalSteps = 5; // Mis à jour de 4 à 5
-        let formData = {};
-        let age = 0;
+</body>
 
-        // Éléments DOM
-        const form = document.getElementById('inscription-form');
-        const stepTitle = document.getElementById('step-title');
-        const stepCounter = document.getElementById('step-counter');
-        const progressBar = document.getElementById('progress-bar');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const submitBtn = document.getElementById('submit-btn');
-        const errorContainer = document.getElementById('error-container');
-        const errorList = document.getElementById('error-list');
-
-        // Titres des étapes - Mis à jour avec la nouvelle étape
-        const stepTitles = [
-            'Informations personnelles',
-            'Informations des parents',
-            'Coordonnées',
-            'Scolarité',
-            'Informations académiques'
-        ];
-
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
-            updateStepDisplay();
-            setupEventListeners();
-        });
-
-        function togglePassportSection() {
-            const isPassport = document.getElementById('passport_status').checked;
-            const passportSection = document.getElementById('passport-section');
-
-            if (isPassport) {
-                passportSection.classList.add('show');
-            } else {
-                passportSection.classList.remove('show');
-                // Clear passport fields
-                document.getElementById('passport_numero').value = '';
-                document.getElementById('passport_pays_emission').value = '';
-                document.getElementById('passport_date_emission').value = '';
-                document.getElementById('passport_date_expiration').value = '';
+<script>
+    // --- Chargement dynamique des parcours selon la mention sélectionnée ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const mentionSelect = document.getElementById('mention_id');
+        const parcoursSelect = document.getElementById('parcours_id');
+        mentionSelect.addEventListener('change', function() {
+            const mentionId = this.value;
+            parcoursSelect.innerHTML = '<option value="">Chargement...</option>';
+            if (!mentionId) {
+                parcoursSelect.innerHTML = '<option value="">Sélectionnez le parcours</option>';
+                return;
             }
+            fetch(`/parcours/by-mention/${mentionId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let options = '<option value="">Sélectionnez le parcours</option>';
+                    data.forEach(function(parcours) {
+                        options += `<option value="${parcours.id}">${parcours.nom}</option>`;
+                    });
+                    parcoursSelect.innerHTML = options;
+                })
+                .catch(() => {
+                    parcoursSelect.innerHTML = '<option value="">Aucun parcours trouvé</option>';
+                });
+        });
+    });
+    // Variables globales
+    let currentStep = 1;
+    const totalSteps = 5;
+    let formData = {};
+    let age = 0;
+
+    // Éléments DOM
+    const form = document.getElementById('inscription-form');
+    const stepTitle = document.getElementById('step-title');
+    const stepCounter = document.getElementById('step-counter');
+    const progressBar = document.getElementById('progress-bar');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorContainer = document.getElementById('error-container');
+    const errorList = document.getElementById('error-list');
+
+    // Titres des étapes - Mis à jour avec la nouvelle étape
+    const stepTitles = [
+        'Informations personnelles',
+        'Informations des parents',
+        'Coordonnées',
+        'Scolarité',
+        'Informations académiques'
+    ];
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStepDisplay();
+        setupEventListeners();
+        // Masquer les parcours non valides au chargement pour chaque groupe mention/parcours
+        document.querySelectorAll('.mention-select').forEach(function(mentionSelect) {
+            const parcoursSelect = mentionSelect.closest('.space-y-2, .md\:col-span-2, .form-section, .step-content, .grid, form')?.querySelector('.parcours-select');
+            if (!parcoursSelect) return;
+            Array.from(parcoursSelect.options).forEach(option => {
+                if (!option.value) return;
+                if (!mentionSelect.value || option.getAttribute('data-mention') !== mentionSelect.value) {
+                    option.classList.add('hidden');
+                } else {
+                    option.classList.remove('hidden');
+                }
+            });
+        });
+    });
+
+    function togglePassportSection() {
+        const isPassport = document.getElementById('passport_status').checked;
+        const passportSection = document.getElementById('passport-section');
+
+        if (isPassport) {
+            passportSection.classList.add('show');
+        } else {
+            passportSection.classList.remove('show');
+            // Clear passport fields
+            document.getElementById('passport_numero').value = '';
+            document.getElementById('passport_pays_emission').value = '';
+            document.getElementById('passport_date_emission').value = '';
+            document.getElementById('passport_date_expiration').value = '';
         }
+    }
 
-        // Configuration des écouteurs d'événements
-        function setupEventListeners() {
-            // Navigation
-            prevBtn.addEventListener('click', goToPreviousStep);
-            nextBtn.addEventListener('click', goToNextStep);
-            form.addEventListener('submit', handleSubmit);
+    // Configuration des écouteurs d'événements
+    function setupEventListeners() {
+        // Navigation
+        prevBtn.addEventListener('click', goToPreviousStep);
+        nextBtn.addEventListener('click', goToNextStep);
+        form.addEventListener('submit', handleSubmit);
 
-            // Génération automatique d'email
-            document.getElementById('nom').addEventListener('input', generateEmail);
-            document.getElementById('prenom').addEventListener('input', generateEmail);
+        // Génération automatique d'email
+        document.getElementById('nom').addEventListener('input', generateEmail);
+        document.getElementById('prenom').addEventListener('input', generateEmail);
 
-            // Calcul de l'âge
-            document.getElementById('date_naissance').addEventListener('change', calculateAge);
+        // Calcul de l'âge
+        document.getElementById('date_naissance').addEventListener('change', calculateAge);
 
-            // Sections conditionnelles
-            document.getElementById('etat_civil').addEventListener('change', toggleConjointSection);
-            document.getElementById('bursary_status').addEventListener('change', toggleSponsorSection);
-            document.getElementById('passport_status').addEventListener('change', togglePassportSection);
+        // Sections conditionnelles
+        document.getElementById('etat_civil').addEventListener('change', toggleConjointSection);
+        document.getElementById('bursary_status').addEventListener('change', toggleSponsorSection);
+        document.getElementById('passport_status').addEventListener('change', togglePassportSection);
 
-            // Formatage du téléphone
-            document.getElementById('telephone').addEventListener('input', formatPhone);
-            document.getElementById('sponsor_telephone').addEventListener('input', formatSponsorPhone);
-            // Nouveaux champs de téléphone des parents
-            document.getElementById('contact_pere').addEventListener('input', formatPhone);
-            document.getElementById('contact_mere').addEventListener('input', formatPhone);
+        // Formatage du téléphone
+        document.getElementById('telephone').addEventListener('input', formatPhone);
+        document.getElementById('sponsor_telephone').addEventListener('input', formatSponsorPhone);
+        // Nouveaux champs de téléphone des parents
+        document.getElementById('contact_pere').addEventListener('input', formatPhone);
+        document.getElementById('contact_mere').addEventListener('input', formatPhone);
 
-            // Génération du matricule
-            document.getElementById('mention_id').addEventListener('change', generateMatricule);
+        // Génération du matricule et filtrage dynamique pour chaque groupe mention/parcours
+        document.querySelectorAll('.mention-select').forEach(function(mentionSelect) {
+            mentionSelect.addEventListener('change', function() {
+                const parcoursSelect = mentionSelect.closest('.space-y-2, .md\:col-span-2, .form-section, .step-content, .grid, form')?.querySelector('.parcours-select');
+                if (!parcoursSelect) return;
+                Array.from(parcoursSelect.options).forEach(option => {
+                    if (!option.value) {
+                        option.classList.remove('hidden');
+                        return;
+                    }
+                    if (option.getAttribute('data-mention') === mentionSelect.value) {
+                        option.classList.remove('hidden');
+                    } else {
+                        option.classList.add('hidden');
+                    }
+                });
+                parcoursSelect.value = '';
+                // Générer le matricule si besoin (uniquement pour la mention principale)
+                if (mentionSelect.id === 'mention_id' && typeof generateMatricule === 'function') {
+                    generateMatricule();
+                }
+            });
+        });
+        if (document.getElementById('generate-matricule')) {
             document.getElementById('generate-matricule').addEventListener('click', generateMatricule);
         }
+    }
 
-        // Mise à jour de l'affichage des étapes
-        function updateStepDisplay() {
-            // Masquer toutes les étapes
-            document.querySelectorAll('.step-content').forEach(step => {
-                step.classList.add('hidden');
-            });
+    // Mise à jour de l'affichage des étapes
+    function updateStepDisplay() {
+        // Masquer toutes les étapes
+        document.querySelectorAll('.step-content').forEach(step => {
+            step.classList.add('hidden');
+        });
 
-            // Afficher l'étape courante
-            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+        // Afficher l'étape courante
+        document.getElementById(`step-${currentStep}`).classList.remove('hidden');
 
-            // Mettre à jour le titre et le compteur
-            stepTitle.textContent = stepTitles[currentStep - 1];
-            stepCounter.textContent = `Étape ${currentStep} sur ${totalSteps}`;
+        // Mettre à jour le titre et le compteur
+        stepTitle.textContent = stepTitles[currentStep - 1];
+        stepCounter.textContent = `Étape ${currentStep} sur ${totalSteps}`;
 
-            // Mettre à jour la barre de progression
-            const progress = (currentStep / totalSteps) * 100;
-            progressBar.style.width = `${progress}%`;
+        // Mettre à jour la barre de progression
+        const progress = (currentStep / totalSteps) * 100;
+        progressBar.style.width = `${progress}%`;
 
-            // Gérer l'affichage des boutons
-            prevBtn.classList.toggle('hidden', currentStep === 1);
-            nextBtn.classList.toggle('hidden', currentStep === totalSteps);
-            submitBtn.classList.toggle('hidden', currentStep !== totalSteps);
+        // Gérer l'affichage des boutons
+        prevBtn.classList.toggle('hidden', currentStep === 1);
+        nextBtn.classList.toggle('hidden', currentStep === totalSteps);
+        submitBtn.classList.toggle('hidden', currentStep !== totalSteps);
+    }
+
+    // Navigation vers l'étape précédente
+    function goToPreviousStep() {
+        if (currentStep > 1) {
+            currentStep--;
+            updateStepDisplay();
+            hideErrors();
         }
+    }
 
-        // Navigation vers l'étape précédente
-        function goToPreviousStep() {
-            if (currentStep > 1) {
-                currentStep--;
+    // Navigation vers l'étape suivante
+    function goToNextStep() {
+        if (validateCurrentStep()) {
+            if (currentStep < totalSteps) {
+                currentStep++;
                 updateStepDisplay();
                 hideErrors();
             }
         }
+    }
 
-        // Navigation vers l'étape suivante
-        function goToNextStep() {
-            if (validateCurrentStep()) {
-                if (currentStep < totalSteps) {
-                    currentStep++;
-                    updateStepDisplay();
-                    hideErrors();
-                }
+    // Validation de l'étape courante - Mise à jour avec la nouvelle étape
+    function validateCurrentStep() {
+        const errors = [];
+
+        if (currentStep === 1) {
+            if (!getValue('nom')) errors.push('Le nom est requis');
+            if (!getValue('prenom')) errors.push('Le prénom est requis');
+            if (!getValue('sexe')) errors.push('Le sexe est requis');
+            if (!getValue('date_naissance')) errors.push('La date de naissance est requise');
+            if (!getValue('lieu_naissance')) errors.push('Le lieu de naissance est requis');
+            if (!getValue('nationalite')) errors.push('La nationalité est requise');
+            if (!getValue('etat_civil')) errors.push('L\'état civil est requis');
+            if (!getValue('statut_interne')) errors.push('Le statut étudiant est requis');
+
+            // Validation conditionnelle pour le conjoint
+            if (getValue('etat_civil') === 'marié' && !getValue('nom_conjoint')) {
+                errors.push('Le nom du conjoint est requis pour les personnes mariées');
+            }
+
+            // Validation conditionnelle pour la CIN (majeurs)
+            if (age >= 18) {
+                if (!getValue('cin_numero')) errors.push('Le numéro CIN est requis');
+                if (!getValue('cin_date_delivrance')) errors.push('La date de délivrance CIN est requise');
+                if (!getValue('cin_lieu_delivrance')) errors.push('Le lieu de délivrance CIN est requis');
             }
         }
 
-        // Validation de l'étape courante - Mise à jour avec la nouvelle étape
-        function validateCurrentStep() {
-            const errors = [];
-
-            if (currentStep === 1) {
-                if (!getValue('nom')) errors.push('Le nom est requis');
-                if (!getValue('prenom')) errors.push('Le prénom est requis');
-                if (!getValue('sexe')) errors.push('Le sexe est requis');
-                if (!getValue('date_naissance')) errors.push('La date de naissance est requise');
-                if (!getValue('lieu_naissance')) errors.push('Le lieu de naissance est requis');
-                if (!getValue('nationalite')) errors.push('La nationalité est requise');
-                if (!getValue('etat_civil')) errors.push('L\'état civil est requis');
-
-                // Validation conditionnelle pour le conjoint
-                if (getValue('etat_civil') === 'marié' && !getValue('nom_conjoint')) {
-                    errors.push('Le nom du conjoint est requis pour les personnes mariées');
-                }
-
-                // Validation conditionnelle pour la CIN (majeurs)
-                if (age >= 18) {
-                    if (!getValue('cin_numero')) errors.push('Le numéro CIN est requis');
-                    if (!getValue('cin_date_delivrance')) errors.push('La date de délivrance CIN est requise');
-                    if (!getValue('cin_lieu_delivrance')) errors.push('Le lieu de délivrance CIN est requis');
-                }
-            }
-
-            // Nouvelle validation pour l'étape 2 (Informations des parents)
-            if (currentStep === 2) {
-                if (!getValue('nom_pere')) errors.push('Le nom du père est requis');
-                if (!getValue('profession_pere')) errors.push('La profession du père est requise');
-                if (!getValue('contact_pere')) errors.push('Le contact du père est requis');
-                if (!getValue('nom_mere')) errors.push('Le nom de la mère est requis');
-                if (!getValue('profession_mere')) errors.push('La profession de la mère est requise');
-                if (!getValue('contact_mere')) errors.push('Le contact de la mère est requis');
-                if (!getValue('adresse_parents')) errors.push('L\'adresse des parents est requise');
-            }
-
-            // Ancienne étape 2 devient étape 3 (Coordonnées)
-            if (currentStep === 3) {
-                if (!getValue('adresse')) errors.push('L\'adresse est requise');
-                if (!getValue('region')) errors.push('La région est requise');
-                if (!getValue('email')) errors.push('L\'email est requis');
-            }
-
-            // Ancienne étape 3 devient étape 4 (Scolarité)
-            if (currentStep === 4) {
-                // Validation conditionnelle pour le sponsor
-                if (document.getElementById('bursary_status').checked) {
-                    if (!getValue('sponsor_nom')) errors.push('Le nom du sponsor est requis');
-                    if (!getValue('sponsor_prenom')) errors.push('Le prénom du sponsor est requis');
-                    if (!getValue('sponsor_telephone')) errors.push('Le téléphone du sponsor est requis');
-                    if (!getValue('sponsor_adresse')) errors.push('L\'adresse du sponsor est requise');
-                }
-            }
-
-            // Ancienne étape 4 devient étape 5 (Informations académiques)
-            if (currentStep === 5) {
-                if (!getValue('annee_etude')) errors.push('L\'année d\'étude est requise');
-                if (!getValue('mention_id')) errors.push('La mention envisagée est requise');
-                if (!getValue('academic_year_id')) errors.push('L\'année académique est requise');
-                if (!getValue('semester_id')) errors.push('Le semestre est requis');
-            }
-
-            if (errors.length > 0) {
-                showErrors(errors);
-                return false;
-            }
-
-            return true;
+        // Nouvelle validation pour l'étape 2 (Informations des parents)
+        if (currentStep === 2) {
+            if (!getValue('nom_pere')) errors.push('Le nom du père est requis');
+            if (!getValue('profession_pere')) errors.push('La profession du père est requise');
+            if (!getValue('contact_pere')) errors.push('Le contact du père est requis');
+            if (!getValue('nom_mere')) errors.push('Le nom de la mère est requis');
+            if (!getValue('profession_mere')) errors.push('La profession de la mère est requise');
+            if (!getValue('contact_mere')) errors.push('Le contact de la mère est requis');
+            if (!getValue('adresse_parents')) errors.push('L\'adresse des parents est requise');
         }
 
-        // Affichage des erreurs
-        function showErrors(errors) {
-            errorList.innerHTML = errors.map(error => `<p>• ${error}</p>`).join('');
-            errorContainer.classList.remove('hidden');
-            window.scrollTo(0, 0);
+        // Ancienne étape 2 devient étape 3 (Coordonnées)
+        if (currentStep === 3) {
+            if (!getValue('adresse')) errors.push('L\'adresse est requise');
+            if (!getValue('region')) errors.push('La région est requise');
+            if (!getValue('email')) errors.push('L\'email est requis');
         }
 
-        // Masquer les erreurs
-        function hideErrors() {
-            errorContainer.classList.add('hidden');
-        }
-
-        // Obtenir la valeur d'un champ
-        function getValue(fieldName) {
-            const field = document.getElementById(fieldName);
-            if (!field) return '';
-            return field.type === 'checkbox' ? field.checked : field.value.trim();
-        }
-
-        // Génération automatique de l'email
-        function generateEmail() {
-            const nom = getValue('nom');
-            const prenom = getValue('prenom');
-
-            if (nom && prenom) {
-                const nomFormatted = nom.toLowerCase().trim();
-                const prenomFormatted = prenom.toLowerCase().trim();
-                const troisLettresPrenom = prenomFormatted.slice(0, 3);
-                const email = `${nomFormatted}.${troisLettresPrenom}@zurcher.edu.mg`;
-
-                document.getElementById('email').value = email;
-                document.getElementById('generated-email').textContent = email;
-                document.getElementById('email-preview').classList.remove('hidden');
-            } else {
-                document.getElementById('email').value = '';
-                document.getElementById('email-preview').classList.add('hidden');
+        // Ancienne étape 3 devient étape 4 (Scolarité)
+        if (currentStep === 4) {
+            // Validation conditionnelle pour le sponsor
+            if (document.getElementById('bursary_status').checked) {
+                if (!getValue('sponsor_nom')) errors.push('Le nom du sponsor est requis');
+                if (!getValue('sponsor_prenom')) errors.push('Le prénom du sponsor est requis');
+                if (!getValue('sponsor_telephone')) errors.push('Le téléphone du sponsor est requis');
+                if (!getValue('sponsor_adresse')) errors.push('L\'adresse du sponsor est requise');
             }
         }
 
-        // Calcul de l'âge
-        function calculateAge() {
-            const dateNaissance = getValue('date_naissance');
-            if (!dateNaissance) {
-                age = 0;
-                document.getElementById('age-display').classList.add('hidden');
+        // Ancienne étape 4 devient étape 5 (Informations académiques)
+        if (currentStep === 5) {
+            if (!getValue('year_level_id')) errors.push('Le niveau d\'étude est requis');
+            if (!getValue('mention_id')) errors.push('La mention envisagée est requise');
+        }
+
+        if (errors.length > 0) {
+            showErrors(errors);
+            return false;
+        }
+
+        return true;
+    }
+
+    // Affichage des erreurs
+    function showErrors(errors) {
+        errorList.innerHTML = errors.map(error => `<p>• ${error}</p>`).join('');
+        errorContainer.classList.remove('hidden');
+        window.scrollTo(0, 0);
+    }
+
+    // Masquer les erreurs
+    function hideErrors() {
+        errorContainer.classList.add('hidden');
+    }
+
+    // Obtenir la valeur d'un champ
+    function getValue(fieldName) {
+        const field = document.getElementById(fieldName);
+        if (!field) return '';
+        return field.type === 'checkbox' ? field.checked : field.value.trim();
+    }
+
+    // Génération automatique de l'email
+    function generateEmail() {
+        const nom = getValue('nom');
+        const prenom = getValue('prenom');
+
+        if (nom && prenom) {
+            const nomFormatted = nom.toLowerCase().trim();
+            const prenomFormatted = prenom.toLowerCase().trim();
+            const troisLettresPrenom = prenomFormatted.slice(0, 3);
+            const email = `${nomFormatted}.${troisLettresPrenom}@zurcher.edu.mg`;
+
+            document.getElementById('email').value = email;
+            document.getElementById('generated-email').textContent = email;
+            document.getElementById('email-preview').classList.remove('hidden');
+        } else {
+            document.getElementById('email').value = '';
+            document.getElementById('email-preview').classList.add('hidden');
+        }
+    }
+
+    // Calcul de l'âge
+    function calculateAge() {
+        const dateNaissance = getValue('date_naissance');
+        if (!dateNaissance) {
+            age = 0;
+            document.getElementById('age-display').classList.add('hidden');
+            return;
+        }
+
+        const birthDate = new Date(dateNaissance);
+        const today = new Date();
+        age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        const ageDisplay = document.getElementById('age-display');
+        const isMajeur = age >= 18;
+        ageDisplay.textContent = `Âge: ${age} ans ${isMajeur ? '(Majeur)' : '(Mineur)'}`;
+        ageDisplay.classList.remove('hidden');
+
+        // Afficher/masquer la section CIN selon l'âge
+        const cinSection = document.getElementById('cin-section');
+        if (isMajeur) {
+            cinSection.classList.remove('hidden');
+        } else {
+            cinSection.classList.add('hidden');
+        }
+    }
+
+    // Afficher/masquer la section conjoint
+    function toggleConjointSection() {
+        const etatCivil = getValue('etat_civil');
+        const conjointSection = document.getElementById('conjoint-section');
+
+        if (etatCivil === 'marié') {
+            conjointSection.classList.remove('hidden');
+        } else {
+            conjointSection.classList.add('hidden');
+            document.getElementById('nom_conjoint').value = '';
+            document.getElementById('nb_enfant').value = '0';
+        }
+    }
+
+    // Afficher/masquer la section sponsor
+    function toggleSponsorSection() {
+        const isBursary = document.getElementById('bursary_status').checked;
+        const sponsorSection = document.getElementById('sponsor-section');
+
+        if (isBursary) {
+            sponsorSection.classList.remove('hidden');
+        } else {
+            sponsorSection.classList.add('hidden');
+            document.getElementById('sponsor_nom').value = '';
+            document.getElementById('sponsor_prenom').value = '';
+            document.getElementById('sponsor_telephone').value = '';
+            document.getElementById('sponsor_adresse').value = '';
+        }
+    }
+
+    // Formatage du téléphone
+    function formatPhone(e) {
+        const value = e.target.value;
+        const numbers = value.replace(/\D/g, '').slice(0, 10);
+        e.target.value = numbers.replace(/(\d{3})(\d{2})(\d{3})(\d{2})/, '$1 $2 $3 $4');
+    }
+
+    // Formatage du téléphone du sponsor
+    function formatSponsorPhone(e) {
+        formatPhone(e);
+    }
+
+    // Génération du matricule
+    function generateMatricule() {
+        const mention = getValue('mention_id');
+        if (!mention) return;
+
+        const matriculePrefix = {
+            'Théologie': '1',
+            'Gestion': '2',
+            'Informatique': '3',
+            'Sciences infirmières': '4',
+            'Éducation': '5',
+            'Communication': '6',
+            'Droit': '9'
+        }[mention] || '0';
+
+        // Générer un numéro séquentiel simulé
+        const randomNum = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+        const matricule = `${matriculePrefix}${randomNum}`;
+
+        document.getElementById('matricule').value = matricule;
+    }
+
+    // Soumission du formulaire
+    function handleSubmit(e) {
+        e.preventDefault();
+        // Valider toutes les étapes
+        let allValid = true;
+        for (let step = 1; step <= totalSteps; step++) {
+            const originalStep = currentStep;
+            currentStep = step;
+            if (!validateCurrentStep()) {
+                allValid = false;
+                currentStep = originalStep;
+                updateStepDisplay();
                 return;
             }
+            currentStep = originalStep;
+        }
 
-            const birthDate = new Date(dateNaissance);
-            const today = new Date();
-            age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (!allValid) return;
 
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
+        // Afficher le spinner
+        document.getElementById('submit-text').textContent = 'Enregistrement...';
+        document.getElementById('submit-spinner').classList.remove('hidden');
+        submitBtn.disabled = true;
+
+        // Collecter toutes les données du formulaire
+        const formData = new FormData(form);
+
+        // Envoyer les données via AJAX
+        fetch("{{ route('register.store') }}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
-
-            const ageDisplay = document.getElementById('age-display');
-            const isMajeur = age >= 18;
-            ageDisplay.textContent = `Âge: ${age} ans ${isMajeur ? '(Majeur)' : '(Mineur)'}`;
-            ageDisplay.classList.remove('hidden');
-
-            // Afficher/masquer la section CIN selon l'âge
-            const cinSection = document.getElementById('cin-section');
-            if (isMajeur) {
-                cinSection.classList.remove('hidden');
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirection vers la page de récapitulatif
+                window.location.href = data.redirect_url;
             } else {
-                cinSection.classList.add('hidden');
-            }
-        }
-
-        // Afficher/masquer la section conjoint
-        function toggleConjointSection() {
-            const etatCivil = getValue('etat_civil');
-            const conjointSection = document.getElementById('conjoint-section');
-
-            if (etatCivil === 'marié') {
-                conjointSection.classList.remove('hidden');
-            } else {
-                conjointSection.classList.add('hidden');
-                document.getElementById('nom_conjoint').value = '';
-                document.getElementById('nb_enfant').value = '0';
-            }
-        }
-
-        // Afficher/masquer la section sponsor
-        function toggleSponsorSection() {
-            const isBursary = document.getElementById('bursary_status').checked;
-            const sponsorSection = document.getElementById('sponsor-section');
-
-            if (isBursary) {
-                sponsorSection.classList.remove('hidden');
-            } else {
-                sponsorSection.classList.add('hidden');
-                document.getElementById('sponsor_nom').value = '';
-                document.getElementById('sponsor_prenom').value = '';
-                document.getElementById('sponsor_telephone').value = '';
-                document.getElementById('sponsor_adresse').value = '';
-            }
-        }
-
-        // Formatage du téléphone
-        function formatPhone(e) {
-            const value = e.target.value;
-            const numbers = value.replace(/\D/g, '').slice(0, 10);
-            e.target.value = numbers.replace(/(\d{3})(\d{2})(\d{3})(\d{2})/, '$1 $2 $3 $4');
-        }
-
-        // Formatage du téléphone du sponsor
-        function formatSponsorPhone(e) {
-            formatPhone(e);
-        }
-
-        // Génération du matricule
-        function generateMatricule() {
-            const mention = getValue('mention_id');
-            if (!mention) return;
-
-            const matriculePrefix = {
-                'Théologie': '1',
-                'Gestion': '2',
-                'Informatique': '3',
-                'Sciences infirmières': '4',
-                'Éducation': '5',
-                'Communication': '6',
-                'Droit': '9'
-            }[mention] || '0';
-
-            // Générer un numéro séquentiel simulé
-            const randomNum = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
-            const matricule = `${matriculePrefix}${randomNum}`;
-
-            document.getElementById('matricule').value = matricule;
-        }
-
-        // Soumission du formulaire
-        function handleSubmit(e) {
-            e.preventDefault();
-
-            // Valider toutes les étapes
-            let allValid = true;
-            for (let step = 1; step <= totalSteps; step++) {
-                const originalStep = currentStep;
-                currentStep = step;
-                if (!validateCurrentStep()) {
-                    allValid = false;
-                    currentStep = originalStep;
-                    updateStepDisplay();
-                    return;
-                }
-                currentStep = originalStep;
-            }
-
-            if (!allValid) return;
-
-            // Afficher le spinner
-            document.getElementById('submit-text').textContent = 'Enregistrement...';
-            document.getElementById('submit-spinner').classList.remove('hidden');
-            submitBtn.disabled = true;
-
-            // Collecter toutes les données du formulaire
-            const formData = new FormData(form);
-
-            // Envoyer les données via AJAX
-            fetch("{{ route('register.store') }}", {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Redirection vers la page de récapitulatif
-                    window.location.href = data.redirect_url;
+                if (data.errors) {
+                    const errors = Object.values(data.errors).flat();
+                    showErrors(errors);
                 } else {
-                    // Afficher les erreurs de validation
-                    if (data.errors) {
-                        const errors = Object.values(data.errors).flat();
-                        showErrors(errors);
-                    } else {
-                        showErrors(['Une erreur s\'est produite lors de l\'enregistrement.']);
-                    }
+                    showErrors(['Une erreur s\'est produite lors de l\'enregistrement.']);
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showErrors(['Une erreur s\'est produite lors de l\'enregistrement.']);
-            })
-            .finally(() => {
-                // Réinitialiser le bouton
-                document.getElementById('submit-text').textContent = 'Enregistrer';
-                document.getElementById('submit-spinner').classList.add('hidden');
-                submitBtn.disabled = false;
-            });
-        }
-    </script>
-</body>
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrors(['Une erreur s\'est produite lors de l\'enregistrement.']);
+        })
+        .finally(() => {
+            // Réinitialiser le bouton
+            document.getElementById('submit-text').textContent = 'Enregistrer';
+            document.getElementById('submit-spinner').classList.add('hidden');
+            submitBtn.disabled = false;
+        });
+    }
+</script>
+
 </html>

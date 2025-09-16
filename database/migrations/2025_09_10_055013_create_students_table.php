@@ -67,12 +67,17 @@ return new class extends Migration
             $table->text('sponsor_adresse')->nullable();
             
             // Informations académiques
-            $table->enum('annee_etude', ['L1', 'L2', 'L3', 'M1', 'M2']);
+            $table->unsignedBigInteger('year_level_id')->nullable();
+            $table->foreign('year_level_id')->references('id')->on('year_levels')->onDelete('set null');
             $table->unsignedBigInteger('mention_id')->nullable();
             $table->foreign('mention_id')->references('id')->on('mentions')->onDelete('set null');
             $table->unsignedBigInteger('semester_id')->nullable();
             $table->foreign('semester_id')->references('id')->on('semesters')->onDelete('set null');
+            $table->unsignedBigInteger('parcours_id')->nullable();
+            $table->foreign('parcours_id')->references('id')->on('parcours')->onDelete('set null');
             
+            $table->enum('statut_interne', ['interne', 'externe'])->default('externe');
+
             $table->timestamps();
         });
     }

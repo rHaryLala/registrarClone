@@ -3,12 +3,20 @@
 use Illuminate\Support\Facades\DB;
 use App\Models\Student;
 use App\Models\Mention;
+use App\Models\Parcours;
 
 $etudiants = DB::table('tbl_2024_etudiant')->get();
 
 foreach ($etudiants as $etudiant) {
     // Trouver la mention correspondante
     $mention = Mention::where('nom', $etudiant->etude_envisage)->first();
+
+    // Trouver le parcours correspondant (option ou champ dédié)
+    $parcoursNom = $etudiant->etude_option ?? $etudiant->student_parcours ?? null;
+    $parcours = null;
+    if ($mention && $parcoursNom) {
+        $parcours = Parcours::where('nom', $parcoursNom)->where('mention_id', $mention->id)->first();
+    }
 
     // Vérifier si un étudiant existe déjà avec cet email ou ce matricule
     $students = Student::where('matricule', $etudiant->student_id)
@@ -104,6 +112,7 @@ foreach ($etudiants as $etudiant) {
         'sponsor_adresse' => $etudiant->sponsor_adresse,
         'annee_etude' => $anneeEtude,
         'mention_id' => $mention ? $mention->id : null,
+        'parcours_id' => $parcours ? $parcours->id : null,
         'matricule' => $etudiant->student_id,
     ];
 

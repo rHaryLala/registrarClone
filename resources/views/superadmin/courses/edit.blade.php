@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -80,6 +81,15 @@
                                 <option value="">Sélectionnez la mention</option>
                                 @foreach($mentions as $mention)
                                     <option value="{{ $mention->id }}" @if(old('mention_id', $course->mention_id) == $mention->id) selected @endif>{{ $mention->nom }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-semibold mb-2">Niveau</label>
+                            <select name="year_level_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <option value="">Sélectionnez le niveau</option>
+                                @foreach($yearLevels as $level)
+                                    <option value="{{ $level->id }}" @if(old('year_level_id', $course->year_level_id) == $level->id) selected @endif>{{ $level->label }}</option>
                                 @endforeach
                             </select>
                         </div>

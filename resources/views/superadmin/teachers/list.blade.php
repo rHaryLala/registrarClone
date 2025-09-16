@@ -38,6 +38,8 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nom</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Téléphone</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Diplôme</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -46,6 +48,8 @@
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $teacher->name }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $teacher->email }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $teacher->telephone }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $teacher->diplome }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap flex space-x-2">
                                     <a href="{{ route('superadmin.teachers.edit', $teacher->id) }}" class="text-blue-600 hover:underline flex items-center">
                                         <i class="fas fa-edit mr-1"></i> Modifier
@@ -61,7 +65,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-6 py-4 text-center text-gray-500">Aucun enseignant trouvé.</td>
+                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">Aucun enseignant trouvé.</td>
                             </tr>
                         @endforelse
                     </tbody>

@@ -8,6 +8,9 @@ use Illuminate\Support\Str;
 use App\Models\Mention;
 use App\Models\AcademicYear;
 use App\Models\Semester;
+use App\Models\YearLevel;
+use App\Models\Parcours;
+use Illuminate\Support\Facades\DB;
 
 class StudentController extends Controller
 {
@@ -16,7 +19,9 @@ class StudentController extends Controller
         $mentions = Mention::all();
         $academicYears = AcademicYear::orderByDesc('date_debut')->get();
         $semesters = Semester::orderBy('ordre')->get();
-        return view('register', compact('mentions', 'academicYears', 'semesters'));
+        $yearLevels = YearLevel::all();
+        $parcours = Parcours::all();
+        return view('register', compact('mentions', 'academicYears', 'semesters', 'yearLevels', 'parcours'));
     }
 
     public function index()
@@ -79,10 +84,9 @@ class StudentController extends Controller
             'sponsor_adresse' => 'nullable|required_if:bursary_status,true|string',
             
             // Informations académiques
-            'annee_etude' => 'required|in:L1,L2,L3,M1,M2',
             'mention_id' => 'required|exists:mentions,id',
-            'academic_year_id' => 'nullable|exists:academic_years,id',
-            'semester_id' => 'nullable|exists:semesters,id',
+            'year_level_id' => 'required|exists:year_levels,id',
+            'parcours_id' => 'nullable|exists:parcours,id',
         ]);
 
         // Ajouter les champs checkbox
@@ -141,6 +145,33 @@ class StudentController extends Controller
         }
         
         $validated['matricule'] = $matricule;
+
+        // Récupérer l'année académique active
+        $activeAcademicYear = AcademicYear::where('active', true)->first();
+        if ($activeAcademicYear) {
+            // year_level_id déjà validé et présent dans $validated
+            $validated['academic_year_id'] = $activeAcademicYear->id;
+            $semester = Semester::where('academic_year_id', $activeAcademicYear->id)
+                ->where('ordre', 1)
+                ->first();
+            if ($semester) {
+                $validated['semester_id'] = $semester->id;
+            }
+        }
+
+        // Sécuriser la présence de year_level_id
+        if (!$request->has('year_level_id')) {
+            return response()->json([
+                'success' => false,
+                'errors' => ['Le niveau d\'étude est requis.']
+            ], 422);
+        }
+        $validated['year_level_id'] = $request->input('year_level_id');
+
+        // Ajoutez explicitement parcours_id si transmis
+        if ($request->has('parcours_id')) {
+            $validated['parcours_id'] = $request->input('parcours_id');
+        }
 
         // Créer l'étudiant
         $student = Student::create($validated);

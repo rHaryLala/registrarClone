@@ -5,6 +5,10 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\ParcoursController;
+use App\Http\Controllers\FinanceDetailController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 // Page d'accueil
 Route::view('/', 'welcome');
@@ -32,53 +36,80 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 Route::middleware(['auth', 'superadmin'])->group(function () {
     Route::get('/superadmin/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
     // Gestion des cours
-    Route::get('/superadmin/courses', [SuperAdminController::class, 'coursesList'])->name('superadmin.courses.list');
-    Route::get('/superadmin/courses/create', [SuperAdminController::class, 'createCourse'])->name('superadmin.courses.create');
-    Route::post('/superadmin/courses/store', [SuperAdminController::class, 'storeCourse'])->name('superadmin.courses.store');
-    Route::get('/superadmin/courses/{course}/edit', [SuperAdminController::class, 'editCourse'])->name('superadmin.courses.edit');
-    Route::put('/superadmin/courses/{course}', [SuperAdminController::class, 'updateCourse'])->name('superadmin.courses.update');
-    Route::delete('/superadmin/courses/{course}', [SuperAdminController::class, 'destroyCourse'])->name('superadmin.courses.destroy');
-    Route::get('/superadmin/courses/{course}', [SuperAdminController::class, 'showCourse'])->name('superadmin.courses.show');
+    Route::prefix('superadmin/courses')->name('superadmin.courses.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'coursesList'])->name('list');
+        Route::get('/create', [SuperAdminController::class, 'createCourse'])->name('create');
+        Route::post('/', [SuperAdminController::class, 'storeCourse'])->name('store');
+        Route::get('/{course}/edit', [SuperAdminController::class, 'editCourse'])->name('edit');
+        Route::put('/{course}', [SuperAdminController::class, 'updateCourse'])->name('update');
+        Route::delete('/{course}', [SuperAdminController::class, 'destroyCourse'])->name('destroy');
+        Route::get('/{course}', [SuperAdminController::class, 'showCourse'])->name('show');
+    });
+
     // Gestion des enseignants
-    Route::get('/superadmin/teachers', [SuperAdminController::class, 'teachersList'])->name('superadmin.teachers.list');
-    Route::get('/superadmin/teachers/create', [SuperAdminController::class, 'createTeacher'])->name('superadmin.teachers.create');
-    Route::post('/superadmin/teachers', [SuperAdminController::class, 'storeTeacher'])->name('superadmin.teachers.store');
-    Route::get('/superadmin/teachers/{teacher}/edit', [SuperAdminController::class, 'editTeacher'])->name('superadmin.teachers.edit');
-    Route::put('/superadmin/teachers/{teacher}', [SuperAdminController::class, 'updateTeacher'])->name('superadmin.teachers.update');
-    Route::delete('/superadmin/teachers/{teacher}', [SuperAdminController::class, 'destroyTeacher'])->name('superadmin.teachers.destroy');
+    Route::prefix('superadmin/teachers')->name('superadmin.teachers.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'teachersList'])->name('list');
+        Route::get('/create', [SuperAdminController::class, 'createTeacher'])->name('create');
+        Route::post('/', [SuperAdminController::class, 'storeTeacher'])->name('store');
+        Route::get('/{teacher}/edit', [SuperAdminController::class, 'editTeacher'])->name('edit');
+        Route::put('/{teacher}', [SuperAdminController::class, 'updateTeacher'])->name('update');
+        Route::delete('/{teacher}', [SuperAdminController::class, 'destroyTeacher'])->name('destroy');
+    });
+
     // Gestion des utilisateurs
-    Route::get('/superadmin/users', [SuperAdminController::class, 'usersList'])->name('superadmin.users.list');
-    Route::get('/superadmin/users/create', [SuperAdminController::class, 'createUser'])->name('superadmin.users.create');
-    Route::post('/superadmin/users', [SuperAdminController::class, 'storeUser'])->name('superadmin.users.store');
-    Route::get('/superadmin/users/{user}/edit', [SuperAdminController::class, 'editUser'])->name('superadmin.users.edit');
-    Route::put('/superadmin/users/{user}', [SuperAdminController::class, 'updateUser'])->name('superadmin.users.update');
-    Route::delete('/superadmin/users/{user}', [SuperAdminController::class, 'destroyUser'])->name('superadmin.users.destroy');
+    Route::prefix('superadmin/users')->name('superadmin.users.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'usersList'])->name('list');
+        Route::get('/create', [SuperAdminController::class, 'createUser'])->name('create');
+        Route::post('/', [SuperAdminController::class, 'storeUser'])->name('store');
+        Route::get('/{user}/edit', [SuperAdminController::class, 'editUser'])->name('edit');
+        Route::put('/{user}', [SuperAdminController::class, 'updateUser'])->name('update');
+        Route::delete('/{user}', [SuperAdminController::class, 'destroyUser'])->name('destroy');
+    });
+
     // Gestion des mentions
-    Route::get('/superadmin/mentions', [SuperAdminController::class, 'mentionsList'])->name('superadmin.mentions.list');
-    Route::get('/superadmin/mentions/create', [SuperAdminController::class, 'createMention'])->name('superadmin.mentions.create');
-    Route::post('/superadmin/mentions', [SuperAdminController::class, 'storeMention'])->name('superadmin.mentions.store');
-    Route::get('/superadmin/mentions/{mention}/edit', [SuperAdminController::class, 'editMention'])->name('superadmin.mentions.edit');
-    Route::put('/superadmin/mentions/{mention}', [SuperAdminController::class, 'updateMention'])->name('superadmin.mentions.update');
-    Route::delete('/superadmin/mentions/{mention}', [SuperAdminController::class, 'destroyMention'])->name('superadmin.mentions.destroy');
-    Route::get('/superadmin/mentions/{mention}', [SuperAdminController::class, 'showMention'])->name('superadmin.mentions.show');
+    Route::prefix('superadmin/mentions')->name('superadmin.mentions.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'mentionsList'])->name('list');
+        Route::get('/create', [SuperAdminController::class, 'createMention'])->name('create');
+        Route::post('/', [SuperAdminController::class, 'storeMention'])->name('store');
+        Route::get('/{mention}/edit', [SuperAdminController::class, 'editMention'])->name('edit');
+        Route::put('/{mention}', [SuperAdminController::class, 'updateMention'])->name('update');
+        Route::delete('/{mention}', [SuperAdminController::class, 'destroyMention'])->name('destroy');
+        Route::get('/{mention}', [SuperAdminController::class, 'showMention'])->name('show');
+    });
+
     // Gestion des étudiants
-    Route::get('/superadmin/students', [SuperAdminController::class, 'studentsList'])->name('superadmin.students.list');
-    Route::get('/superadmin/students/create', [SuperAdminController::class, 'createStudent'])->name('superadmin.students.create');
-    Route::get('/superadmin/students/{student}', [SuperAdminController::class, 'showStudent'])->name('superadmin.students.show');
-    Route::post('/superadmin/students', [SuperAdminController::class, 'storeStudent'])->name('superadmin.students.store');
-    Route::get('/superadmin/students/{student}/edit', [SuperAdminController::class, 'editStudent'])->name('superadmin.students.edit');
-    Route::put('/superadmin/students/{student}', [SuperAdminController::class, 'updateStudent'])->name('superadmin.students.update');
-    Route::delete('/superadmin/students/{student}', [SuperAdminController::class, 'destroyStudent'])->name('superadmin.students.destroy');
-    // Ajout d'un cours à un étudiant
-    Route::get('/superadmin/students/{student}/add-course', [SuperAdminController::class, 'addCourseToStudent'])->name('superadmin.students.courses.add');
-    Route::post('/superadmin/students/{student}/add-course', [SuperAdminController::class, 'storeCourseToStudent'])->name('superadmin.students.courses.store');
-    Route::patch('/superadmin/students/{student}/courses/{course}/remove', [\App\Http\Controllers\SuperAdminController::class, 'removeCourseFromStudent'])->name('superadmin.students.courses.remove');
-    // Historique des cours d'un étudiant
-    Route::get('/superadmin/students/{student}/courses/history', [\App\Http\Controllers\SuperAdminController::class, 'showStudentCourses'])->name('superadmin.students.courses.history');
+    Route::prefix('superadmin/students')->name('superadmin.students.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'studentsList'])->name('list');
+        Route::get('/create', [SuperAdminController::class, 'createStudent'])->name('create');
+        Route::post('/', [SuperAdminController::class, 'storeStudent'])->name('store');
+        Route::get('/{student}/edit', [SuperAdminController::class, 'editStudent'])->name('edit');
+        Route::put('/{student}', [SuperAdminController::class, 'updateStudent'])->name('update');
+        Route::delete('/{student}', [SuperAdminController::class, 'destroyStudent'])->name('destroy');
+        Route::get('/{student}', [SuperAdminController::class, 'showStudent'])->name('show');
+        Route::get('/{student}/add-course', [SuperAdminController::class, 'addCourseToStudent'])->name('courses.add');
+        Route::post('/{student}/add-course', [SuperAdminController::class, 'storeCourseToStudent'])->name('courses.store');
+        Route::patch('/{student}/courses/{course}/remove', [SuperAdminController::class, 'removeCourseFromStudent'])->name('courses.remove');
+        Route::get('/{student}/courses/history', [SuperAdminController::class, 'showStudentCourses'])->name('courses.history');
+    });
+   
     // Paramètres globaux
     Route::get('/superadmin/settings', function () {
         return view('superadmin.settings');})->name('superadmin.settings');
-   Route::put('/superadmin/settings', [SuperAdminController::class, 'updateSettings'])->name('superadmin.settings.update');
+    Route::put('/superadmin/settings', [SuperAdminController::class, 'updateSettings'])->name('superadmin.settings.update');
+
+
+    // Gestion des finances étudiantes
+    Route::prefix('superadmin/finances')->name('superadmin.finances.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'financesList'])->name('list');
+        Route::get('/create', [SuperAdminController::class, 'createFinance'])->name('create');
+        Route::post('/', [SuperAdminController::class, 'storeFinance'])->name('store');
+        Route::get('/{finance}/edit', [SuperAdminController::class, 'editFinance'])->name('edit');
+        Route::put('/{finance}', [SuperAdminController::class, 'updateFinance'])->name('update');
+        Route::delete('/{finance}', [SuperAdminController::class, 'destroyFinance'])->name('destroy');
+    });
+
+    // Gestion des détails de finances
+    Route::resource('financedetails', FinanceDetailController::class)->names('superadmin.financedetails');
 });
 
 // Gestion des utilisateurs
@@ -89,3 +120,6 @@ Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.
 
 // Gestion des étudiants
 Route::get('/students', [StudentController::class, 'index'])->name('students.index');
+
+// API pour charger les parcours d'une mention (AJAX)
+Route::get('/parcours/by-mention/{mentionId}', [ParcoursController::class, 'getByMention']);

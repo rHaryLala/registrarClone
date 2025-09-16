@@ -9,6 +9,9 @@ use App\Models\Teacher;
 use App\Models\Course;
 use App\Models\Semester;
 use App\Models\AcademicYear;
+use App\Models\AccessCode;
+use App\Models\Parcours;
+use App\Models\YearLevel;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -24,9 +27,13 @@ class DatabaseSeeder extends Seeder
             // StudentSeeder::class,
             MentionSeeder::class,
             TeacherSeeder::class,
-            CourseSeeder::class,
-            SemesterSeeder::class,
+            YearLevelSeeder::class,
             AcademicYearSeeder::class,
+            SemesterSeeder::class,
+            AccessCodeSeeder::class,
+            ParcoursSeeder::class,
+            CourseSeeder::class,
+            FinanceDetailSeeder::class,
         ]);
     }
 }

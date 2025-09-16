@@ -6,6 +6,7 @@
     <title>Récapitulatif - Université Adventiste Zurcher</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/favicon.png">
     
     <style>
         .section-card {
@@ -129,7 +130,7 @@
                 <div class="ml-3">
                     <h3 class="text-sm font-medium text-green-800">Inscription validée</h3>
                     <div class="mt-2 text-sm text-green-700">
-                        <p>Votre inscription a été enregistrée avec succès. Vous recevrez un email de confirmation sous peu.</p>
+                        <p>Votre inscription a été enregistrée avec succès.</p>
                     </div>
                 </div>
             </div>
@@ -266,52 +267,76 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
                 </svg>
-                Informations Académiques
+                Informations Académiques & Administratives
             </h3>
             <div class="info-grid">
                 <div class="info-item">
-                    <p class="info-label">Année d'étude</p>
-                    <p class="info-value">
-                        @switch($student->annee_etude)
-                            @case('L1') Licence 1 @break
-                            @case('L2') Licence 2 @break
-                            @case('L3') Licence 3 @break
-                            @case('M1') Master 1 @break
-                            @case('M2') Master 2 @break
-                        @endswitch
-                    </p>
+                    <p class="info-label">Matricule</p>
+                    <p class="info-value">{{ $student->matricule }}</p>
                 </div>
                 <div class="info-item">
-                    <p class="info-label">Mention envisagée</p>
+                    <p class="info-label">Niveau d'étude</p>
                     <p class="info-value">
-                        {{ $student->mention ? $student->mention->nom : 'Non spécifié' }}
-                    </p>
-                </div>
-                <div class="info-item">
-                    <p class="info-label">Série du Baccalauréat</p>
-                    <p class="info-value">{{ $student->bacc_serie ?? 'Non spécifié' }}</p>
-                </div>
-                <div class="info-item">
-                    <p class="info-label">Date d'obtention du Bac</p>
-                    <p class="info-value">
-                        @if($student->bacc_date_obtention)
-                            {{ \Carbon\Carbon::parse($student->bacc_date_obtention)->format('d/m/Y') }}
+                        @if($student->yearLevel)
+                            {{ $student->yearLevel->label }} ({{ $student->yearLevel->code }})
+                        @elseif($student->annee_etude)
+                            @switch($student->annee_etude)
+                                @case('L1') Licence 1 (L1) @break
+                                @case('L2') Licence 2 (L2) @break
+                                @case('L3') Licence 3 (L3) @break
+                                @case('M1') Master 1 (M1) @break
+                                @case('M2') Master 2 (M2) @break
+                                @default {{ $student->annee_etude }}
+                            @endswitch
                         @else
                             Non spécifié
                         @endif
                     </p>
                 </div>
                 <div class="info-item">
-                    <p class="info-label">Statut</p>
+                    <p class="info-label">Mention</p>
+                    <p class="info-value">{{ $student->mention ? $student->mention->nom : 'Non spécifié' }}</p>
+                </div>
+                <div class="info-item">
+                    <p class="info-label">Année académique</p>
                     <p class="info-value">
-                        <span class="badge badge-success">Nouvel étudiant</span>
+                        {{ $student->semester && $student->semester->academicYear ? $student->semester->academicYear->libelle : ($student->academic_year_id ?? 'Non spécifié') }}
                     </p>
                 </div>
-                {{-- Ajoutez l'affichage du semestre dans la section académique --}}
                 <div class="info-item">
                     <p class="info-label">Semestre</p>
                     <p class="info-value">
-                        {{ $student->semester ? $student->semester->nom . ' (' . $student->semester->annee . ')' : 'Non spécifié' }}
+                        {{ $student->semester ? $student->semester->nom : 'Non spécifié' }}
+                    </p>
+                </div>
+                <div class="info-item">
+                    <p class="info-label">Date début semestre</p>
+                    <p class="info-value">
+                        {{ $student->semester && $student->semester->date_debut ? \Carbon\Carbon::parse($student->semester->date_debut)->format('d/m/Y') : 'Non spécifié' }}
+                    </p>
+                </div>
+                <div class="info-item">
+                    <p class="info-label">Date fin semestre</p>
+                    <p class="info-value">
+                        {{ $student->semester && $student->semester->date_fin ? \Carbon\Carbon::parse($student->semester->date_fin)->format('d/m/Y') : 'Non spécifié' }}
+                    </p>
+                </div>
+                <div class="info-item">
+                    <p class="info-label">Statut étudiant</p>
+                    <p class="info-value">{{ ucfirst($student->statut_interne) }}</p>
+                </div>
+                <div class="info-item">
+                    <p class="info-label">Parcours</p>
+                    <p class="info-value">{{ $student->parcours ? $student->parcours->nom : 'Non spécifié' }}</p>
+                </div>
+                <div class="info-item">
+                    <p class="info-label">Image de profil</p>
+                    <p class="info-value">
+                        @if($student->image)
+                            <img src="{{ asset($student->image) }}" alt="Photo de profil" style="max-width:100px;max-height:100px;">
+                        @else
+                            Non spécifié
+                        @endif
                     </p>
                 </div>
             </div>
@@ -421,7 +446,9 @@
 <footer class="bg-gray-100 border-t border-gray-200 mt-12 py-6">
     <div class="max-w-6xl mx-auto px-4 text-center text-gray-600 text-sm">
         <p>© {{ date('Y') }} Université Adventiste Zurcher. Tous droits réservés.</p>
-        <p class="mt-2">Votre inscription a été enregistrée le {{ \Carbon\Carbon::now()->format('d/m/Y à H:i') }}</p>
+        <p class="mt-2">
+            Votre inscription a été enregistrée le {{ $student->created_at->format('d/m/Y à H:i') }}
+        </p>
     </div>
 </footer>
 

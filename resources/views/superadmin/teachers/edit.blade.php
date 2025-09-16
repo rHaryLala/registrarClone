@@ -37,9 +37,17 @@
                             <label class="block text-gray-700 font-semibold mb-2">Nom</label>
                             <input type="text" name="name" value="{{ old('name', $teacher->name) }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                         </div>
-                        <div class="mb-6">
+                        <div class="mb-4">
                             <label class="block text-gray-700 font-semibold mb-2">Email</label>
                             <input type="email" name="email" value="{{ old('email', $teacher->email) }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-semibold mb-2">Téléphone</label>
+                            <input type="text" name="telephone" value="{{ old('telephone', $teacher->telephone) }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-semibold mb-2">Diplôme</label>
+                            <input type="text" name="diplome" value="{{ old('diplome', $teacher->diplome) }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div class="flex justify-end">
                             <a href="{{ route('superadmin.teachers.list') }}" class="mr-4 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">Annuler</a>

@@ -12,24 +12,25 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
-                'name' => 'Hary Lala Rabenamana',
+                'name' => 'Rabenamana Hary Lala ',
                 'email' => 'rabenamana.h@zurcher.edu.mg',
                 'password' => Hash::make('3453Student23'),
                 'plain_password' => '3453Student23',
                 'role' => 'superadmin',
-            ],            [
-                'name' => 'Daniella Malalanirina',
+            ],            
+            [
+                'name' => 'Malalanirina Daniella',
                 'email' => 'daniellamalalanirina@zurcher.edu.mg',
                 'password' => Hash::make('admin12345'),
                 'plain_password' => 'admin12345',
                 'role' => 'superadmin',
             ],
             [
-                'name' => 'Admin',
-                'email' => 'admin@example.com',
-                'password' => Hash::make('password'),
-                'plain_password' => 'password',
-                'role' => 'admin',
+                'name' => 'Nomenjanahary Roger Francky',
+                'email' => 'uaz.secretaryacad@zurcher.edu.mg',
+                'password' => Hash::make('franckymiddleware2025'),
+                'plain_password' => 'franckymiddleware2025',
+                'role' => 'superadmin',
             ],
             [
                 'name' => 'Enseignant',
@@ -63,59 +64,6 @@ class UserSeeder extends Seeder
 
         foreach ($users as $userData) {
             User::create($userData);
-        }
-
-        // Optionnel: Créer des utilisateurs supplémentaires pour les tests
-        $this->createAdditionalUsers();
-    }
-
-    /**
-     * Créer des utilisateurs supplémentaires pour les tests
-     */
-    private function createAdditionalUsers(): void
-    {
-        // Ajouter quelques étudiants supplémentaires
-        for ($i = 1; $i <= 5; $i++) {
-            User::create([
-                'name' => 'Étudiant ' . $i,
-                'email' => 'student' . $i . '@example.com',
-                'password' => Hash::make('password'),
-                'plain_password' => 'password',
-                'role' => 'student',
-            ]);
-        }
-
-        // Ajouter quelques enseignants supplémentaires
-        for ($i = 1; $i <= 3; $i++) {
-            User::create([
-                'name' => 'Enseignant ' . $i,
-                'email' => 'teacher' . $i . '@example.com',
-                'password' => Hash::make('password'),
-                'plain_password' => 'password',
-                'role' => 'teacher',
-            ]);
-        }
-
-        // Ajouter quelques parents supplémentaires
-        for ($i = 1; $i <= 3; $i++) {
-            User::create([
-                'name' => 'Parent ' . $i,
-                'email' => 'parent' . $i . '@example.com',
-                'password' => Hash::make('password'),
-                'plain_password' => 'password',
-                'role' => 'parent',
-            ]);
-        }
-
-        // Ajouter quelques employés supplémentaires
-        for ($i = 1; $i <= 2; $i++) {
-            User::create([
-                'name' => 'Employé ' . $i,
-                'email' => 'employe' . $i . '@example.com',
-                'password' => Hash::make('password'),
-                'plain_password' => 'password',
-                'role' => 'employe',
-            ]);
         }
     }
 }

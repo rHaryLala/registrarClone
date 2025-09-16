@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Course;
 use App\Models\Mention;
 use App\Models\Semester;
+use App\Models\Parcours;
+use App\Models\StudentFinance;
+use App\Models\YearLevel;
 
 class Student extends Model
 {
@@ -21,8 +24,8 @@ class Student extends Model
         'contact_pere', 'nom_mere', 'profession_mere', 'contact_mere', 
         'adresse_parents', 'telephone', 'email', 'adresse', 'region', 
         'district', 'bacc_serie', 'bacc_date_obtention', 'bursary_status', 
-        'sponsor_nom', 'sponsor_prenom', 'sponsor_telephone', 'sponsor_adresse', 
-        'annee_etude', 'mention_id', 'semester_id', 'matricule', 'image'
+        'sponsor_nom', 'sponsor_prenom', 'sponsor_telephone', 'sponsor_adresse',
+        'year_level_id', 'mention_id', 'parcours_id', 'semester_id', 'matricule', 'image'
     ];
 
     protected $casts = [
@@ -50,5 +53,25 @@ class Student extends Model
     public function semester()
     {
         return $this->belongsTo(Semester::class, 'semester_id');
+    }
+
+    public function parcours()
+    {
+        return $this->belongsTo(Parcours::class, 'parcours_id');
+    }
+
+    public function finances()
+    {
+        return $this->hasMany(StudentFinance::class);
+    }
+
+    public function year()
+    {
+        return $this->belongsTo(\App\Models\Year::class);
+    }
+
+    public function yearLevel()
+    {
+        return $this->belongsTo(YearLevel::class);
     }
 }

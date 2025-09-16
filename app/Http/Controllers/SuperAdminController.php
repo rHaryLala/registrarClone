@@ -6,6 +6,10 @@ use App\Models\Student;
 use App\Models\Course;
 use App\Models\Mention;
 use App\Models\Teacher;
+use App\Models\StudentFinance;
+use App\Models\YearLevel;
+use App\Models\AcademicYear;
+use App\Models\Semester;
 use Illuminate\Http\Request;
 
 class SuperAdminController extends Controller
@@ -15,38 +19,42 @@ class SuperAdminController extends Controller
         $usersCount = User::count();
         $studentsCount = Student::count();
         $teachersCount = Teacher::count();
-        $coursesCount = \App\Models\Course::count(); // Si ton modèle s'appelle Course
+        $coursesCount = Course::count();
 
-        // Dernières inscriptions (étudiants)
         $latestRegistrations = Student::orderBy('created_at', 'desc')
             ->latest()
             ->take(3)
             ->get();
 
-        // Statistiques mensuelles (étudiants inscrits par mois)
-        $monthlyRegistrations = Student::query()
-            ->whereYear('created_at', now()->year)
-            ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-            ->groupBy('month')
-            ->pluck('count', 'month');
+        // Statistiques journalières (étudiants inscrits par jour sur les 7 derniers jours)
+        $startDate = now()->subDays(6)->startOfDay();
+        $endDate = now()->endOfDay();
+        $dailyRegistrations = Student::query()
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as day, COUNT(*) as count')
+            ->groupBy('day')
+            ->orderBy('day')
+            ->pluck('count', 'day');
 
         return view('superadmin.dashboard', compact(
             'usersCount', 'studentsCount', 'teachersCount', 'coursesCount',
-            'latestRegistrations', 'monthlyRegistrations'
+            'latestRegistrations', 'dailyRegistrations'
         ));
     }
 
     public function coursesList()
     {
-        $courses = Course::with('teacher')->get();
-        return view('superadmin.courses-list', compact('courses'));
+        $courses = Course::with('teacher', 'yearLevel')->get();
+        $yearLevels = YearLevel::all();
+        return view('superadmin.courses.list', compact('courses', 'yearLevels'));
     }
 
     public function createCourse()
     {
         $teachers = Teacher::all();
         $mentions = Mention::all();
-        return view('superadmin.courses-create', compact('teachers', 'mentions'));
+        $yearLevels = YearLevel::all();
+        return view('superadmin.courses.create', compact('teachers', 'mentions', 'yearLevels'));
     }
 
     public function storeCourse(Request $request)
@@ -75,7 +83,8 @@ class SuperAdminController extends Controller
         $course = Course::findOrFail($id);
         $teachers = Teacher::all();
         $mentions = Mention::all();
-        return view('superadmin.courses-edit', compact('course', 'teachers', 'mentions'));
+        $yearLevels = YearLevel::all();
+        return view('superadmin.courses.edit', compact('course', 'teachers', 'mentions', 'yearLevels'));
     }
 
     public function updateCourse(Request $request, $id)
@@ -102,12 +111,12 @@ class SuperAdminController extends Controller
     public function teachersList()
     {
         $teachers = Teacher::all();
-        return view('superadmin.teachers-list', compact('teachers'));
+        return view('superadmin.teachers.list', compact('teachers'));
     }
 
     public function createTeacher()
     {
-        return view('superadmin.teachers-create');
+        return view('superadmin.teachers.create');
     }
 
     public function storeTeacher(Request $request)
@@ -115,6 +124,8 @@ class SuperAdminController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:teachers,email',
+            'telephone' => 'nullable|string|max:255',
+            'diplome' => 'nullable|string|max:255',
         ]);
         Teacher::create($validated);
         return redirect()->route('superadmin.teachers.list')->with('success', 'Enseignant ajouté avec succès.');
@@ -123,7 +134,7 @@ class SuperAdminController extends Controller
     public function editTeacher($id)
     {
         $teacher = Teacher::findOrFail($id);
-        return view('superadmin.teachers-edit', compact('teacher'));
+        return view('superadmin.teachers.edit', compact('teacher'));
     }
 
     public function updateTeacher(Request $request, $id)
@@ -132,6 +143,8 @@ class SuperAdminController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:teachers,email,' . $id,
+            'telephone' => 'nullable|string|max:255',
+            'diplome' => 'nullable|string|max:255',
         ]);
         $teacher->update($validated);
         return redirect()->route('superadmin.teachers.list')->with('success', 'Enseignant modifié avec succès.');
@@ -148,11 +161,11 @@ class SuperAdminController extends Controller
     public function usersList()
     {
         $users = User::all();
-        return view('superadmin.users-list', compact('users'));
+        return view('superadmin.users.list', compact('users'));
     }
     public function createUser()
     {
-        return view('superadmin.users-create');
+        return view('superadmin.users.create');
     }
     public function storeUser(Request $request)
     {
@@ -169,7 +182,7 @@ class SuperAdminController extends Controller
     public function editUser($id)
     {
         $user = User::findOrFail($id);
-        return view('superadmin.users-edit', compact('user'));
+        return view('superadmin.users.edit', compact('user'));
     }
     public function updateUser(Request $request, $id)
     {
@@ -193,11 +206,11 @@ class SuperAdminController extends Controller
     public function mentionsList()
     {
         $mentions = \App\Models\Mention::all();
-        return view('superadmin.mentions-list', compact('mentions'));
+        return view('superadmin.mentions.list', compact('mentions'));
     }
     public function createMention()
     {
-        return view('superadmin.mentions-create');
+        return view('superadmin.mentions.create');
     }
     public function storeMention(Request $request)
     {
@@ -231,12 +244,12 @@ class SuperAdminController extends Controller
     // STUDENTS
     public function studentsList(Request $request)
     {
-        $sortable = ['matricule', 'nom', 'prenom', 'email', 'mention_id', 'annee_etude']; // Ajout du tri par niveau d'étude
-        $sort = $request->get('sort', 'matricule');
-        $direction = $request->get('direction', 'asc');
+        $sortable = ['id', 'matricule', 'nom', 'prenom', 'email', 'mention_id', 'annee_etude']; // Ajout du tri par ID
+        $sort = $request->get('sort', 'id'); // Par défaut, tri par ID
+        $direction = $request->get('direction', 'desc');
 
         if (!in_array($sort, $sortable)) {
-            $sort = 'matricule';
+            $sort = 'id';
         }
         if (!in_array($direction, ['asc', 'desc'])) {
             $direction = 'asc';
@@ -259,6 +272,7 @@ class SuperAdminController extends Controller
         $students = $query->orderBy($sort, $direction)->get();
 
         $mentions = \App\Models\Mention::all();
+        $yearLevels = YearLevel::all();
 
         // Préparer les tableaux pour le JS
         $studentsArray = $students->map(function($student) {
@@ -270,7 +284,8 @@ class SuperAdminController extends Controller
                 'email' => $student->email,
                 'mention_id' => $student->mention_id,
                 'mention_nom' => $student->mention ? $student->mention->nom : '-',
-                'annee_etude' => $student->annee_etude, // Ajout du niveau d'étude
+                'year_level_id' => $student->year_level_id,
+                'year_level_label' => $student->yearLevel ? $student->yearLevel->label : '-',
             ];
         })->values()->toArray();
 
@@ -281,12 +296,13 @@ class SuperAdminController extends Controller
             ];
         })->values()->toArray();
 
-        return view('superadmin.students-list', compact('students', 'mentions', 'studentsArray', 'mentionsArray'));
+        return view('superadmin.students.list', compact('students', 'mentions', 'studentsArray', 'mentionsArray', 'yearLevels'));
     }
     public function createStudent()
     {
         $mentions = Mention::all();
-        return view('superadmin.students-create', compact('mentions'));
+        $yearLevels = YearLevel::all();
+        return view('superadmin.students.create', compact('mentions', 'yearLevels'));
     }
     private function uploadProfilePhoto(Request $request)
     {
@@ -338,15 +354,31 @@ class SuperAdminController extends Controller
             'sponsor_prenom' => 'nullable|string|max:255',
             'sponsor_telephone' => 'nullable|string|max:255',
             'sponsor_adresse' => 'nullable|string|max:255',
-            'annee_etude' => 'nullable|integer',
+            'year_level_id' => 'required|exists:year_levels,id',
             'mention_id' => 'nullable|exists:mentions,id',
             'matricule' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'parcours_id' => 'nullable|exists:parcours,id',
         ]);
         $imagePath = $this->uploadProfilePhoto($request);
         if ($imagePath) {
             $validated['image'] = $imagePath;
         }
+        $validated['parcours_id'] = $request->parcours_id;
+
+        // Récupérer l'année académique active
+        $activeAcademicYear = AcademicYear::where('active', true)->first();
+        if ($activeAcademicYear) {
+            // Récupérer le semestre d'ordre 1 de cette année académique
+            $semester = Semester::where('academic_year_id', $activeAcademicYear->id)
+                ->where('ordre', 1)
+                ->first();
+            if ($semester) {
+                $validated['semester_id'] = $semester->id;
+            }
+            $validated['academic_year_id'] = $activeAcademicYear->id;
+        }
+
         Student::create($validated);
         return redirect()->route('superadmin.students.list')->with('success', 'Étudiant ajouté avec succès.');
     }
@@ -354,7 +386,8 @@ class SuperAdminController extends Controller
     {
         $student = Student::findOrFail($id);
         $mentions = Mention::all();
-        return view('superadmin.students-edit', compact('student', 'mentions'));
+        $yearLevels = YearLevel::all();
+        return view('superadmin.students.edit', compact('student', 'mentions', 'yearLevels'));
     }
     public function updateStudent(Request $request, $id)
     {
@@ -397,15 +430,31 @@ class SuperAdminController extends Controller
             'sponsor_prenom' => 'nullable|string|max:255',
             'sponsor_telephone' => 'nullable|string|max:255',
             'sponsor_adresse' => 'nullable|string|max:255',
-            'annee_etude' => 'required|in:L1,L2,L3,M1,M2',
+            'year_level_id' => 'required|exists:year_levels,id',
             'mention_id' => 'nullable|exists:mentions,id',
-            'matricule' => 'nullable|string|max:255',
+            'parcours_id' => 'nullable|exists:parcours,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        // Upload photo si besoin
         $imagePath = $this->uploadProfilePhoto($request);
         if ($imagePath) {
             $validated['image'] = $imagePath;
         }
+
+        // Gestion du semester_id comme dans storeStudent
+        $activeAcademicYear = AcademicYear::where('active', true)->first();
+        if ($activeAcademicYear) {
+            // Récupérer le semestre d'ordre 1 de cette année académique
+            $semester = Semester::where('academic_year_id', $activeAcademicYear->id)
+                ->where('ordre', 1)
+                ->first();
+            if ($semester) {
+                $validated['semester_id'] = $semester->id;
+            }
+            $validated['academic_year_id'] = $activeAcademicYear->id;
+        }
+
         $student->update($validated);
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -424,12 +473,12 @@ class SuperAdminController extends Controller
     public function showStudent($id)
     {
         $student = Student::findOrFail($id);
-        return view('superadmin.students-show', compact('student'));
+        return view('superadmin.students.show', compact('student'));
     }
     public function showStudentCourses($id)
     {
         $student = Student::findOrFail($id);
-        return view('superadmin.students-courses-history', compact('student'));
+        return view('superadmin.students.courses-history', compact('student'));
     }
 
     public function updateSettings(Request $request)
@@ -510,6 +559,78 @@ class SuperAdminController extends Controller
     public function showMention($id)
     {
         $mention = Mention::with('students')->findOrFail($id);
-        return view('superadmin.mentions-show', compact('mention'));
+        return view('superadmin.mentions.show', compact('mention'));
+    }
+
+    // FINANCES
+    public function financesList()
+    {
+        $finances = StudentFinance::with(['student', 'course'])->orderByDesc('created_at')->get();
+        return view('superadmin.finances.list', compact('finances'));
+    }
+
+    public function createFinance()
+    {
+        $students = Student::all();
+        $courses = Course::all();
+        return view('superadmin.finances.create', compact('students', 'courses'));
+    }
+
+    public function storeFinance(Request $request)
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'type' => 'required|string|max:255',
+            'montant' => 'required|numeric|min:0',
+            'status' => 'required|string|max:50',
+            'description' => 'nullable|string',
+            'course_id' => 'nullable|exists:courses,id',
+            'extra' => 'nullable|array',
+        ]);
+        if (isset($validated['extra'])) {
+            $validated['extra'] = json_encode($validated['extra']);
+        }
+        StudentFinance::create($validated);
+        return redirect()->route('superadmin.finances.list')->with('success', 'Finance ajoutée avec succès.');
+    }
+
+    public function showFinance($id)
+    {
+        $finance = StudentFinance::with(['student', 'course'])->findOrFail($id);
+        return view('superadmin.finances.show', compact('finance'));
+    }
+
+    public function editFinance($id)
+    {
+        $finance = StudentFinance::findOrFail($id);
+        $students = Student::all();
+        $courses = Course::all();
+        return view('superadmin.finances.edit', compact('finance', 'students', 'courses'));
+    }
+
+    public function updateFinance(Request $request, $id)
+    {
+        $finance = StudentFinance::findOrFail($id);
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'type' => 'required|string|max:255',
+            'montant' => 'required|numeric|min:0',
+            'status' => 'required|string|max:50',
+            'description' => 'nullable|string',
+            'course_id' => 'nullable|exists:courses,id',
+            'extra' => 'nullable|array',
+        ]);
+        if (isset($validated['extra'])) {
+            $validated['extra'] = json_encode($validated['extra']);
+        }
+        $finance->update($validated);
+        return redirect()->route('superadmin.finances.list')->with('success', 'Finance modifiée avec succès.');
+    }
+
+    public function destroyFinance($id)
+    {
+        $finance = StudentFinance::findOrFail($id);
+        $finance->delete();
+        return redirect()->route('superadmin.finances.list')->with('success', 'Finance supprimée avec succès.');
     }
 }

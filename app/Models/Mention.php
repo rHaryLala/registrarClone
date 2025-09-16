@@ -14,4 +14,9 @@ class Mention extends Model
     {
         return $this->hasMany(Student::class);
     }
+
+    public function parcours()
+    {
+        return $this->hasMany(\App\Models\Parcours::class, 'mention_id');
+    }
 }
