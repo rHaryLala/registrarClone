@@ -123,11 +123,6 @@
     </div>
 
     <main class="flex-grow">
-        <!-- Header avec animation -->
-        <header class="animate-on-load animate-fade-in-up">
-            @include('layouts.header')
-        </header>
-        
         <!-- Section Welcome avec animations échelonnées -->
         <section class="animate-on-load animate-fade-in-up delay-200">
             @include('layouts.welcome')
@@ -195,17 +190,6 @@
                     });
                 }
             });
-        });
-
-        // Animation de la navbar au scroll
-        window.addEventListener('scroll', function() {
-            const navbar = document.querySelector('nav');
-            if (window.scrollY > 50) {
-                navbar.classList.add('shadow-lg');
-                navbar.style.transform = 'translateY(0)';
-            } else {
-                navbar.classList.remove('shadow-lg');
-            }
         });
 
         // Animation des éléments de navigation

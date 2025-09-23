@@ -92,9 +92,116 @@
             padding: 1rem;
             margin-bottom: 1rem;
         }
+
+        /* Enhanced toast notification styles with better animations and positioning */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        
+        .toast {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid #ef4444;
+            transform: translateX(100%);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            border-left-color: #10b981;
+        }
+        
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .toast-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .toast-title {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .toast-icon {
+            width: 1rem;
+            height: 1rem;
+        }
+        
+        .toast-close {
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+            padding: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .toast-close:hover {
+            color: #374151;
+            background: #f3f4f6;
+        }
+        
+        .toast-message {
+            color: #6b7280;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        /* Responsive toast styles for mobile */
+        @media (max-width: 640px) {
+            .toast-container {
+                left: 10px;
+                right: 10px;
+                top: 10px;
+                max-width: none;
+            }
+            
+            .toast {
+                transform: translateY(-100%);
+            }
+            
+            .toast.show {
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
-<body class="bg-gray-50 font-montserrat">
+<body class="bg-gray-50 font-montserrat min-h-screen">
 
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-gray-200">
@@ -138,20 +245,8 @@
 
     <!-- Main Content -->
     <main class="max-w-4xl mx-auto px-4 py-8">
-        <!-- Error Messages -->
-        <div id="error-container" class="hidden mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-red-800">Erreurs dans le formulaire</h3>
-                    <div class="mt-2 text-sm text-red-700" id="error-list"></div>
-                </div>
-            </div>
-        </div>
+        <!-- Enhanced toast container with better structure -->
+        <div id="toast-container" class="toast-container"></div>
 
         <!-- Form -->
         <form id="inscription-form" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" method="POST" action="{{ route('register.store') }}">
@@ -169,6 +264,14 @@
                             </div>
                         </div>
                     </div>
+                    <div class="p-6">
+                        <div class="space-y-2">
+                            <label for="nom" class="block text-sm font-medium text-gray-700">Code d'accès *</label>
+                            <input type="text" id="access_code" name="access_code" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent"
+                                    placeholder="Insérer votre code d'accès">
+                        </div>
+                    </div>
                     
                     <div class="p-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -176,17 +279,27 @@
                                 <label for="nom" class="block text-sm font-medium text-gray-700">Nom *</label>
                                 <input type="text" id="nom" name="nom" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent mention-select"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus-border-transparent parcours-select"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent mention-select"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent parcours-select"
                                        placeholder="Nom de famille">
                             </div>
                             <div class="space-y-2">
-                                <label for="prenom" class="block text-sm font-medium text-gray-700">Prénom *</label>
-                                <input type="text" id="prenom" name="prenom" required
+                                <label for="prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+                                <input type="text" id="prenom" name="prenom"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent"
                                        placeholder="Prénom">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label for="taille" class="block text-sm font-medium text-gray-700">Taille</label>
+                                <select id="taille" name="taille"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent">
+                                    <option value="">Sélectionnez la taille</option>
+                                    <option value="S">S</option>
+                                    <option value="M">M</option>
+                                    <option value="L">L</option>
+                                    <option value="XL">XL</option>
+                                    <option value="XXL">XXL</option>
+                                    <option value="XXXL">XXXL</option>
+                                </select>
                             </div>
 
                             <!-- Email généré automatiquement -->
@@ -233,10 +346,29 @@
                             </div>
 
                             <div class="space-y-2">
-                                <label for="religion" class="block text-sm font-medium text-gray-700">Religion</label>
-                                <input type="text" id="religion" name="religion"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent"
-                                       placeholder="Religion" value="Adventiste du 7ème jour">
+                                <label for="religion_select" class="block text-sm font-medium text-gray-700">Religion</label>
+                                <select id="religion_select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent">
+                                    <option value="">Sélectionnez la religion</option>
+                                    <option value="Adventiste du 7ème jour">Adventiste</option>
+                                    <option value="Catholique">Catholique</option>
+                                    <option value="Anglicane">Anglicane</option>
+                                    <option value="Luthérienne">Luthérienne</option>
+                                    <option value="Evangélique">Evangélique</option>
+                                    <option value="Pentecôtiste">Pentecôtiste</option>
+                                    <option value="Protestante">Protestante</option>
+                                    <option value="Musulmane">Musulmane</option>
+                                    <option value="Témoin de Jéhovah">Témoin de Jéhovah</option>
+                                    <option value="Baptiste">Baptiste</option>
+                                    <option value="Bouddhiste">Bouddhiste</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+
+                                <!-- Visible only when 'Autre' is selected -->
+                                <input type="text" id="religion_autre" name="religion_autre" placeholder="Précisez la religion"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent hidden mt-2">
+
+                                <!-- Hidden final field sent to backend; keeps compatibility with existing server expecting 'religion' -->
+                                <input type="hidden" id="religion" name="religion" value="Adventiste du 7ème jour">
                             </div>
 
                             <div class="space-y-2">
@@ -260,8 +392,13 @@
                                     <option value="externe">Externe</option>
                                 </select>
                             </div>
-
-                            <!-- Suppression du champ code d'accès -->
+                            <div class="flex items-center space-x-3 mt-6">
+                                <input type="checkbox" id="abonne_caf" name="abonne_caf"
+                                        class="rounded border-gray-300 text-[#1e3a8a] focus:ring-[#1e3a8a] w-5 h-5">
+                                <label for="abonne_caf" class="text-sm font-medium text-gray-700 cursor-pointer">
+                                    Je veux être abonné(e) à la cafétéria
+                                </label>
+                            </div>
 
                             <!-- Adding passport checkbox and form in first step -->
                             <div class="md:col-span-2 mt-6">
@@ -297,14 +434,74 @@
                                                 <select id="passport_pays_emission" name="passport_pays_emission"
                                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent">
                                                     <option value="">Sélectionner un pays</option>
-                                                    <option value="MG">Madagascar</option>
-                                                    <option value="FR">France</option>
-                                                    <option value="US">États-Unis</option>
-                                                    <option value="CA">Canada</option>
-                                                    <option value="GB">Royaume-Uni</option>
-                                                    <option value="DE">Allemagne</option>
-                                                    <option value="IT">Italie</option>
-                                                    <option value="ES">Espagne</option>
+                                                    <option value="Madagascar">Madagascar</option>
+                                                    <option value="France">France</option>
+                                                    <option value="États-Unis">États-Unis</option>
+                                                    <option value="Canada">Canada</option>
+                                                    <option value="Royaume-Uni">Royaume-Uni</option>
+                                                    <option value="Allemagne">Allemagne</option>
+                                                    <option value="Italie">Italie</option>
+                                                    <option value="Espagne">Espagne</option>
+                                                    <!-- African countries -->
+                                                    <option value="Afrique du Sud">Afrique du Sud</option>
+                                                    <option value="Algérie">Algérie</option>
+                                                    <option value="Angola">Angola</option>
+                                                    <option value="Bénin">Bénin</option>
+                                                    <option value="Botswana">Botswana</option>
+                                                    <option value="Burkina Faso">Burkina Faso</option>
+                                                    <option value="Burundi">Burundi</option>
+                                                    <option value="Cameroun">Cameroun</option>
+                                                    <option value="Cap-Vert">Cap-Vert</option>
+                                                    <option value="République centrafricaine">République centrafricaine</option>
+                                                    <option value="Tchad">Tchad</option>
+                                                    <option value="Comores">Comores</option>
+                                                    <option value="Congo - Brazzaville">Congo - Brazzaville</option>
+                                                    <option value="République démocratique du Congo">République démocratique du Congo</option>
+                                                    <option value="Côte d'Ivoire">Côte d'Ivoire</option>
+                                                    <option value="Djibouti">Djibouti</option>
+                                                    <option value="Égypte">Égypte</option>
+                                                    <option value="Guinée équatoriale">Guinée équatoriale</option>
+                                                    <option value="Érythrée">Érythrée</option>
+                                                    <option value="Éthiopie">Éthiopie</option>
+                                                    <option value="Gabon">Gabon</option>
+                                                    <option value="Gambie">Gambie</option>
+                                                    <option value="Ghana">Ghana</option>
+                                                    <option value="Guinée">Guinée</option>
+                                                    <option value="Guinée-Bissau">Guinée-Bissau</option>
+                                                    <option value="Kenya">Kenya</option>
+                                                    <option value="Lesotho">Lesotho</option>
+                                                    <option value="Libéria">Libéria</option>
+                                                    <option value="Libye">Libye</option>
+                                                    <option value="Malawi">Malawi</option>
+                                                    <option value="Mali">Mali</option>
+                                                    <option value="Mauritanie">Mauritanie</option>
+                                                    <option value="Maurice">Maurice</option>
+                                                    <option value="Maroc">Maroc</option>
+                                                    <option value="Mozambique">Mozambique</option>
+                                                    <option value="Namibie">Namibie</option>
+                                                    <option value="Niger">Niger</option>
+                                                    <option value="Nigeria">Nigeria</option>
+                                                    <option value="Rwanda">Rwanda</option>
+                                                    <option value="Sao Tomé-et-Principe">Sao Tomé-et-Principe</option>
+                                                    <option value="Sénégal">Sénégal</option>
+                                                    <option value="Seychelles">Seychelles</option>
+                                                    <option value="Sierra Leone">Sierra Leone</option>
+                                                    <option value="Somalie">Somalie</option>
+                                                    <option value="Soudan">Soudan</option>
+                                                    <option value="Soudan du Sud">Soudan du Sud</option>
+                                                    <option value="Eswatini">Eswatini</option>
+                                                    <option value="Tanzanie">Tanzanie</option>
+                                                    <option value="Togo">Togo</option>
+                                                    <option value="Tunisie">Tunisie</option>
+                                                    <option value="Ouganda">Ouganda</option>
+                                                    <option value="Zambie">Zambie</option>
+                                                    <option value="Zimbabwe">Zimbabwe</option>
+                                                    <!-- Nordic countries -->
+                                                    <option value="Danemark">Danemark</option>
+                                                    <option value="Suède">Suède</option>
+                                                    <option value="Norvège">Norvège</option>
+                                                    <option value="Finlande">Finlande</option>
+                                                    <option value="Islande">Islande</option>
                                                 </select>
                                             </div>
                                             <div class="space-y-2">
@@ -384,7 +581,7 @@
 
             <!-- Étape 2: Informations des parents -->
             <div id="step-2" class="step-content hidden">
-                <!-- Adding harmonized step container with header -->
+                <!-- Adding harmonized step container with header for step 2 -->
                 <div class="step-container">
                     <div class="step-header">
                         <div class="flex items-center gap-3">
@@ -614,9 +811,11 @@
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label for="bacc_date_obtention" class="block text-sm font-medium text-gray-700">Date d'obtention du Bac</label>
-                                    <input type="date" id="bacc_date_obtention" name="bacc_date_obtention"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent">
+                                    <label for="bacc_date_obtention" class="block text-sm font-medium text-gray-700">Année d'obtention du Bac</label>
+                                    <input type="number" id="bacc_date_obtention" name="bacc_date_obtention"
+                                        min="2010" max="{{ date('Y')+1 }}"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent"
+                                        placeholder="Ex: 2025">
                                 </div>
 
                                 <div class="flex items-center space-x-2 md:col-span-2">
@@ -638,14 +837,14 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="space-y-2">
-                                    <label for="sponsor_nom" class="block text-sm font-medium text-gray-700">Nom du sponsor *</label>
+                                    <label for="sponsor_nom" class="block text-sm font-medium text-gray-700">Nom du sponsor / Organisation *</label>
                                     <input type="text" id="sponsor_nom" name="sponsor_nom"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent"
                                        placeholder="Nom du sponsor">
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label for="sponsor_prenom" class="block text-sm font-medium text-gray-700">Prénom du sponsor *</label>
+                                    <label for="sponsor_prenom" class="block text-sm font-medium text-gray-700">Prénom du sponsor</label>
                                     <input type="text" id="sponsor_prenom" name="sponsor_prenom"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent"
                                        placeholder="Prénom du sponsor">
@@ -763,36 +962,11 @@
 </body>
 
 <script>
-    // --- Chargement dynamique des parcours selon la mention sélectionnée ---
-    document.addEventListener('DOMContentLoaded', function() {
-        const mentionSelect = document.getElementById('mention_id');
-        const parcoursSelect = document.getElementById('parcours_id');
-        mentionSelect.addEventListener('change', function() {
-            const mentionId = this.value;
-            parcoursSelect.innerHTML = '<option value="">Chargement...</option>';
-            if (!mentionId) {
-                parcoursSelect.innerHTML = '<option value="">Sélectionnez le parcours</option>';
-                return;
-            }
-            fetch(`/parcours/by-mention/${mentionId}`)
-                .then(response => response.json())
-                .then(data => {
-                    let options = '<option value="">Sélectionnez le parcours</option>';
-                    data.forEach(function(parcours) {
-                        options += `<option value="${parcours.id}">${parcours.nom}</option>`;
-                    });
-                    parcoursSelect.innerHTML = options;
-                })
-                .catch(() => {
-                    parcoursSelect.innerHTML = '<option value="">Aucun parcours trouvé</option>';
-                });
-        });
-    });
     // Variables globales
     let currentStep = 1;
     const totalSteps = 5;
-    let formData = {};
     let age = 0;
+    let isAccessCodeValid = false; // Variable pour suivre la validité du code d'accès
 
     // Éléments DOM
     const form = document.getElementById('inscription-form');
@@ -802,8 +976,8 @@
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const submitBtn = document.getElementById('submit-btn');
-    const errorContainer = document.getElementById('error-container');
-    const errorList = document.getElementById('error-list');
+    const errorContainer = document.getElementById('error-container'); // Ce conteneur est maintenant obsolète
+    const errorList = document.getElementById('error-list'); // Ce conteneur est maintenant obsolète
 
     // Titres des étapes - Mis à jour avec la nouvelle étape
     const stepTitles = [
@@ -818,89 +992,243 @@
     document.addEventListener('DOMContentLoaded', function() {
         updateStepDisplay();
         setupEventListeners();
-        // Masquer les parcours non valides au chargement pour chaque groupe mention/parcours
-        document.querySelectorAll('.mention-select').forEach(function(mentionSelect) {
-            const parcoursSelect = mentionSelect.closest('.space-y-2, .md\:col-span-2, .form-section, .step-content, .grid, form')?.querySelector('.parcours-select');
-            if (!parcoursSelect) return;
-            Array.from(parcoursSelect.options).forEach(option => {
-                if (!option.value) return;
-                if (!mentionSelect.value || option.getAttribute('data-mention') !== mentionSelect.value) {
-                    option.classList.add('hidden');
-                } else {
-                    option.classList.remove('hidden');
-                }
-            });
-        });
+        // Initialiser les sections conditionnelles
+        toggleConjointSection();
+        toggleSponsorSection();
+        togglePassportSection();
+        calculateAge(); // Calculer l'âge initialement pour afficher/masquer la section CIN
     });
 
-    function togglePassportSection() {
-        const isPassport = document.getElementById('passport_status').checked;
-        const passportSection = document.getElementById('passport-section');
-
-        if (isPassport) {
-            passportSection.classList.add('show');
-        } else {
-            passportSection.classList.remove('show');
-            // Clear passport fields
-            document.getElementById('passport_numero').value = '';
-            document.getElementById('passport_pays_emission').value = '';
-            document.getElementById('passport_date_emission').value = '';
-            document.getElementById('passport_date_expiration').value = '';
+    // --- Fonctions de gestion des toasts ---
+    function showToast(message, type = 'error', duration = 5000) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const toastId = 'toast-' + Date.now();
+        toast.id = toastId;
+        
+        // Définir les icônes pour différents types de toasts
+        const icons = {
+            error: '<svg class="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+            success: '<svg class="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+            warning: '<svg class="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>'
+        };
+        
+        const titles = {
+            error: 'Erreur',
+            success: 'Succès',
+            warning: 'Attention'
+        };
+        
+        toast.innerHTML = `
+            <div class="toast-header">
+                <span class="toast-title">
+                    ${icons[type] || icons.error}
+                    ${titles[type] || titles.error}
+                </span>
+                <button class="toast-close" onclick="closeToast('${toastId}')" aria-label="Fermer">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                        <path d="M6.94 6l3.53-3.53a.67.67 0 10-.94-.94L6 4.06 2.47.53a.67.67 0 10-.94.94L4.06 6 .53 9.53a.67.67 0 10.94.94L6 7.94l3.53 3.53a.67.67 0 10.94-.94L6.94 6z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="toast-message">${message}</div>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Déclencher l'animation avec un léger délai pour un meilleur effet
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 100);
+        
+        // Suppression automatique avec fondu
+        setTimeout(() => {
+            closeToast(toastId);
+        }, duration);
+        
+        // Ajouter la fonctionnalité de fermeture au clic
+        toast.addEventListener('click', () => {
+            closeToast(toastId);
+        });
+    }
+    
+    function closeToast(toastId) {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 400);
         }
     }
-
-    // Configuration des écouteurs d'événements
-    function setupEventListeners() {
-        // Navigation
-        prevBtn.addEventListener('click', goToPreviousStep);
-        nextBtn.addEventListener('click', goToNextStep);
-        form.addEventListener('submit', handleSubmit);
-
-        // Génération automatique d'email
-        document.getElementById('nom').addEventListener('input', generateEmail);
-        document.getElementById('prenom').addEventListener('input', generateEmail);
-
-        // Calcul de l'âge
-        document.getElementById('date_naissance').addEventListener('change', calculateAge);
-
-        // Sections conditionnelles
-        document.getElementById('etat_civil').addEventListener('change', toggleConjointSection);
-        document.getElementById('bursary_status').addEventListener('change', toggleSponsorSection);
-        document.getElementById('passport_status').addEventListener('change', togglePassportSection);
-
-        // Formatage du téléphone
-        document.getElementById('telephone').addEventListener('input', formatPhone);
-        document.getElementById('sponsor_telephone').addEventListener('input', formatSponsorPhone);
-        // Nouveaux champs de téléphone des parents
-        document.getElementById('contact_pere').addEventListener('input', formatPhone);
-        document.getElementById('contact_mere').addEventListener('input', formatPhone);
-
-        // Génération du matricule et filtrage dynamique pour chaque groupe mention/parcours
-        document.querySelectorAll('.mention-select').forEach(function(mentionSelect) {
-            mentionSelect.addEventListener('change', function() {
-                const parcoursSelect = mentionSelect.closest('.space-y-2, .md\:col-span-2, .form-section, .step-content, .grid, form')?.querySelector('.parcours-select');
-                if (!parcoursSelect) return;
-                Array.from(parcoursSelect.options).forEach(option => {
-                    if (!option.value) {
-                        option.classList.remove('hidden');
-                        return;
-                    }
-                    if (option.getAttribute('data-mention') === mentionSelect.value) {
-                        option.classList.remove('hidden');
-                    } else {
-                        option.classList.add('hidden');
-                    }
-                });
-                parcoursSelect.value = '';
-                // Générer le matricule si besoin (uniquement pour la mention principale)
-                if (mentionSelect.id === 'mention_id' && typeof generateMatricule === 'function') {
-                    generateMatricule();
-                }
+    
+    // Affichage des erreurs avec animations décalées et meilleurs messages
+    function showErrors(errors) {
+        if (errors.length === 1) {
+            showToast(errors[0], 'error');
+        } else {
+            // Afficher un toast récapitulatif pour plusieurs erreurs
+            showToast(`${errors.length} erreurs détectées dans le formulaire`, 'error', 3000);
+            
+            // Puis afficher les erreurs individuelles avec décalage
+            errors.forEach((error, index) => {
+                setTimeout(() => {
+                    showToast(error, 'error', 4000);
+                }, (index + 1) * 300);
             });
-        });
-        if (document.getElementById('generate-matricule')) {
-            document.getElementById('generate-matricule').addEventListener('click', generateMatricule);
         }
+    }
+    
+    function showSuccess(message) {
+        showToast(message, 'success', 4000);
+    }
+    
+    function showWarning(message) {
+        showToast(message, 'warning', 4000);
+    }
+
+    // --- Fonctions de validation ---
+    function validateStep(step) {
+        const errors = [];
+        
+        switch(step) {
+            case 1:
+                // Validation du code d'accès
+                if (!getValue('access_code')) {
+                    errors.push('Le code d\'accès est obligatoire pour continuer');
+                } else if (!isAccessCodeValid) {
+                    errors.push('Veuillez entrer un code d\'accès valide avant de continuer');
+                }
+                
+                // Validation des champs personnels
+                if (!getValue('nom')) {
+                    errors.push('Votre nom de famille est requis');
+                }
+                if (!getValue('sexe')) {
+                    errors.push('Veuillez sélectionner votre sexe');
+                }
+                if (!getValue('date_naissance')) {
+                    errors.push('Veuillez indiquer votre date de naissance');
+                }
+                if (!getValue('lieu_naissance')) {
+                    errors.push('Le lieu de naissance doit être renseigné');
+                }
+                if (!getValue('nationalite')) {
+                    errors.push('Votre nationalité est requise');
+                }
+                if (!getValue('etat_civil')) {
+                    errors.push('L\'état civil doit être précisé');
+                }
+                if (!getValue('statut_interne')) {
+                    errors.push('Veuillez choisir votre statut étudiant (interne/externe)');
+                }
+                
+                // Validation conditionnelle pour les champs CIN (majeurs)
+                const dateNaissance = getValue('date_naissance');
+                if (dateNaissance) {
+                    const calculatedAge = calculateAge(dateNaissance);
+                    if (calculatedAge >= 18) {
+                        if (!getValue('cin_numero')) {
+                            errors.push('Le numéro de CIN est requis pour les étudiants majeurs');
+                        }
+                        if (!getValue('cin_date_delivrance')) {
+                            errors.push('La date de délivrance du CIN est requise');
+                        }
+                        if (!getValue('cin_lieu_delivrance')) {
+                            errors.push('Le lieu de délivrance du CIN est requis');
+                        }
+                    }
+                }
+                
+                // Validation conditionnelle pour conjoint
+                if (getValue('etat_civil') === 'marié' && !getValue('nom_conjoint')) {
+                    errors.push('Le nom du conjoint est requis pour les personnes mariées');
+                }
+                break;
+                
+            case 2: // Informations des parents
+                if (!getValue('nom_pere')) errors.push('Le nom du père est requis');
+                if (!getValue('profession_pere')) errors.push('La profession du père est requise');
+                if (!getValue('contact_pere')) errors.push('Le contact du père est requis');
+                if (!getValue('nom_mere')) errors.push('Le nom de la mère est requis');
+                if (!getValue('profession_mere')) errors.push('La profession de la mère est requise');
+                if (!getValue('contact_mere')) errors.push('Le contact de la mère est requis');
+                if (!getValue('adresse_parents')) errors.push('L\'adresse des parents est requise');
+                break;
+                
+            case 3: // Coordonnées
+                if (!getValue('email')) {
+                    errors.push('Une adresse email est requise');
+                } else if (!isValidEmail(getValue('email'))) {
+                    errors.push('Veuillez saisir une adresse email valide');
+                }
+                if (!getValue('adresse')) {
+                    errors.push('Votre adresse complète est requise');
+                }
+                if (!getValue('region')) {
+                    errors.push('Veuillez sélectionner votre région');
+                }
+                if (!getValue('district')) {
+                    errors.push('Le district doit être précisé');
+                }
+                break;
+                
+            case 4: // Scolarité
+                if (!getValue('bacc_serie')) {
+                    errors.push('Veuillez sélectionner la série de votre Baccalauréat');
+                }
+                if (!getValue('bacc_date_obtention')) {
+                    errors.push('Veuillez indiquer l\'année d\'obtention de votre Baccalauréat');
+                }
+                
+                // Validation conditionnelle pour le sponsor
+                    if (document.getElementById('bursary_status').checked) {
+                    if (!getValue('sponsor_nom')) errors.push('Le nom du sponsor est requis');
+                    // Le prénom du sponsor peut être absent (certaines personnes n'en ont pas)
+                    if (!getValue('sponsor_telephone')) errors.push('Le téléphone du sponsor est requis');
+                    if (!getValue('sponsor_adresse')) errors.push('L\'adresse du sponsor est requise');
+                }
+                break;
+
+            case 5: // Informations académiques
+                if (!getValue('year_level_id')) {
+                    errors.push('Veuillez sélectionner votre niveau d\'étude');
+                }
+                if (!getValue('mention_id')) {
+                    errors.push('Veuillez choisir une mention');
+                }
+                break;
+        }
+        
+        if (errors.length > 0) {
+            showErrors(errors);
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Fonctions utilitaires pour la validation
+    function calculateAge(dateString) {
+        const birthDate = new Date(dateString);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        
+        return age;
+    }
+    
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     }
 
     // Mise à jour de l'affichage des étapes
@@ -932,101 +1260,31 @@
         if (currentStep > 1) {
             currentStep--;
             updateStepDisplay();
-            hideErrors();
+            hideErrors(); // Masquer les erreurs lors de la navigation
         }
     }
 
     // Navigation vers l'étape suivante
     function goToNextStep() {
-        if (validateCurrentStep()) {
+        if (validateStep(currentStep)) {
             if (currentStep < totalSteps) {
                 currentStep++;
                 updateStepDisplay();
-                hideErrors();
+                hideErrors(); // Masquer les erreurs lors de la navigation
             }
         }
     }
 
-    // Validation de l'étape courante - Mise à jour avec la nouvelle étape
-    function validateCurrentStep() {
-        const errors = [];
-
-        if (currentStep === 1) {
-            if (!getValue('nom')) errors.push('Le nom est requis');
-            if (!getValue('prenom')) errors.push('Le prénom est requis');
-            if (!getValue('sexe')) errors.push('Le sexe est requis');
-            if (!getValue('date_naissance')) errors.push('La date de naissance est requise');
-            if (!getValue('lieu_naissance')) errors.push('Le lieu de naissance est requis');
-            if (!getValue('nationalite')) errors.push('La nationalité est requise');
-            if (!getValue('etat_civil')) errors.push('L\'état civil est requis');
-            if (!getValue('statut_interne')) errors.push('Le statut étudiant est requis');
-
-            // Validation conditionnelle pour le conjoint
-            if (getValue('etat_civil') === 'marié' && !getValue('nom_conjoint')) {
-                errors.push('Le nom du conjoint est requis pour les personnes mariées');
-            }
-
-            // Validation conditionnelle pour la CIN (majeurs)
-            if (age >= 18) {
-                if (!getValue('cin_numero')) errors.push('Le numéro CIN est requis');
-                if (!getValue('cin_date_delivrance')) errors.push('La date de délivrance CIN est requise');
-                if (!getValue('cin_lieu_delivrance')) errors.push('Le lieu de délivrance CIN est requis');
-            }
-        }
-
-        // Nouvelle validation pour l'étape 2 (Informations des parents)
-        if (currentStep === 2) {
-            if (!getValue('nom_pere')) errors.push('Le nom du père est requis');
-            if (!getValue('profession_pere')) errors.push('La profession du père est requise');
-            if (!getValue('contact_pere')) errors.push('Le contact du père est requis');
-            if (!getValue('nom_mere')) errors.push('Le nom de la mère est requis');
-            if (!getValue('profession_mere')) errors.push('La profession de la mère est requise');
-            if (!getValue('contact_mere')) errors.push('Le contact de la mère est requis');
-            if (!getValue('adresse_parents')) errors.push('L\'adresse des parents est requise');
-        }
-
-        // Ancienne étape 2 devient étape 3 (Coordonnées)
-        if (currentStep === 3) {
-            if (!getValue('adresse')) errors.push('L\'adresse est requise');
-            if (!getValue('region')) errors.push('La région est requise');
-            if (!getValue('email')) errors.push('L\'email est requis');
-        }
-
-        // Ancienne étape 3 devient étape 4 (Scolarité)
-        if (currentStep === 4) {
-            // Validation conditionnelle pour le sponsor
-            if (document.getElementById('bursary_status').checked) {
-                if (!getValue('sponsor_nom')) errors.push('Le nom du sponsor est requis');
-                if (!getValue('sponsor_prenom')) errors.push('Le prénom du sponsor est requis');
-                if (!getValue('sponsor_telephone')) errors.push('Le téléphone du sponsor est requis');
-                if (!getValue('sponsor_adresse')) errors.push('L\'adresse du sponsor est requise');
-            }
-        }
-
-        // Ancienne étape 4 devient étape 5 (Informations académiques)
-        if (currentStep === 5) {
-            if (!getValue('year_level_id')) errors.push('Le niveau d\'étude est requis');
-            if (!getValue('mention_id')) errors.push('La mention envisagée est requise');
-        }
-
-        if (errors.length > 0) {
-            showErrors(errors);
-            return false;
-        }
-
-        return true;
-    }
-
-    // Affichage des erreurs
-    function showErrors(errors) {
+    // Affichage des erreurs (obsolète, remplacé par showErrors avec toasts)
+    function showErrors_old(errors) {
         errorList.innerHTML = errors.map(error => `<p>• ${error}</p>`).join('');
         errorContainer.classList.remove('hidden');
         window.scrollTo(0, 0);
     }
 
-    // Masquer les erreurs
+    // Masquer les erreurs (obsolète, remplacé par closeToast)
     function hideErrors() {
-        errorContainer.classList.add('hidden');
+        // errorContainer.classList.add('hidden'); // Retiré car les toasts gèrent l'affichage
     }
 
     // Obtenir la valeur d'un champ
@@ -1041,11 +1299,21 @@
         const nom = getValue('nom');
         const prenom = getValue('prenom');
 
-        if (nom && prenom) {
+        if (nom) {
             const nomFormatted = nom.toLowerCase().trim();
-            const prenomFormatted = prenom.toLowerCase().trim();
-            const troisLettresPrenom = prenomFormatted.slice(0, 3);
-            const email = `${nomFormatted}.${troisLettresPrenom}@zurcher.edu.mg`;
+            let email;
+
+            if (!prenom) {
+                // Si pas de prénom, utiliser uniquement le nom
+                email = `${nomFormatted}@zurcher.edu.mg`;
+            } else {
+                // Si prénom existe, traiter les prénoms composés
+                const prenomFormatted = prenom.toLowerCase().trim();
+                const prenomParts = prenomFormatted.split(' '); // Séparer les parties du prénom
+                const premierPrenom = prenomParts[0]; // Prendre le premier prénom
+                const troisLettresPrenom = premierPrenom.slice(0, 3);
+                email = `${nomFormatted}.${troisLettresPrenom}@zurcher.edu.mg`;
+            }
 
             document.getElementById('email').value = email;
             document.getElementById('generated-email').textContent = email;
@@ -1056,7 +1324,7 @@
         }
     }
 
-    // Calcul de l'âge
+    // Calcul de l'âge et mise à jour de l'affichage
     function calculateAge() {
         const dateNaissance = getValue('date_naissance');
         if (!dateNaissance) {
@@ -1085,6 +1353,10 @@
             cinSection.classList.remove('hidden');
         } else {
             cinSection.classList.add('hidden');
+            // Vider les champs CIN si la section est masquée
+            document.getElementById('cin_numero').value = '';
+            document.getElementById('cin_date_delivrance').value = '';
+            document.getElementById('cin_lieu_delivrance').value = '';
         }
     }
 
@@ -1109,12 +1381,30 @@
 
         if (isBursary) {
             sponsorSection.classList.remove('hidden');
-        } else {
+            } else {
             sponsorSection.classList.add('hidden');
             document.getElementById('sponsor_nom').value = '';
-            document.getElementById('sponsor_prenom').value = '';
+            // Ne pas vider sponsor_prenom — certaines personnes peuvent ne pas en avoir
+            // document.getElementById('sponsor_prenom').value = '';
             document.getElementById('sponsor_telephone').value = '';
             document.getElementById('sponsor_adresse').value = '';
+        }
+    }
+
+    // Afficher/masquer la section passeport
+    function togglePassportSection() {
+        const isPassport = document.getElementById('passport_status').checked;
+        const passportSection = document.getElementById('passport-section');
+
+        if (isPassport) {
+            passportSection.classList.add('show');
+        } else {
+            passportSection.classList.remove('show');
+            // Vider les champs du passeport
+            document.getElementById('passport_numero').value = '';
+            document.getElementById('passport_pays_emission').value = '';
+            document.getElementById('passport_date_emission').value = '';
+            document.getElementById('passport_date_expiration').value = '';
         }
     }
 
@@ -1130,48 +1420,196 @@
         formatPhone(e);
     }
 
-    // Génération du matricule
+    // Génération du matricule (exemple basique)
     function generateMatricule() {
         const mention = getValue('mention_id');
         if (!mention) return;
 
-        const matriculePrefix = {
-            'Théologie': '1',
-            'Gestion': '2',
-            'Informatique': '3',
-            'Sciences infirmières': '4',
-            'Éducation': '5',
-            'Communication': '6',
-            'Droit': '9'
-        }[mention] || '0';
+        // Mapping basique des mentions aux préfixes de matricule
+        const mentionPrefixMap = {
+            '1': '1', // Exemple: ID 1 pour Théologie
+            '2': '2', // Exemple: ID 2 pour Gestion
+            '3': '3', // Exemple: ID 3 pour Informatique
+            '4': '4', // Exemple: ID 4 pour Sciences infirmières
+            '5': '5', // Exemple: ID 5 pour Éducation
+            '6': '6', // Exemple: ID 6 pour Communication
+            '9': '9'  // Exemple: ID 9 pour Droit
+        };
+        const prefix = mentionPrefixMap[mention] || '0';
 
-        // Générer un numéro séquentiel simulé
+        // Générer un numéro séquentiel simulé (à remplacer par une logique serveur si nécessaire)
         const randomNum = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
-        const matricule = `${matriculePrefix}${randomNum}`;
+        const matricule = `${prefix}${randomNum}`;
 
-        document.getElementById('matricule').value = matricule;
+        // Assurez-vous que l'élément 'matricule' existe dans votre HTML
+        const matriculeField = document.getElementById('matricule');
+        if (matriculeField) {
+            matriculeField.value = matricule;
+        }
+    }
+
+    // Configuration des écouteurs d'événements
+    function setupEventListeners() {
+        // Navigation
+        prevBtn.addEventListener('click', goToPreviousStep);
+        nextBtn.addEventListener('click', goToNextStep);
+        form.addEventListener('submit', handleSubmit);
+
+        // Génération automatique d'email
+        document.getElementById('nom').addEventListener('input', generateEmail);
+        document.getElementById('prenom').addEventListener('input', generateEmail);
+
+        // Calcul de l'âge
+        document.getElementById('date_naissance').addEventListener('change', calculateAge);
+
+        // Sections conditionnelles
+        document.getElementById('etat_civil').addEventListener('change', toggleConjointSection);
+        document.getElementById('bursary_status').addEventListener('change', toggleSponsorSection);
+        document.getElementById('passport_status').addEventListener('change', togglePassportSection);
+
+        // Formatage du téléphone
+        document.getElementById('telephone').addEventListener('input', formatPhone);
+        document.getElementById('sponsor_telephone').addEventListener('input', formatSponsorPhone);
+        document.getElementById('contact_pere').addEventListener('input', formatPhone);
+        document.getElementById('contact_mere').addEventListener('input', formatPhone);
+
+        // Chargement dynamique des parcours selon la mention sélectionnée
+        const mentionSelect = document.getElementById('mention_id');
+        const parcoursSelect = document.getElementById('parcours_id');
+        if (mentionSelect && parcoursSelect) {
+            mentionSelect.addEventListener('change', function() {
+                const mentionId = this.value;
+                parcoursSelect.innerHTML = '<option value="">Chargement...</option>';
+                if (!mentionId) {
+                    parcoursSelect.innerHTML = '<option value="">Sélectionnez le parcours</option>';
+                    return;
+                }
+                fetch(`/parcours/by-mention/${mentionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let options = '<option value="">Sélectionnez le parcours</option>';
+                        data.forEach(function(parcours) {
+                            options += `<option value="${parcours.id}">${parcours.nom}</option>`;
+                        });
+                        parcoursSelect.innerHTML = options;
+                    })
+                    .catch(() => {
+                        parcoursSelect.innerHTML = '<option value="">Aucun parcours trouvé</option>';
+                    });
+            });
+        }
+
+        // Validation du code d'accès au départ du champ
+        document.getElementById('access_code').addEventListener('blur', function() {
+            const code = this.value;
+            if (!code) {
+                isAccessCodeValid = false; // Réinitialiser si le champ est vide
+                return;
+            }
+
+            const upperCode = code.toUpperCase();
+            
+            // Afficher l'état de chargement
+            this.style.opacity = '0.7';
+            this.disabled = true;
+
+            fetch('/check-access-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ access_code: upperCode })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur réseau lors de la vérification du code');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Réponse du serveur:', data); // Pour le débogage
+                isAccessCodeValid = data.valid;
+                if (!data.valid) {
+                    showToast('Code d\'accès invalide. Veuillez vérifier et réessayer.', 'error');
+                    this.value = ''; // Vider le champ si invalide
+                    this.focus();
+                } else {
+                    this.value = upperCode; // Conserver le code en majuscules
+                    showToast('Code d\'accès validé avec succès !', 'success', 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                showToast('Impossible de vérifier le code d\'accès. Vérifiez votre connexion internet.', 'error');
+                isAccessCodeValid = false; // Marquer comme invalide en cas d'erreur
+            })
+            .finally(() => {
+                // Restaurer l'état de l'input
+                this.style.opacity = '1';
+                this.disabled = false;
+            });
+        });
+
+        // Religion select + 'Autre' handling
+        const religionSelect = document.getElementById('religion_select');
+        const religionAutre = document.getElementById('religion_autre');
+        const religionHidden = document.getElementById('religion');
+
+        if (religionSelect && religionHidden) {
+            // Initialize: if hidden has a default non-empty value, attempt to match select
+            const current = religionHidden.value || '';
+            if (current) {
+                const found = Array.from(religionSelect.options).some(opt => opt.value === current);
+                if (found) {
+                    religionSelect.value = current;
+                } else {
+                    religionSelect.value = 'Autre';
+                    religionAutre.classList.remove('hidden');
+                    religionAutre.value = current;
+                }
+            }
+
+            religionSelect.addEventListener('change', function() {
+                const val = this.value;
+                if (val === 'Autre') {
+                    religionAutre.classList.remove('hidden');
+                    religionAutre.focus();
+                    religionHidden.value = religionAutre.value.trim();
+                } else {
+                    religionAutre.classList.add('hidden');
+                    religionHidden.value = val;
+                }
+            });
+
+            religionAutre.addEventListener('input', function() {
+                religionHidden.value = this.value.trim();
+            });
+        }
     }
 
     // Soumission du formulaire
     function handleSubmit(e) {
         e.preventDefault();
-        // Valider toutes les étapes
-        let allValid = true;
-        for (let step = 1; step <= totalSteps; step++) {
-            const originalStep = currentStep;
-            currentStep = step;
-            if (!validateCurrentStep()) {
-                allValid = false;
-                currentStep = originalStep;
+
+        // Valider toutes les étapes avant la soumission finale
+        let allStepsValid = true;
+        for (let i = 1; i <= totalSteps; i++) {
+            if (!validateStep(i)) {
+                allStepsValid = false;
+                // Si une étape n'est pas valide, on navigue vers elle et on arrête la validation
+                currentStep = i;
                 updateStepDisplay();
-                return;
+                break;
             }
-            currentStep = originalStep;
         }
 
-        if (!allValid) return;
+        if (!allStepsValid) {
+            return; // Ne pas soumettre si une étape n'est pas valide
+        }
 
-        // Afficher le spinner
+        // Afficher le spinner et désactiver le bouton
         document.getElementById('submit-text').textContent = 'Enregistrement...';
         document.getElementById('submit-spinner').classList.remove('hidden');
         submitBtn.disabled = true;
@@ -1184,31 +1622,49 @@
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest', // Indique une requête AJAX
+                'Accept': 'application/json', // Attendre une réponse JSON
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                // Si la réponse n'est pas OK (ex: 422 Unprocessable Entity pour les erreurs de validation)
+                return response.json().then(data => { throw data; });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                // Redirection vers la page de récapitulatif
-                window.location.href = data.redirect_url;
+                // Redirection vers la page de récapitulatif ou une autre page
+                showSuccess('Inscription soumise avec succès !');
+                setTimeout(() => {
+                    window.location.href = data.redirect_url || '/'; // Utiliser l'URL de redirection ou une URL par défaut
+                }, 2000); // Délai avant redirection
             } else {
+                // Gérer les erreurs de validation du backend
                 if (data.errors) {
-                    const errors = Object.values(data.errors).flat();
-                    showErrors(errors);
+                    const backendErrors = Object.values(data.errors).flat();
+                    showErrors(backendErrors);
                 } else {
-                    showErrors(['Une erreur s\'est produite lors de l\'enregistrement.']);
+                    // Gérer d'autres messages d'erreur du backend
+                    showToast(data.message || 'Une erreur s\'est produite lors de l\'enregistrement.', 'error');
                 }
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            showErrors(['Une erreur s\'est produite lors de l\'enregistrement.']);
+            console.error('Erreur lors de la soumission:', error);
+            // Afficher les erreurs de validation du backend si disponibles
+            if (error.errors) {
+                const backendErrors = Object.values(error.errors).flat();
+                showErrors(backendErrors);
+            } else {
+                // Afficher un message d'erreur générique
+                showToast(error.message || 'Une erreur inattendue s\'est produite. Veuillez réessayer.', 'error');
+            }
         })
         .finally(() => {
-            // Réinitialiser le bouton
+            // Réinitialiser le bouton et le spinner
             document.getElementById('submit-text').textContent = 'Enregistrer';
             document.getElementById('submit-spinner').classList.add('hidden');
             submitBtn.disabled = false;

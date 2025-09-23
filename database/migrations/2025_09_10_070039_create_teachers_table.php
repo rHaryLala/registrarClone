@@ -14,6 +14,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('telephone')->nullable();
             $table->string('diplome')->nullable();
+            $table->unsignedBigInteger('last_change_user_id')->nullable();
+            $table->dateTime('last_change_datetime')->nullable();
             $table->timestamps();
         });
     }

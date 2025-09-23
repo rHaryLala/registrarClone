@@ -141,7 +141,7 @@
             <div class="grid lg:grid-cols-2 gap-12 items-center">
                 <div>
                     <!-- Image adaptée pour le campus -->
-                    <img src="https://scontent-jnb2-1.xx.fbcdn.net/v/t39.30808-6/485201894_122221407680197341_1275653949045854586_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeEpMESNlh3_asygVdnpXQ_Z3VLLEmcc92_dUssSZxz3b2iiKSH5vC8K6BqhUJTuKSQo1VMyV6Ew1RQ1GVA78wRj&_nc_ohc=igwRvLHoTKsQ7kNvwEgszh4&_nc_oc=AdkdnhLPSo7dS1SQQ8qMeSiD25hQH4Er7d_-JLz7BW1Wu4Z3FoIoQ6uDZRmRg2nhAPM&_nc_zt=23&_nc_ht=scontent-jnb2-1.xx&_nc_gid=OdGXH-kz8GhBQB35rXUJyQ&oh=00_AfZscWwrcvynP-4LdFDmQ_ORM60ToEZZZsZtoi08e-vSOQ&oe=68C5E4E2" 
+                    <img src="https://scontent-jnb2-1.xx.fbcdn.net/v/t39.30808-6/492503040_1167834935357704_98875299689711851_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeFqCii0OOrB08E53Y5Tq9Be--zPykhkuRf77M_KSGS5F_SU1AxhtnON9jR1TI7qmImpa3V8QxmuEex9gMQDWwIs&_nc_ohc=ieBwU7ZXZcYQ7kNvwEnbgsP&_nc_oc=Adkb2TwB9010Yoi6uuBZMjtBaDzPuEecQtRSh4KU7XYbslCM9zLoVVggKprz-7kvhgE&_nc_zt=23&_nc_ht=scontent-jnb2-1.xx&_nc_gid=t_LvdngIRSa5LkxT1Va90g&oh=00_AfbepaiKXRxmWQ-fzHURTjF8vgvMzS-iEMPsMYj9dD7JMQ&oe=68D6AA02" 
                          alt="Campus UAZ" 
                          class="w-full h-auto rounded-2xl shadow-xl">
                 </div>

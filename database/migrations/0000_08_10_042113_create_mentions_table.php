@@ -12,6 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('nom')->unique();
             $table->string('description')->nullable();
+            $table->unsignedBigInteger('last_change_user_id')->nullable();
+            $table->dateTime('last_change_datetime')->nullable();
             $table->timestamps();
         });
     }

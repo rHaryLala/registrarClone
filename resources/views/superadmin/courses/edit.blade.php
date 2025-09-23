@@ -93,6 +93,13 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-semibold mb-2">Catégorie</label>
+                            <select name="categorie" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <option value="général" @if(old('categorie', $course->categorie) == 'général') selected @endif>Général</option>
+                                <option value="majeur" @if(old('categorie', $course->categorie) == 'majeur') selected @endif>Majeur</option>
+                            </select>
+                        </div>
                         <div class="flex justify-end">
                             <a href="{{ route('superadmin.courses.list') }}" class="mr-4 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">Annuler</a>
                             <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded-lg hover:bg-blue-800 transition flex items-center">

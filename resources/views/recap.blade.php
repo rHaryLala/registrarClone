@@ -433,14 +433,7 @@
         </div>
     </div>
 
-    <div class="mt-8 flex justify-center gap-4">
-        <a href="{{ route('register') }}" class="px-6 py-3 bg-[#1e3a8a] text-white rounded-lg shadow hover:bg-blue-700 transition">
-            Nouvelle inscription
-        </a>
-        <button onclick="window.print()" class="px-6 py-3 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 transition">
-            Imprimer ce récapitulatif
-        </button>
-    </div>
+
 </main>
 
 <footer class="bg-gray-100 border-t border-gray-200 mt-12 py-6">

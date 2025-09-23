@@ -85,7 +85,7 @@
                 <!-- Modern search and filter section -->
                 <div class="search-container rounded-2xl p-6 mb-6 shadow-lg">
                     <form method="get" id="searchForm" onsubmit="return false;" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div class="md:col-span-2">
                                 <label for="searchInput" class="block text-sm font-medium text-white mb-2">
                                     <i class="fas fa-search mr-2"></i>Rechercher des étudiants
@@ -108,6 +108,19 @@
                                     @foreach($mentions as $mention)
                                         <option value="{{ $mention->id }}">{{ $mention->nom }}</option>
                                     @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label for="academic_year" class="block text-sm font-medium text-white mb-2">
+                                    <i class="fas fa-calendar mr-2"></i>Année académique
+                                </label>
+                                <select name="academic_year" 
+                                        id="academic_year" 
+                                        class="modern-select modern-input w-full px-4 py-3 rounded-xl border-0 focus:ring-0 text-gray-900 appearance-none">
+                                    <option value="">Toutes les années</option>
+                                    @for($year = date('Y'); $year >= 2020; $year--)
+                                        <option value="{{ $year }}-{{ $year+1 }}">{{ $year }}-{{ $year+1 }}</option>
+                                    @endfor
                                 </select>
                             </div>
                         </div>
@@ -160,6 +173,13 @@
             <div id="pagination" class="flex justify-center items-center mt-6"></div>
 
             <script>
+                // Add helper function at the top of the script section
+                function getInitials(prenom, nom) {
+                    const prenomInitial = prenom ? prenom.charAt(0) : '';
+                    const nomInitial = nom ? nom.charAt(0) : '';
+                    return (prenomInitial + nomInitial) || '?';
+                }
+
                 // Charger tous les étudiants dans une variable JS
                 const students = @json($studentsArray);
                 const mentions = @json($mentionsArray);
@@ -203,10 +223,10 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="w-10 h-10 bg-blue-800 rounded-full flex items-center justify-center text-white font-semibold text-sm mr-3">
-                                        ${student.prenom.charAt(0)}${student.nom.charAt(0)}
+                                        ${getInitials(student.prenom, student.nom)}
                                     </div>
                                     <div>
-                                        <div class="text-sm font-medium text-gray-900">${student.prenom} ${student.nom}</div>
+                                        <div class="text-sm font-medium text-gray-900">${student.prenom ? student.prenom + ' ' : ''}${student.nom || ''}</div>
                                     </div>
                                 </div>
                             </td>
@@ -241,10 +261,10 @@
                             <div class="flex items-start justify-between mb-4">
                                 <div class="flex items-center">
                                     <div class="w-12 h-12 bg-blue-800 rounded-full flex items-center justify-center text-white font-semibold mr-4">
-                                        ${student.prenom.charAt(0)}${student.nom.charAt(0)}
+                                        ${getInitials(student.prenom, student.nom)}
                                     </div>
                                     <div>
-                                        <h3 class="text-lg font-semibold text-gray-900">${student.prenom} ${student.nom}</h3>
+                                        <h3 class="text-lg font-semibold text-gray-900">${student.prenom ? student.prenom + ' ' : ''}${student.nom || ''}</h3>
                                         <p class="text-sm text-gray-600">${student.email}</p>
                                     </div>
                                 </div>
@@ -297,8 +317,11 @@
                 function filterStudents() {
                     const q = document.getElementById('searchInput').value.toLowerCase();
                     const mentionId = document.getElementById('mention_id').value;
+                    const academicYear = document.getElementById('academic_year').value;
+                    
                     let filtered = students.filter(student => {
                         let matchMention = !mentionId || student.mention_id == mentionId;
+                        let matchYear = !academicYear || student.academic_year === academicYear;
                         let matchSearch = !q || (
                             student.matricule.toLowerCase().includes(q) ||
                             student.nom.toLowerCase().includes(q) ||
@@ -306,13 +329,14 @@
                             student.email.toLowerCase().includes(q) ||
                             student.mention_nom.toLowerCase().includes(q)
                         );
-                        return matchMention && matchSearch;
+                        return matchMention && matchSearch && matchYear;
                     });
                     renderTable(filtered);
                 }
 
                 document.getElementById('searchInput').addEventListener('input', filterStudents);
                 document.getElementById('mention_id').addEventListener('change', filterStudents);
+                document.getElementById('academic_year').addEventListener('change', filterStudents);
 
                 // Initial render
                 renderTable(students);

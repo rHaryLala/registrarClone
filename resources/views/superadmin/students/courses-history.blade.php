@@ -76,11 +76,16 @@
                         <p class="text-blue-100 text-lg font-['Open_Sans']">Gestion des inscriptions aux cours</p>
                     </div>
                     
-                    <div class="animate-slide-in-right">
+                    <div class="animate-slide-in-right flex items-center gap-3">
                         <a href="{{ route('superadmin.students.courses.add', $student->id) }}" 
                         class="inline-flex items-center space-x-3 bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl hover:bg-white/30 transition-all duration-300 transform hover:scale-105 hover:shadow-xl border border-white/20 group">
                             <i class="fas fa-plus text-lg group-hover:rotate-90 transition-transform duration-300"></i>
                             <span class="font-semibold">Ajouter un cours</span>
+                        </a>
+                        <a href="{{ route('superadmin.students.show', $student->id) }}" 
+                        class="inline-flex items-center space-x-3 bg-white/10 text-white px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-200 border border-white/10">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Retour</span>
                         </a>
                     </div>
                 </div>

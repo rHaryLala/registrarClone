@@ -7,11 +7,13 @@ use App\Models\Teacher;
 use App\Models\Student;
 use App\Models\Mention;
 use App\Models\YearLevel;
+use App\Traits\TracksLastChange;
 
 class Course extends Model
 {
+    use TracksLastChange;
     protected $fillable = [
-        'sigle', 'nom', 'credits', 'teacher_id', 'mention_id', 'year_level_id'
+        'sigle', 'nom', 'credits', 'teacher_id', 'mention_id', 'year_level_id', 'besoin_labo', 'categorie'
     ];
 
     public function teacher()

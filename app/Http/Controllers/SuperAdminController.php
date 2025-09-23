@@ -7,10 +7,15 @@ use App\Models\Course;
 use App\Models\Mention;
 use App\Models\Teacher;
 use App\Models\StudentFinance;
+use App\Models\Finance;
+use Illuminate\Support\Facades\DB;
 use App\Models\YearLevel;
 use App\Models\AcademicYear;
 use App\Models\Semester;
+use App\Models\FinanceDetail;
+use Barryvdh\DomPDF\Facade\Pdf; // Ajoutez ceci en haut du fichier
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class SuperAdminController extends Controller
 {
@@ -65,6 +70,7 @@ class SuperAdminController extends Controller
             'credits' => 'required|integer|min:1|max:10',
             'teacher_id' => 'nullable|exists:teachers,id',
             'mention_id' => 'nullable|exists:mentions,id',
+            'categorie' => 'required|in:général,majeur',
         ]);
 
         Course::create([
@@ -73,6 +79,7 @@ class SuperAdminController extends Controller
             'credits' => $request->credits,
             'teacher_id' => $request->teacher_id,
             'mention_id' => $request->mention_id,
+            'categorie' => $request->categorie,
         ]);
 
         return redirect()->route('superadmin.courses.list')->with('success', 'Cours créé avec succès.');
@@ -96,6 +103,7 @@ class SuperAdminController extends Controller
             'credits' => 'required|integer|min:1',
             'teacher_id' => 'nullable|exists:teachers,id',
             'mention_id' => 'nullable|exists:mentions,id',
+            'categorie' => 'required|in:général,majeur',
         ]);
         $course->update($validated);
         return redirect()->route('superadmin.courses.list')->with('success', 'Cours modifié avec succès.');
@@ -172,12 +180,21 @@ class SuperAdminController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'role' => 'required|string',
-            'password' => 'required|string|min:6',
+            'password' => 'required|min:8',
+            'role' => 'required|in:admin,dean,teacher,student,parent',
+            'mention_id' => 'required_if:role,dean|exists:mentions,id'
         ]);
-        $validated['password'] = bcrypt($validated['password']);
-        User::create($validated);
-        return redirect()->route('superadmin.users.list')->with('success', 'Utilisateur ajouté avec succès.');
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'plain_password' => $validated['password'],
+            'role' => $validated['role'],
+            'mention_id' => $validated['mention_id'] ?? null
+        ]);
+
+        return redirect()->route('users.index')->with('success', 'User created successfully');
     }
     public function editUser($id)
     {
@@ -223,7 +240,7 @@ class SuperAdminController extends Controller
     public function editMention($id)
     {
         $mention = \App\Models\Mention::findOrFail($id);
-        return view('superadmin.mentions-edit', compact('mention'));
+        return view('superadmin.mentions.edit', compact('mention'));
     }
     public function updateMention(Request $request, $id)
     {
@@ -298,20 +315,85 @@ class SuperAdminController extends Controller
 
         return view('superadmin.students.list', compact('students', 'mentions', 'studentsArray', 'mentionsArray', 'yearLevels'));
     }
+    
     public function createStudent()
     {
         $mentions = Mention::all();
         $yearLevels = YearLevel::all();
         return view('superadmin.students.create', compact('mentions', 'yearLevels'));
     }
-    private function uploadProfilePhoto(Request $request)
+    
+    private function uploadImage(Request $request)
     {
         if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('photo_profil'), $filename);
-            return 'photo_profil/' . $filename;
+            $image = $request->file('image');
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $image->getClientOriginalName());
+            $directory = public_path('storage/students');
+            $path = 'storage/students/' . $filename;
+
+            // Créer le dossier s'il n'existe pas
+            if (!file_exists($directory)) {
+                if (!mkdir($directory, 0777, true) && !is_dir($directory)) {
+                    throw new \RuntimeException(sprintf('Directory "%s" was not created', $directory));
+                }
+            }
+
+            // Traitement carré avec GD
+            $srcPath = $image->getRealPath();
+            [$width, $height, $type] = getimagesize($srcPath);
+
+            // Charger l'image selon le type
+            switch ($type) {
+                case IMAGETYPE_JPEG:
+                    $srcImg = imagecreatefromjpeg($srcPath);
+                    break;
+                case IMAGETYPE_PNG:
+                    $srcImg = imagecreatefrompng($srcPath);
+                    break;
+                case IMAGETYPE_GIF:
+                    $srcImg = imagecreatefromgif($srcPath);
+                    break;
+                default:
+                    // Fallback: déplacer sans traitement
+                    $image->move($directory, $filename);
+                    return $path;
+            }
+
+            // Calculer la taille du carré et cropper au centre
+            $side = min($width, $height);
+            $src_x = ($width > $height) ? intval(($width - $height) / 2) : 0;
+            $src_y = ($height > $width) ? intval(($height - $width) / 2) : 0;
+
+            $dstImg = imagecreatetruecolor($side, $side);
+
+            // Pour PNG/GIF, gérer la transparence
+            if ($type == IMAGETYPE_PNG || $type == IMAGETYPE_GIF) {
+                imagecolortransparent($dstImg, imagecolorallocatealpha($dstImg, 0, 0, 0, 127));
+                imagealphablending($dstImg, false);
+                imagesavealpha($dstImg, true);
+            }
+
+            imagecopyresampled($dstImg, $srcImg, 0, 0, $src_x, $src_y, $side, $side, $side, $side);
+
+            // Sauvegarder l'image carrée
+            switch ($type) {
+                case IMAGETYPE_JPEG:
+                    imagejpeg($dstImg, $directory . '/' . $filename, 90);
+                    break;
+                case IMAGETYPE_PNG:
+                    imagepng($dstImg, $directory . '/' . $filename);
+                    break;
+                case IMAGETYPE_GIF:
+                    imagegif($dstImg, $directory . '/' . $filename);
+                    break;
+            }
+
+            imagedestroy($srcImg);
+            imagedestroy($dstImg);
+
+            return $path;
         }
+
         return null;
     }
     public function storeStudent(Request $request)
@@ -324,7 +406,7 @@ class SuperAdminController extends Controller
             'lieu_naissance' => 'nullable|string|max:255',
             'nationalite' => 'nullable|string|max:255',
             'religion' => 'nullable|string|max:255',
-            'etat_civil' => 'nullable|string|max:255',
+            'etat_civil' => 'required|in:célibataire,marié,divorcé,veuf',
             'passport_status' => 'nullable|boolean',
             'passport_numero' => 'nullable|string|max:255',
             'passport_pays_emission' => 'nullable|string|max:255',
@@ -348,7 +430,7 @@ class SuperAdminController extends Controller
             'region' => 'nullable|string|max:255',
             'district' => 'nullable|string|max:255',
             'bacc_serie' => 'nullable|string|max:255',
-            'bacc_date_obtention' => 'nullable|date',
+            'bacc_date_obtention' => 'nullable', // on gère la validation plus bas
             'bursary_status' => 'nullable|boolean',
             'sponsor_nom' => 'nullable|string|max:255',
             'sponsor_prenom' => 'nullable|string|max:255',
@@ -357,10 +439,13 @@ class SuperAdminController extends Controller
             'year_level_id' => 'required|exists:year_levels,id',
             'mention_id' => 'nullable|exists:mentions,id',
             'matricule' => 'nullable|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
             'parcours_id' => 'nullable|exists:parcours,id',
+            'statut_interne' => 'nullable|boolean',
+            'abonne_caf' => 'nullable|boolean',
         ]);
-        $imagePath = $this->uploadProfilePhoto($request);
+        // Remplacer l'appel à uploadProfilePhoto par uploadImage
+        $imagePath = $this->uploadImage($request);
         if ($imagePath) {
             $validated['image'] = $imagePath;
         }
@@ -379,6 +464,22 @@ class SuperAdminController extends Controller
             $validated['academic_year_id'] = $activeAcademicYear->id;
         }
 
+        // Correction robuste pour bacc_date_obtention
+        if (isset($validated['bacc_date_obtention']) && $validated['bacc_date_obtention'] !== null && $validated['bacc_date_obtention'] !== '') {
+            // Si la valeur ressemble à une date (ex: 1970-01-01...), extraire l'année
+            if (preg_match('/^\d{4}-\d{2}-\d{2}/', $validated['bacc_date_obtention'])) {
+                $validated['bacc_date_obtention'] = (int)substr($validated['bacc_date_obtention'], 0, 4);
+            } else {
+                $validated['bacc_date_obtention'] = (int)$validated['bacc_date_obtention'];
+            }
+            // Si ce n'est pas une année valide, mettre à null
+            if ($validated['bacc_date_obtention'] < 1900 || $validated['bacc_date_obtention'] > (date('Y')+1)) {
+                $validated['bacc_date_obtention'] = null;
+            }
+        } else {
+            $validated['bacc_date_obtention'] = null;
+        }
+
         Student::create($validated);
         return redirect()->route('superadmin.students.list')->with('success', 'Étudiant ajouté avec succès.');
     }
@@ -392,6 +493,91 @@ class SuperAdminController extends Controller
     public function updateStudent(Request $request, $id)
     {
         $student = Student::findOrFail($id);
+
+        // Si c'est une requête AJAX pour uploader une image
+        if ($request->hasFile('image')) {
+            $request->validate([
+                'image' => 'image|mimes:jpeg,png,jpg,gif'
+            ]);
+            
+            // Upload de l'image
+            $imagePath = $this->uploadImage($request);
+            
+            if ($imagePath) {
+                $student->update(['image' => $imagePath]);
+                
+                return response()->json([
+                    'success' => true,
+                    'image_url' => asset($imagePath) . '?t=' . time()
+                ]);
+            }
+            
+            return response()->json(['success' => false, 'message' => 'Erreur lors du téléchargement'], 500);
+        }
+
+        // Si c'est une requête AJAX inline (modification rapide d'un seul champ)
+        if ($request->ajax() || $request->wantsJson()) {
+            // Déterminer le champ modifié en ignorant _method et _token (ordre non garanti)
+            $keys = array_values(array_diff($request->keys(), ['_method', '_token']));
+            $field = $keys[0] ?? null;
+            $value = $field ? $request->input($field) : null;
+
+            // Liste des champs autorisés à l'édition rapide
+            $editableFields = [
+                'sexe' => 'nullable|string|max:10',
+                // Allow nullable for inline editing (full form still requires date)
+                'date_naissance' => 'nullable|date',
+                'lieu_naissance' => 'nullable|string|max:255',
+                'nationalite' => 'nullable|string|max:255',
+                'religion' => 'nullable|string|max:255',
+                // For inline edits enforce allowed civil statuses (required to avoid NULL DB updates)
+                // Values normalized to match DB enum: lowercase with accents
+                'etat_civil' => 'required|in:célibataire,marié,divorcé,veuf',
+                'telephone' => 'nullable|string|max:255',
+                'adresse' => 'nullable|string|max:255',
+                'region' => 'nullable|string|max:255',
+                'district' => 'nullable|string|max:255',
+                'bacc_serie' => 'nullable|string|max:255',
+                'bacc_date_obtention' => 'nullable|digits:4',
+                'nom_conjoint' => 'nullable|string|max:255',
+                'nb_enfant' => 'nullable|integer',
+                'cin_numero' => 'nullable|string|max:255',
+                'cin_date_delivrance' => 'nullable|date',
+                'cin_lieu_delivrance' => 'nullable|string|max:255',
+                'nom_pere' => 'nullable|string|max:255',
+                'profession_pere' => 'nullable|string|max:255',
+                'contact_pere' => 'nullable|string|max:255',
+                'nom_mere' => 'nullable|string|max:255',
+                'profession_mere' => 'nullable|string|max:255',
+                'contact_mere' => 'nullable|string|max:255',
+                'adresse_parents' => 'nullable|string|max:255',
+                'sponsor_nom' => 'nullable|string|max:255',
+                'sponsor_prenom' => 'nullable|string|max:255',
+                'sponsor_telephone' => 'nullable|string|max:255',
+                'sponsor_adresse' => 'nullable|string|max:255',
+                'taille' => 'nullable|string|in:S,M,L,XL,XXL,XXXL',
+            ];
+
+            if (!$field || !array_key_exists($field, $editableFields)) {
+                return response()->json(['success' => false, 'message' => 'Champ non autorisé.'], 422);
+            }
+
+            // Validation du champ unique
+            $validated = $request->validate([
+                $field => $editableFields[$field]
+            ]);
+
+            // Correction pour date_naissance si besoin
+            if ($field === 'date_naissance' && $validated[$field]) {
+                // S'assurer que la date est bien au format Y-m-d
+                $validated[$field] = date('Y-m-d', strtotime($validated[$field]));
+            }
+
+            $student->update($validated);
+
+            return response()->json(['success' => true]);
+        }
+
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
@@ -424,7 +610,7 @@ class SuperAdminController extends Controller
             'region' => 'nullable|string|max:255',
             'district' => 'nullable|string|max:255',
             'bacc_serie' => 'nullable|string|max:255',
-            'bacc_date_obtention' => 'nullable|date',
+            'bacc_date_obtention' => 'nullable',
             'bursary_status' => 'nullable|boolean',
             'sponsor_nom' => 'nullable|string|max:255',
             'sponsor_prenom' => 'nullable|string|max:255',
@@ -433,14 +619,19 @@ class SuperAdminController extends Controller
             'year_level_id' => 'required|exists:year_levels,id',
             'mention_id' => 'nullable|exists:mentions,id',
             'parcours_id' => 'nullable|exists:parcours,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'abonne_caf' => 'nullable|boolean',
         ]);
 
         // Upload photo si besoin
-        $imagePath = $this->uploadProfilePhoto($request);
-        if ($imagePath) {
-            $validated['image'] = $imagePath;
+        if ($request->hasFile('image')) {
+            $imagePath = $this->uploadImage($request);
+            if ($imagePath) {
+                $validated['image'] = $imagePath;
+            }
         }
+        
+        $validated['abonne_caf'] = $request->has('abonne_caf');
 
         // Gestion du semester_id comme dans storeStudent
         $activeAcademicYear = AcademicYear::where('active', true)->first();
@@ -455,13 +646,29 @@ class SuperAdminController extends Controller
             $validated['academic_year_id'] = $activeAcademicYear->id;
         }
 
+        // Correction robuste pour bacc_date_obtention
+        if (isset($validated['bacc_date_obtention']) && $validated['bacc_date_obtention'] !== null && $validated['bacc_date_obtention'] !== '') {
+            if (preg_match('/^\d{4}-\d{2}-\d{2}/', $validated['bacc_date_obtention'])) {
+                $validated['bacc_date_obtention'] = (int)substr($validated['bacc_date_obtention'], 0, 4);
+            } else {
+                $validated['bacc_date_obtention'] = (int)$validated['bacc_date_obtention'];
+            }
+            if ($validated['bacc_date_obtention'] < 1900 || $validated['bacc_date_obtention'] > (date('Y')+1)) {
+                $validated['bacc_date_obtention'] = null;
+            }
+        } else {
+            $validated['bacc_date_obtention'] = null;
+        }
+
         $student->update($validated);
+        
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'image_url' => isset($validated['image']) ? asset($validated['image']) : null
             ]);
         }
+        
         return redirect()->route('superadmin.students.list')->with('success', 'Étudiant modifié avec succès.');
     }
     public function destroyStudent($id)
@@ -472,7 +679,7 @@ class SuperAdminController extends Controller
     }
     public function showStudent($id)
     {
-        $student = Student::findOrFail($id);
+        $student = Student::with('lastChangedBy')->findOrFail($id);
         return view('superadmin.students.show', compact('student'));
     }
     public function showStudentCourses($id)
@@ -512,7 +719,7 @@ class SuperAdminController extends Controller
         $courses = Course::where('mention_id', $student->mention_id)
             ->whereNotIn('id', $takenCourseIds)
             ->get();
-        return view('superadmin.students-courses-add', compact('student', 'courses'));
+        return view('superadmin.students.courses-add', compact('student', 'courses'));
     }
 
     public function storeCourseToStudent(Request $request, $studentId)
@@ -538,6 +745,9 @@ class SuperAdminController extends Controller
                 ]);
             }
         }
+        // Recompute and update total credits for the student's finance row
+        $this->recomputeStudentFinanceTotalCredits($student->id);
+
         return redirect()->route('superadmin.students.courses.history', $student->id)->with('success', 'Cours ajoutés à l\'étudiant.');
     }
 
@@ -548,13 +758,42 @@ class SuperAdminController extends Controller
             'deleted_at' => now(),
             'updated_at' => now(),
         ]);
+        // Recompute and update total credits for the student's finance row
+        $this->recomputeStudentFinanceTotalCredits($student->id);
+
         return back()->with('success', 'Cours retiré de l\'étudiant.');
+    }
+
+    /**
+     * Recompute total credits for a student from course_student pivot and update finance.total_credit
+     * @param int $studentId
+     * @return void
+     */
+    private function recomputeStudentFinanceTotalCredits(int $studentId): void
+    {
+        // Sum credits for non-deleted pivot entries
+        $totalCredits = DB::table('course_student')
+            ->join('courses', 'course_student.course_id', '=', 'courses.id')
+            ->where('course_student.student_id', $studentId)
+            ->whereNull('course_student.deleted_at')
+            ->sum('courses.credits');
+
+        $student = Student::find($studentId);
+        if (!$student) {
+            return;
+        }
+
+        // Update finance row(s) that reference this student's matricule
+        if ($student->matricule) {
+            Finance::where('student_id', $student->matricule)
+                ->update(['total_credit' => (int)$totalCredits]);
+        }
     }
 
     public function showCourse($id)
     {
         $course = Course::with('teacher', 'students')->findOrFail($id);
-        return view('superadmin.courses-show', compact('course'));
+        return view('superadmin.courses.show', compact('course'));
     }
     public function showMention($id)
     {
@@ -565,8 +804,41 @@ class SuperAdminController extends Controller
     // FINANCES
     public function financesList()
     {
-        $finances = StudentFinance::with(['student', 'course'])->orderByDesc('created_at')->get();
-        return view('superadmin.finances.list', compact('finances'));
+        $finances = Finance::with(['student', 'semester', 'lastChangedBy'])->orderByDesc('date_entry')->get();
+
+        // determine the most recent change across finance rows (if any)
+        $lastChange = Finance::whereNotNull('last_change_datetime')
+            ->orderByDesc('last_change_datetime')
+            ->with('lastChangedBy')
+            ->first();
+
+        $lastChangedBy = null;
+        $lastChangedAt = null;
+        if ($lastChange) {
+            $lastChangedBy = $lastChange->lastChangedBy;
+            $lastChangedAt = $lastChange->last_change_datetime;
+        }
+
+        return view('superadmin.finances.list', compact('finances', 'lastChangedBy', 'lastChangedAt'));
+    }
+
+    /**
+     * Update finance plan (A..E) via AJAX
+     */
+    public function updateFinancePlan(Request $request, $financeId)
+    {
+        $finance = Finance::findOrFail($financeId);
+
+        $validated = $request->validate([
+            'plan' => 'required|string|in:A,B,C,D,E'
+        ]);
+
+        $finance->plan = $validated['plan'];
+        $finance->last_change_user_id = auth()->id() ?? $finance->last_change_user_id;
+        $finance->last_change_datetime = now();
+        $finance->save();
+
+        return response()->json(['success' => true, 'plan' => $finance->plan]);
     }
 
     public function createFinance()
@@ -633,4 +905,92 @@ class SuperAdminController extends Controller
         $finance->delete();
         return redirect()->route('superadmin.finances.list')->with('success', 'Finance supprimée avec succès.');
     }
+
+    // DETAILS FINANCES CRUD
+
+    public function index()
+    {
+        $details = \App\Models\FinanceDetail::with('mention')->get();
+        return view('superadmin.financedetails.index', compact('details'));
+    }
+
+    public function create()
+    {
+        $mentions = \App\Models\Mention::all();
+        return view('superadmin.financedetails.create', compact('mentions'));
+    }
+
+    public function store(\Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'statut_etudiant' => 'required|string',
+            'mention_id' => 'nullable|exists:mentions,id',
+            'frais_generaux' => 'required|numeric',
+            'ecolage' => 'required|numeric',
+            'laboratory' => 'required|numeric',
+            'dortoir' => 'required|numeric',
+            'nb_jours_semestre' => 'nullable|integer',
+            'nb_jours_semestre_L2' => 'nullable|integer',
+            'nb_jours_semestre_L3' => 'nullable|integer',
+            'cafeteria' => 'required|numeric',
+            'fond_depot' => 'required|numeric',
+            'frais_graduation' => 'required|numeric',
+            'frais_costume' => 'required|numeric',
+            'frais_voyage' => 'required|numeric',
+        ]);
+        \App\Models\FinanceDetail::create($validated);
+        return redirect()->route('superadmin.financedetails.index')->with('success', 'Détail finance ajouté.');
+    }
+
+    public function edit($id)
+    {
+        $detail = \App\Models\FinanceDetail::findOrFail($id);
+        $mentions = \App\Models\Mention::all();
+        return view('superadmin.financedetails.edit', compact('detail', 'mentions'));
+    }
+
+    public function update(\Illuminate\Http\Request $request, $id)
+    {
+        $validated = $request->validate([
+            'statut_etudiant' => 'required|string',
+            'mention_id' => 'nullable|exists:mentions,id',
+            'frais_generaux' => 'required|numeric',
+            'ecolage' => 'required|numeric',
+            'laboratory' => 'required|numeric',
+            'dortoir' => 'required|numeric',
+            'nb_jours_semestre' => 'nullable|integer',
+            'nb_jours_semestre_L2' => 'nullable|integer',
+            'nb_jours_semestre_L3' => 'nullable|integer',
+            'cafeteria' => 'required|numeric',
+            'fond_depot' => 'required|numeric',
+            'frais_graduation' => 'required|numeric',
+            'frais_costume' => 'required|numeric',
+            'frais_voyage' => 'required|numeric',
+        ]);
+        $detail = \App\Models\FinanceDetail::findOrFail($id);
+        $detail->update($validated);
+        return redirect()->route('superadmin.financedetails.index')->with('success', 'Détail finance modifié.');
+    }
+
+    public function destroy($id)
+    {
+        $detail = \App\Models\FinanceDetail::findOrFail($id);
+        $detail->delete();
+        return redirect()->route('superadmin.financedetails.index')->with('success', 'Détail finance supprimé.');
+    }
+
+    public function show($id)
+    {
+        $detail = \App\Models\FinanceDetail::with('mention')->findOrFail($id);
+        return view('superadmin.financedetails.show', compact('detail'));
+    }
+
+    // Exemple d'appel à la vue pour l'export PDF étudiant :
+    public function exportStudentPdf($id)
+    {
+        $student = Student::findOrFail($id);
+        $pdf = Pdf::loadView('PDFexport.recap-pdf', compact('student'));
+        return $pdf->download('fiche-inscription-'.$student->matricule.'.pdf');
+    }
+
 }

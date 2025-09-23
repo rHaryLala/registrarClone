@@ -228,11 +228,11 @@ class UserController extends Controller
         $user = auth()->user();
         
         if ($user->isSuperAdmin()) {
-            return ['superadmin', 'admin', 'employe', 'teacher', 'student', 'parent'];
+            return ['superadmin', 'admin', 'dean', 'employe', 'teacher', 'student', 'parent'];
         }
         
         if ($user->isAdmin()) {
-            return ['admin', 'employe', 'teacher', 'student', 'parent'];
+            return ['admin', 'dean', 'employe', 'teacher', 'student', 'parent'];
         }
         
         return [];
@@ -243,6 +243,6 @@ class UserController extends Controller
      */
     private function getAllowedRoles(): array
     {
-        return ['superadmin', 'admin', 'employe', 'teacher', 'student', 'parent'];
+        return ['superadmin', 'admin', 'dean', 'employe', 'teacher', 'student', 'parent'];
     }
 }

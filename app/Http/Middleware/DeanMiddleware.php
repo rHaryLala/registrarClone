@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminMiddleware
+class DeanMiddleware
 {
     /**
      * Handle an incoming request.
@@ -15,8 +15,8 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || !(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())) {
-            abort(403, 'Accès réservé aux administrateurs');
+        if (!auth()->check() || !auth()->user()->isDean()) {
+            abort(403, 'Accès réservé aux doyens');
         }
         return $next($request);
     }

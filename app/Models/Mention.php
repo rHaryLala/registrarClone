@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Teacher;
 use App\Models\Student;
+use App\Traits\TracksLastChange;
 
 class Mention extends Model
 {
+    use TracksLastChange;
     protected $fillable = ['nom', 'description'];
 
     public function students()

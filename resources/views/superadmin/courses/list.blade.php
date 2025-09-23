@@ -126,6 +126,12 @@
                             </th>
                             <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">
                                 <div class="flex items-center gap-2">
+                                    <i class="fas fa-layer-group text-blue-200"></i>
+                                    Catégorie
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">
+                                <div class="flex items-center gap-2">
                                     <i class="fas fa-cogs text-blue-200"></i>
                                     Actions
                                 </div>
@@ -166,6 +172,11 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-5">
+                                    <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        {{ $course->categorie }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-5">
                                     <div class="flex items-center space-x-3">
                                         <a href="{{ route('superadmin.courses.edit', $course->id) }}" 
                                            class="action-btn bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition-all duration-200 flex items-center text-sm font-medium">
@@ -185,7 +196,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center">
+                                <td colspan="7" class="px-6 py-12 text-center">
                                     <div class="text-gray-400">
                                         <i class="fas fa-book text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">Aucun cours trouvé</p>
@@ -234,6 +245,12 @@
                                 @else
                                     <span class="text-gray-400 text-sm">-</span>
                                 @endif
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider">Catégorie</p>
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    {{ $course->categorie }}
+                                </span>
                             </div>
                         </div>
                         

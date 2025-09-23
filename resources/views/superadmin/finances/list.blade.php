@@ -151,6 +151,38 @@
         <!-- Header -->
         @include('superadmin.components.header')
 
+        {{-- Last change toast (show who modified most recently) --}}
+        @if(isset($lastChangedBy) && $lastChangedBy)
+            @php
+                $lcName = '-';
+                if (is_object($lastChangedBy) && isset($lastChangedBy->name)) {
+                    $lcName = $lastChangedBy->name;
+                } elseif (!is_object($lastChangedBy)) {
+                    $lcName = $lastChangedBy;
+                }
+                // Show exact datetime (local format) instead of relative 'ago'
+                $lcWhen = (isset($lastChangedAt) && $lastChangedAt) ? \Carbon\Carbon::parse($lastChangedAt)->format('d/m/Y H:i') : null;
+            @endphp
+            <div id="last-change-toast" class="fixed top-4 right-4 z-50 bg-white border border-gray-200 shadow-lg rounded-lg px-4 py-3 flex items-start gap-3" role="status" aria-live="polite">
+                <div class="text-blue-600 mt-1"><i class="fas fa-user-edit"></i></div>
+                <div>
+                    <div class="font-semibold text-gray-900">Dernière modification</div>
+                    <div class="text-sm text-gray-600">Par {{ $lcName }}@if($lcWhen) • {{ $lcWhen }}@endif</div>
+                </div>
+                <button id="last-change-toast-close" class="ml-3 text-gray-400 hover:text-gray-600" aria-label="Fermer">&times;</button>
+            </div>
+            <script>
+            (function() {
+                const toast = document.getElementById('last-change-toast');
+                if (!toast) return;
+                const closeBtn = document.getElementById('last-change-toast-close');
+                const hide = () => { toast.style.transition = 'opacity 0.4s'; toast.style.opacity = 0; setTimeout(() => toast.remove(), 500); };
+                setTimeout(hide, 8000);
+                if (closeBtn) closeBtn.addEventListener('click', hide);
+            })();
+            </script>
+        @endif
+
         <main class="p-6 max-w-7xl mx-auto">
             <!-- Header moderne avec gradient et fonctionnalités de recherche -->
             <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-2xl p-8 mb-8 text-white shadow-2xl fade-in">
@@ -170,14 +202,7 @@
                                 <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             </div>
                         </div>
-                        
-                        <div class="flex gap-2">
-                            <a href="{{ route('superadmin.finances.create') }}" 
-                               class="action-btn bg-white text-blue-700 px-6 py-3 rounded-xl font-semibold hover:bg-blue-50 flex items-center gap-2">
-                                <i class="fas fa-plus"></i>
-                                <span>Nouvelle Finance</span>
-                            </a>
-                        </div>
+            
                     </div>
                 </div>
             </div>
@@ -189,19 +214,17 @@
                         <thead class="bg-gradient-to-r from-gray-50 to-blue-50">
                             <tr>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Étudiant</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Type</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Montant</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Statut</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Cours</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Plan</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Crédits totaux</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Total payé</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100" id="financeTableBody">
                             @foreach($finances as $index => $finance)
                             <tr class="table-row finance-row stagger-{{ ($index % 4) + 1 }}" 
                                 data-student="{{ strtolower($finance->student->prenom ?? '') }} {{ strtolower($finance->student->nom ?? '') }}"
-                                data-type="{{ strtolower($finance->type) }}"
-                                data-status="{{ strtolower($finance->status) }}">
+                                data-type="{{ strtolower($finance->plan ?? '') }}"
+                                data-status="{{ strtolower(($finance->total_payment ?? '0') != '0' ? 'payé' : 'en_attente') }}">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold mr-3">
@@ -209,48 +232,20 @@
                                         </div>
                                         <div>
                                             <div class="font-semibold text-gray-900">{{ $finance->student->prenom ?? '' }} {{ $finance->student->nom ?? '' }}</div>
-                                            <div class="text-sm text-gray-500">ID: {{ $finance->student->id ?? '-' }}</div>
+                                            <div class="text-sm text-gray-500">ID: {{ $finance->student->matricule ?? '-' }}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                        <i class="fas fa-tag mr-1"></i>
-                                        {{ $finance->type }}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 plan-cell" data-finance-id="{{ $finance->id }}" title="Double-cliquer pour modifier">
+                                        {{ $finance->plan ?? '-' }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="amount-highlight text-lg font-bold">{{ number_format($finance->montant, 2) }} Ar</span>
+                                    <span class="text-gray-900 font-medium">{{ $finance->total_credit ?? 0 }}</span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="status-badge inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                                        @if($finance->status == 'payé') bg-green-100 text-green-800
-                                        @elseif($finance->status == 'en_attente') bg-yellow-100 text-yellow-800
-                                        @else bg-red-100 text-red-800 @endif">
-                                        <i class="fas fa-circle mr-1 text-xs"></i>
-                                        {{ ucfirst(str_replace('_', ' ', $finance->status)) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-gray-900 font-medium">{{ $finance->course->nom ?? '-' }}</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-2">
-                                        <a href="{{ route('superadmin.finances.show', $finance->id) }}" 
-                                           class="action-btn bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition-all duration-200">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ route('superadmin.finances.edit', $finance->id) }}" 
-                                           class="action-btn bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg hover:bg-yellow-200 transition-all duration-200">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form action="{{ route('superadmin.finances.destroy', $finance->id) }}" method="POST" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette finance ?');">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="action-btn bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 transition-all duration-200">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
+                                    <span class="amount-highlight text-lg font-bold">{{ $finance->total_payment ?? '0' }}</span>
                                 </td>
                             </tr>
                             @endforeach
@@ -262,10 +257,10 @@
             <!-- Version mobile avec cartes -->
             <div class="lg:hidden space-y-4" id="financeCardsContainer">
                 @foreach($finances as $index => $finance)
-                <div class="finance-card bg-white rounded-xl p-6 shadow-lg stagger-{{ ($index % 4) + 1 }} finance-row"
-                     data-student="{{ strtolower($finance->student->prenom ?? '') }} {{ strtolower($finance->student->nom ?? '') }}"
-                     data-type="{{ strtolower($finance->type) }}"
-                     data-status="{{ strtolower($finance->status) }}">
+             <div class="finance-card bg-white rounded-xl p-6 shadow-lg stagger-{{ ($index % 4) + 1 }} finance-row"
+                 data-student="{{ strtolower($finance->student->prenom ?? '') }} {{ strtolower($finance->student->nom ?? '') }}"
+                 data-type="{{ strtolower($finance->plan ?? '') }}"
+                 data-status="{{ strtolower(($finance->total_payment ?? '0') != '0' ? 'payé' : 'en_attente') }}">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
                             <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold mr-4">
@@ -299,17 +294,34 @@
                         </div>
                     </div>
                     
-                    <div class="mb-4">
-                        <p class="text-gray-500 text-sm mb-1">Cours</p>
-                        <p class="text-gray-900 font-medium">{{ $finance->course->nom ?? '-' }}</p>
+                    <div class="mb-4 grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">Matricule</p>
+                            <p class="text-gray-900 font-medium">{{ $finance->student->matricule ?? '-' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">Plan</p>
+                            <p class="text-gray-900 font-medium plan-cell" data-finance-id="{{ $finance->id }}">{{ $finance->plan ?? '-' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">Crédits totaux</p>
+                            <p class="text-gray-900 font-medium">{{ $finance->total_credit ?? 0 }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">Total payé</p>
+                            <p class="text-gray-900 font-medium">{{ $finance->total_payment ?? '0' }}</p>
+                        </div>
                     </div>
                     
                     <div class="flex justify-end space-x-2 pt-4 border-t border-gray-100">
-                        <a href="{{ route('superadmin.finances.show', $finance->id) }}" 
+                        {{-- <a href="{{ route('superadmin.finances.show', $finance->id) }}" 
                            class="action-btn bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 flex items-center gap-2">
                             <i class="fas fa-eye"></i>
                             <span>Voir</span>
-                        </a>
+                        </a> --}}
                         <a href="{{ route('superadmin.finances.edit', $finance->id) }}" 
                            class="action-btn bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg hover:bg-yellow-200 flex items-center gap-2">
                             <i class="fas fa-edit"></i>
@@ -395,6 +407,71 @@
                 sidebar.classList.contains('active')) {
                 sidebar.classList.remove('active');
             }
+        });
+
+        // Double-click to edit plan (A..E)
+        function makePlanEditable(el) {
+            const financeId = el.dataset.financeId;
+            const current = (el.textContent || el.innerText).trim();
+            const options = ['A','B','C','D','E'];
+
+            const select = document.createElement('select');
+            select.className = 'px-2 py-1 rounded bg-white border';
+            options.forEach(opt => {
+                const o = document.createElement('option');
+                o.value = opt; o.text = opt; if (opt === current) o.selected = true;
+                select.appendChild(o);
+            });
+
+            el.replaceWith(select);
+            select.focus();
+
+            const finish = (save) => {
+                if (save) {
+                    fetch(`{{ url('/superadmin/finances') }}/${financeId}/plan`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ plan: select.value })
+                    }).then(r => r.json()).then(data => {
+                        const span = document.createElement('span');
+                        span.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 plan-cell';
+                        span.dataset.financeId = financeId;
+                        span.textContent = data.plan || select.value;
+                        select.replaceWith(span);
+                        // reattach dblclick
+                        span.addEventListener('dblclick', () => makePlanEditable(span));
+                    }).catch(err => {
+                        // revert on error
+                        const span = document.createElement('span');
+                        span.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 plan-cell';
+                        span.dataset.financeId = financeId;
+                        span.textContent = current;
+                        select.replaceWith(span);
+                        span.addEventListener('dblclick', () => makePlanEditable(span));
+                    });
+                } else {
+                    const span = document.createElement('span');
+                    span.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 plan-cell';
+                    span.dataset.financeId = financeId;
+                    span.textContent = current;
+                    select.replaceWith(span);
+                    span.addEventListener('dblclick', () => makePlanEditable(span));
+                }
+            };
+
+            select.addEventListener('blur', () => finish(true));
+            select.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Enter') { ev.preventDefault(); finish(true); }
+                if (ev.key === 'Escape') { ev.preventDefault(); finish(false); }
+            });
+        }
+
+        // Attach dblclick handlers to initial plan cells
+        document.querySelectorAll('.plan-cell').forEach(el => {
+            el.addEventListener('dblclick', () => makePlanEditable(el));
         });
     </script>
 </body>

@@ -222,11 +222,7 @@
                         <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $usersCount }}</h3>
                     </div>
                 </div>
-                <div class="mt-4">
-                    <p class="text-green-600 text-sm flex items-center font-medium">
-                        <i class="fas fa-arrow-up mr-1"></i> 12% depuis le mois dernier
-                    </p>
-                </div>
+                <!-- Statistiques dynamiques à implémenter -->
             </div>
 
             <div class="stats-card bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:border-green-200">
@@ -239,11 +235,7 @@
                         <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $studentsCount }}</h3>
                     </div>
                 </div>
-                <div class="mt-4">
-                    <p class="text-green-600 text-sm flex items-center font-medium">
-                        <i class="fas fa-arrow-up mr-1"></i> 8% depuis le mois dernier
-                    </p>
-                </div>
+                <!-- Statistiques dynamiques à implémenter -->
             </div>
 
             <div class="stats-card bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:border-blue-200">
@@ -256,11 +248,7 @@
                         <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $teachersCount }}</h3>
                     </div>
                 </div>
-                <div class="mt-4">
-                    <p class="text-red-600 text-sm flex items-center font-medium">
-                        <i class="fas fa-arrow-down mr-1"></i> 2% depuis le mois dernier
-                    </p>
-                </div>
+                <!-- Statistiques dynamiques à implémenter -->
             </div>
 
             <div class="stats-card bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:border-orange-200">
@@ -273,11 +261,7 @@
                         <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $coursesCount }}</h3>
                     </div>
                 </div>
-                <div class="mt-4">
-                    <p class="text-green-600 text-sm flex items-center font-medium">
-                        <i class="fas fa-arrow-up mr-1"></i> 5% depuis le mois dernier
-                    </p>
-                </div>
+                <!-- Statistiques dynamiques à implémenter -->
             </div>
         </div>
 

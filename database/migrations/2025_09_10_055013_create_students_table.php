@@ -10,12 +10,13 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-            $table->string('matricule')->unique();
+            $table->string('matricule')->unique()->nullable();
+            $table->string('account_code')->unique()->nullable(); // <-- nullable ici
             $table->string('image')->nullable(); 
             
             // Informations personnelles
             $table->string('nom');
-            $table->string('prenom');
+            $table->string('prenom')->nullable();
             $table->enum('sexe', ['M', 'F']);
             $table->date('date_naissance');
             $table->string('lieu_naissance');
@@ -57,7 +58,7 @@ return new class extends Migration
             
             // Scolarité
             $table->string('bacc_serie')->nullable();
-            $table->date('bacc_date_obtention')->nullable();
+            $table->integer('bacc_date_obtention')->nullable();
             $table->boolean('bursary_status')->default(false);
             
             // Informations sponsor (conditionnelles)
@@ -75,9 +76,14 @@ return new class extends Migration
             $table->foreign('semester_id')->references('id')->on('semesters')->onDelete('set null');
             $table->unsignedBigInteger('parcours_id')->nullable();
             $table->foreign('parcours_id')->references('id')->on('parcours')->onDelete('set null');
-            
+            $table->foreignId('academic_year_id')->nullable()->constrained()->onDelete('set null');
             $table->enum('statut_interne', ['interne', 'externe'])->default('externe');
-
+            $table->boolean('abonne_caf')->default(false);
+            $table->string('password')->nullable(); 
+            $table->string('plain_password')->nullable(); 
+            $table->string('taille')->nullable();
+            $table->unsignedBigInteger('last_change_user_id')->nullable();
+            $table->dateTime('last_change_datetime')->nullable();
             $table->timestamps();
         });
     }

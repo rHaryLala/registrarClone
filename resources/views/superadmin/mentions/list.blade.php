@@ -26,47 +26,110 @@
     @include('superadmin.components.sidebar')
     <div class="main-content min-h-screen">
         @include('superadmin.components.header')
-        <main class="p-6">
-            <div class="flex items-center justify-between mb-6">
-                <h1 class="text-2xl font-bold">Liste des mentions</h1>
-                <a href="{{ route('superadmin.mentions.create') }}" class="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition flex items-center">
+        <!-- Modernized main section with improved design, better spacing, and contemporary styling -->
+        <main class="p-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+            <!-- Header section with improved typography and spacing -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Liste des mentions</h1>
+                    <p class="text-gray-600 text-sm">Gérez les mentions de votre université</p>
+                </div>
+                <a href="{{ route('superadmin.mentions.create') }}" 
+                   class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium">
                     <i class="fas fa-plus mr-2"></i> Nouvelle mention
                 </a>
             </div>
-            <div class="bg-white shadow rounded-lg overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-blue-700 text-white">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nom</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Description</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($mentions as $mention)
-                            <tr class="cursor-pointer hover:bg-blue-50 transition" onclick="window.location='{{ route('superadmin.mentions.show', $mention->id) }}'">
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $mention->nom }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $mention->description }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap flex space-x-2">
-                                    <a href="{{ route('superadmin.mentions.edit', $mention->id) }}" class="text-blue-600 hover:underline flex items-center">
-                                        <i class="fas fa-edit mr-1"></i> Modifier
-                                    </a>
-                                    <form action="{{ route('superadmin.mentions.destroy', $mention->id) }}" method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer cette mention ?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:underline flex items-center">
-                                            <i class="fas fa-trash-alt mr-1"></i> Supprimer
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
+
+            <!-- Modern card container with enhanced styling -->
+            <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+                <!-- Table header with gradient background -->
+                <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                    <h2 class="text-white font-semibold text-lg flex items-center">
+                        <i class="fas fa-list-ul mr-3"></i>
+                        Mentions disponibles
+                    </h2>
+                </div>
+
+                <!-- Responsive table wrapper -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <td colspan="3" class="px-6 py-4 text-center text-gray-500">Aucune mention trouvée.</td>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-tag mr-2 text-gray-500"></i>
+                                        Nom
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-align-left mr-2 text-gray-500"></i>
+                                        Description
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-cogs mr-2 text-gray-500"></i>
+                                        Actions
+                                    </div>
+                                </th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            @forelse($mentions as $mention)
+                                <tr class="cursor-pointer hover:bg-blue-50 transition-all duration-200 group" 
+                                    onclick="window.location='{{ route('superadmin.mentions.show', $mention->id) }}'">
+                                    <td class="px-6 py-5 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mr-4 group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-200">
+                                                <i class="fas fa-graduation-cap text-blue-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-semibold text-gray-900">{{ $mention->nom }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <div class="text-sm text-gray-700 max-w-xs truncate">{{ $mention->description }}</div>
+                                    </td>
+                                    <td class="px-6 py-5 whitespace-nowrap">
+                                        <div class="flex space-x-3">
+                                            <a href="{{ route('superadmin.mentions.edit', $mention->id) }}" 
+                                               class="inline-flex items-center px-3 py-2 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-all duration-200 hover:shadow-md">
+                                                <i class="fas fa-edit mr-1"></i> Modifier
+                                            </a>
+                                            <form action="{{ route('superadmin.mentions.destroy', $mention->id) }}" method="POST" 
+                                                  onsubmit="return confirm('Voulez-vous vraiment supprimer cette mention ?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" 
+                                                        class="inline-flex items-center px-3 py-2 text-xs font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-all duration-200 hover:shadow-md">
+                                                    <i class="fas fa-trash-alt mr-1"></i> Supprimer
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="px-6 py-12 text-center">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                                <i class="fas fa-inbox text-gray-400 text-2xl"></i>
+                                            </div>
+                                            <h3 class="text-lg font-medium text-gray-900 mb-2">Aucune mention trouvée</h3>
+                                            <p class="text-gray-500 text-sm mb-6">Commencez par créer votre première mention</p>
+                                            <a href="{{ route('superadmin.mentions.create') }}" 
+                                               class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-medium">
+                                                <i class="fas fa-plus mr-2"></i> Créer une mention
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div>

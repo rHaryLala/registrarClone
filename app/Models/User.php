@@ -17,6 +17,7 @@ class User extends Authenticatable
         'password',
         'plain_password',
         'role',
+        'mention_id'
     ];
 
     protected $hidden = [
@@ -41,6 +42,11 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+    
+    public function isDean(): bool
+    {
+        return $this->role === 'dean';
     }
 
     public function isEmploye(): bool
@@ -67,5 +73,10 @@ class User extends Authenticatable
     public function hasRole(array $roles): bool
     {
         return in_array($this->role, $roles);
+    }
+
+    public function mention()
+    {
+        return $this->belongsTo(Mention::class);
     }
 }
