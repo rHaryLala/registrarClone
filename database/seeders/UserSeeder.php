@@ -58,7 +58,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'name' => 'Ravoninjatovo Sitraka',
-                'email' => 'sitrakasio@zurcher.edu.mg',
+                'email' => 'sitrakarsio@zurcher.edu.mg',
                 'password' => Hash::make('sitrakaravmiddleware2025'),
                 'plain_password' => 'sitrakaravmiddleware2025',
                 'role' => 'dean',
@@ -73,10 +73,10 @@ class UserSeeder extends Seeder
                 'mention_id' => 5,
             ],
             [
-                'name' => 'Ranala Marc Arthur',
-                'email' => 'marcarthurranala@zurcher.edu.mg',
-                'password' => Hash::make('ranalamarcmiddleware2025'),
-                'plain_password' => 'ranalamarcmiddleware2025',
+                'name' => 'Andrianasolo Eric Tantely',
+                'email' => 'uaz.dean@zurcher.edu.mg',
+                'password' => Hash::make('tantelyericmiddleware2025'),
+                'plain_password' => 'tantelyericmiddleware2025',
                 'role' => 'dean',
                 'mention_id' => 6,
             ],
@@ -95,6 +95,21 @@ class UserSeeder extends Seeder
                 'plain_password' => 'malalaniainamiddleware2025',
                 'role' => 'dean',
                 'mention_id' => 8,
+            ],
+            // Accountants
+            [
+                'name' => 'Comptable Principal',
+                'email' => 'accountant1@zurcher.edu.mg',
+                'password' => Hash::make('accountantPass123'),
+                'plain_password' => 'accountantPass123',
+                'role' => 'accountant',
+            ],
+            [
+                'name' => 'Comptable Secondaire',
+                'email' => 'accountant2@zurcher.edu.mg',
+                'password' => Hash::make('accountantPass456'),
+                'plain_password' => 'accountantPass456',
+                'role' => 'accountant',
             ],
         ];
 

@@ -216,7 +216,8 @@
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Étudiant</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Plan</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Crédits totaux</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Total payé</th>
+                                   <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Montant dû</th>
+                                   <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Détails</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100" id="financeTableBody">
@@ -248,11 +249,61 @@
                                     <span class="amount-highlight text-lg font-bold">{{ $finance->total_payment ?? '0' }}</span>
                                 </td>
                             </tr>
+
+                            {{-- Installments row (desktop): show student_installments for this finance's student --}}
+                            @php
+                                // Use the eager-loaded installments where possible. If student relation is missing,
+                                // try to resolve by matricule as a fallback and load installments ordered by sequence.
+                                $installments = collect();
+                                if (!empty($finance->student)) {
+                                    $installments = $finance->student->installments ?? collect();
+                                } elseif (!empty($finance->student_id)) {
+                                    $fallbackStudent = \App\Models\Student::where('matricule', $finance->student_id)->first();
+                                    if ($fallbackStudent) {
+                                        $installments = $fallbackStudent->installments()->orderBy('sequence')->get();
+                                    }
+                                }
+                            @endphp
+                            @if($installments->count())
+                            <tr class="bg-gray-50">
+                                <td colspan="5" class="px-6 py-3">
+                                    <div class="text-sm font-medium text-gray-700 mb-2">Échéances pour {{ $finance->student->prenom ?? '-' }} {{ $finance->student->nom ?? '-' }}</div>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full text-sm">
+                                            <thead>
+                                                <tr class="text-left text-gray-600 text-xs uppercase">
+                                                    <th class="px-2 py-1">#</th>
+                                                    <th class="px-2 py-1">Montant dû</th>
+                                                    <th class="px-2 py-1">Montant payé</th>
+                                                    <th class="px-2 py-1">Échéance</th>
+                                                    <th class="px-2 py-1">Statut</th>
+                                                    <th class="px-2 py-1">Référence</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($installments as $inst)
+                                                <tr class="border-t">
+                                                    <td class="px-2 py-1">{{ $inst->sequence }}</td>
+                                                    <td class="px-2 py-1">{{ number_format($inst->amount_due, 2, ',', ' ') }} FCFA</td>
+                                                    <td class="px-2 py-1">{{ number_format($inst->amount_paid, 2, ',', ' ') }} FCFA</td>
+                                                    <td class="px-2 py-1">{{ $inst->due_at ? \Carbon\Carbon::parse($inst->due_at)->format('d/m/Y') : '-' }}</td>
+                                                    <td class="px-2 py-1">{{ ucfirst($inst->status) }}</td>
+                                                    <td class="px-2 py-1">{{ $inst->reference ?? '-' }}</td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endif
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            {{-- duplicate desktop installments block removed (installments are rendered inline inside the table loop) --}}
 
             <!-- Version mobile avec cartes -->
             <div class="lg:hidden space-y-4" id="financeCardsContainer">
@@ -278,8 +329,15 @@
                             <i class="fas fa-circle mr-1 text-xs"></i>
                             {{ ucfirst(str_replace('_', ' ', $finance->status)) }}
                         </span>
-                    </div>
-                    
+                        <div class="ml-4 text-right">
+                            <div><span class="amount-highlight text-lg font-bold">{{ number_format($finance->computed->total_due ?? 0, 0, ',', ' ') }} Ar</span></div>
+                            <div class="text-sm text-gray-600">
+                                <div>Frais généraux: {{ number_format($finance->computed->frais_generaux ?? 0, 0, ',', ' ') }} Ar</div>
+                                <div>Écolage: {{ number_format($finance->computed->ecolage ?? 0, 0, ',', ' ') }} Ar</div>
+                                <div>Cantine: {{ number_format($finance->computed->cantine ?? 0, 0, ',', ' ') }} Ar</div>
+                                <div>Dortoir: {{ number_format($finance->computed->dortoir ?? 0, 0, ',', ' ') }} Ar</div>
+                            </div>
+                        </div>
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <p class="text-gray-500 text-sm mb-1">Type</p>
@@ -315,6 +373,38 @@
                             <p class="text-gray-900 font-medium">{{ $finance->total_payment ?? '0' }}</p>
                         </div>
                     </div>
+                    
+                    {{-- Installments (mobile card) --}}
+                    @php
+                        $installments = collect();
+                        if (!empty($finance->student)) {
+                            $installments = $finance->student->installments ?? collect();
+                        } elseif (!empty($finance->student_id)) {
+                            $fallbackStudent = \App\Models\Student::where('matricule', $finance->student_id)->first();
+                            if ($fallbackStudent) {
+                                $installments = $fallbackStudent->installments()->orderBy('sequence')->get();
+                            }
+                        }
+                    @endphp
+                    @if($installments && $installments->count())
+                        <div class="mb-4">
+                            <h4 class="text-sm font-semibold text-gray-600 mb-2">Échéances</h4>
+                            <div class="space-y-2 text-sm text-gray-700">
+                                @foreach($installments as $inst)
+                                    <div class="flex items-center justify-between bg-gray-50 rounded px-3 py-2">
+                                        <div class="flex items-center gap-3">
+                                            <div class="font-medium">#{{ $inst->sequence }}</div>
+                                            <div class="text-gray-600">{{ number_format($inst->amount_due, 2, ',', ' ') }} FCFA</div>
+                                        </div>
+                                        <div class="text-right text-sm">
+                                            <div class="text-gray-700">{{ $inst->due_at ? \Carbon\Carbon::parse($inst->due_at)->format('d/m/Y') : '-' }}</div>
+                                            <div class="text-xs text-gray-500">{{ ucfirst($inst->status) }} • {{ $inst->reference ?? '-' }}</div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                     
                     <div class="flex justify-end space-x-2 pt-4 border-t border-gray-100">
                         {{-- <a href="{{ route('superadmin.finances.show', $finance->id) }}" 

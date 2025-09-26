@@ -16,6 +16,7 @@ class Semester extends Model
         'annee',
         'date_debut',
         'date_fin',
+        'duration',
         'academic_year_id',
     ];
 

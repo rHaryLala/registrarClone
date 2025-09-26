@@ -12,6 +12,9 @@ use App\Models\Parcours;
 use App\Models\AccessCode;
 use Illuminate\Support\Facades\DB;
 use App\Models\FinancePlan;
+use App\Models\AcademicFee;
+use App\Models\PaymentMode;
+use App\Services\InstallmentService;
 
 class StudentController extends Controller 
 {
@@ -190,9 +193,19 @@ class StudentController extends Controller
             // If there are no pivot entries yet, default to 0
             $totalCredits = $totalCredits ?? 0;
 
-            // Determine default plan (category) from finance_plan table
-            $planRow = FinancePlan::orderBy('id')->first();
-            $planCategory = $planRow ? $planRow->category : 'A';
+            // Determine default plan (category) from finance_plan table if the model exists
+            $planCategory = 'A'; // default
+            try {
+                if (class_exists(\App\Models\FinancePlan::class)) {
+                    $planRow = \App\Models\FinancePlan::orderBy('id')->first();
+                    $planCategory = $planRow ? $planRow->category : $planCategory;
+                } else {
+                    logger()->info('FinancePlan model not found; using default plan category "' . $planCategory . '"');
+                }
+            } catch (\Throwable $e) {
+                // In case something else goes wrong, keep default and log
+                logger()->warning('Error while reading FinancePlan: ' . $e->getMessage());
+            }
 
             DB::table('finance')->insert([
                 'student_id' => $matricule,
@@ -206,6 +219,137 @@ class StudentController extends Controller
                 'last_change_user_id' => auth()->id() ?? null,
                 'last_change_datetime' => now(),
             ]);
+
+            // Try to link to AcademicFee and generate installments according to the default plan
+            try {
+                // We'll explicitly add the "Frais Généraux" academic fee at registration.
+                // Match as specifically as possible: mention, year_level, academic_year, semester and is_internal.
+                $aqYear = $currentAcademicYear->id ?? null;
+                $levelId = $stdYearLevel;
+                $semesterId = $semesterId ?? ($validated['semester_id'] ?? null);
+                $isInternal = (isset($validated['statut_interne']) && $validated['statut_interne'] === 'interne');
+
+                $feeTypeName = 'Frais Généraux';
+
+                // helper: try different specificity levels from most specific to least
+                $academicFee = null;
+
+                                // 1) exact match: mention + year_level + academic_year + semester
+                                $academicFee = AcademicFee::whereHas('feeType', function($q) use ($feeTypeName) {
+                                        $q->where('name', $feeTypeName);
+                                })->where('mention_id', $validated['mention_id'])
+                                    ->where('year_level_id', $levelId)
+                                    ->where('academic_year_id', $aqYear)
+                                    ->where('semester_id', $semesterId)
+                                    ->first();
+
+                // 2) relax semester
+                if (!$academicFee) {
+                    $academicFee = AcademicFee::whereHas('feeType', function($q) use ($feeTypeName) {
+                        $q->where('name', $feeTypeName);
+                    })->where('mention_id', $validated['mention_id'])
+                      ->where('year_level_id', $levelId)
+                      ->where('academic_year_id', $aqYear)
+                      ->first();
+                }
+
+                // 3) relax mention (generic fee for level/year)
+                if (!$academicFee) {
+                    $academicFee = AcademicFee::whereHas('feeType', function($q) use ($feeTypeName) {
+                        $q->where('name', $feeTypeName);
+                    })->whereNull('mention_id')
+                      ->where('year_level_id', $levelId)
+                      ->where('academic_year_id', $aqYear)
+                      ->first();
+                }
+
+                // 4) relax year_level
+                if (!$academicFee) {
+                    $academicFee = AcademicFee::whereHas('feeType', function($q) use ($feeTypeName) {
+                        $q->where('name', $feeTypeName);
+                    })->whereNull('mention_id')
+                      ->where(function($q) use ($levelId) {
+                          $q->where('year_level_id', $levelId)
+                            ->orWhereNull('year_level_id');
+                      })
+                      ->where('academic_year_id', $aqYear)
+                      ->first();
+                }
+
+                // 5) last resort: any fee_type match for the academic year and internal flag
+                if (!$academicFee) {
+                    $academicFee = AcademicFee::whereHas('feeType', function($q) use ($feeTypeName) {
+                        $q->where('name', $feeTypeName);
+                    })->where('academic_year_id', $aqYear)
+                      ->first();
+                }
+
+                // Final fallback: try to find any matching 'Frais Généraux' academic fee regardless of academic year
+                if (!$academicFee) {
+                    $fallbackCount = AcademicFee::whereHas('feeType', function($q) use ($feeTypeName) {
+                        $q->where('name', $feeTypeName);
+                    })->count();
+                    logger()->info('AcademicFee fallback: found ' . $fallbackCount . ' candidate(s) for feeType "' . $feeTypeName . '" across all years');
+                    $academicFee = AcademicFee::whereHas('feeType', function($q) use ($feeTypeName) {
+                        $q->where('name', $feeTypeName);
+                    })->first();
+                    if ($academicFee) {
+                        logger()->info('AcademicFee fallback: using AcademicFee id=' . $academicFee->id . ' from academic_year_id=' . ($academicFee->academic_year_id ?? 'NULL'));
+                    }
+                }
+
+                if ($academicFee) {
+                    // Find default payment mode from planCategory (A..E)
+                    $paymentMode = PaymentMode::where('code', $planCategory)->first();
+                    if (!$paymentMode) {
+                        // fallback to code 'A' or first available payment mode
+                        $paymentMode = PaymentMode::where('code', 'E')->first() ?: PaymentMode::first();
+                    }
+
+                    if ($paymentMode) {
+                        try {
+                            // Use InstallmentService to generate installments for the frais généraux
+                            $created = app(InstallmentService::class)->generateFor($student, $academicFee, $paymentMode, \Carbon\Carbon::now());
+                            $countCreated = is_array($created) ? count($created) : 0;
+                            logger()->info("Generated {$countCreated} frais généraux installment(s) for student " . ($student->id ?? 'unknown'));
+
+                            // If InstallmentService didn't create any installments (unexpected), add a minimal fallback row
+                            if ($countCreated === 0) {
+                                try {
+                                    \App\Models\StudentInstallment::create([
+                                        'student_id' => $student->id,
+                                        'payment_mode_id' => $paymentMode->id,
+                                        'academic_fee_id' => $academicFee->id,
+                                        'sequence' => 1,
+                                        'amount_due' => $academicFee->amount,
+                                        'amount_paid' => 0,
+                                        'due_at' => \Carbon\Carbon::now(),
+                                        'status' => 'pending'
+                                    ]);
+                                    logger()->info('Fallback: created 1 StudentInstallment for student ' . ($student->id ?? 'unknown'));
+                                } catch (\Throwable $e) {
+                                    logger()->warning('Fallback StudentInstallment creation failed for student ' . ($student->id ?? 'unknown') . ': ' . $e->getMessage());
+                                }
+                            }
+                        } catch (\Throwable $e) {
+                            logger()->warning('Failed to generate "Frais Généraux" installments for student ' . ($student->id ?? 'unknown') . ': ' . $e->getMessage());
+                        }
+                    } else {
+                        logger()->warning('No payment mode available while creating frais généraux for student ' . ($student->id ?? 'unknown'));
+                    }
+                } else {
+                    logger()->info('No "Frais Généraux" academic_fee found for student ' . ($student->id ?? 'unknown') . ' (mention ' . ($validated['mention_id'] ?? 'null') . ', level ' . ($levelId ?? 'null') . ', acad_year ' . ($aqYear ?? 'null') . ', semester ' . ($semesterId ?? 'null') . ', internal ' . ($isInternal ? '1' : '0') . ')');
+                }
+            } catch (\Throwable $e) {
+                logger()->warning('Error while linking academic fee/installments: ' . $e->getMessage());
+            }
+            // Compute and persist semester fee breakdown (frais généraux, dortoir, cantine, ecolage, etc.)
+            try {
+                app(InstallmentService::class)->computeSemesterFees($student, $currentAcademicYear->id, $semesterId, auth()->id() ?? null);
+                logger()->info('StudentSemesterFee computed for student ' . ($student->id ?? 'unknown'));
+            } catch (\Throwable $e) {
+                logger()->warning('Failed to compute StudentSemesterFee for student ' . ($student->id ?? 'unknown') . ': ' . $e->getMessage());
+            }
         } catch (\Throwable $e) {
             // Log error but don't block student creation
             logger()->error('Failed to insert finance row for student: ' . ($student->id ?? 'unknown') . ' - ' . $e->getMessage());

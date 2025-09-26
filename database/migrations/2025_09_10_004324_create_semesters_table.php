@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->unsignedTinyInteger('ordre'); // 1 à 4
             $table->date('date_debut')->nullable();
             $table->date('date_fin')->nullable();
+            $table->unsignedSmallInteger('duration')->nullable();
             $table->timestamps();
         });
     }

@@ -82,6 +82,7 @@ return new class extends Migration
             $table->string('password')->nullable(); 
             $table->string('plain_password')->nullable(); 
             $table->string('taille')->nullable();
+            $table->boolean('fee_check')->default(false);
             $table->unsignedBigInteger('last_change_user_id')->nullable();
             $table->dateTime('last_change_datetime')->nullable();
             $table->timestamps();

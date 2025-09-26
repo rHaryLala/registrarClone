@@ -303,7 +303,7 @@
                             </div>
 
                             <!-- Email généré automatiquement -->
-                            <div id="email-preview" class="md:col-span-2 space-y-2 hidden">
+                            {{-- <div id="email-preview" class="md:col-span-2 space-y-2 hidden">
                                 <label class="block text-sm font-medium text-gray-700 flex items-center gap-2">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
@@ -312,7 +312,7 @@
                                 </label>
                                 <div class="p-3 border rounded-md bg-gray-50 text-sm" id="generated-email"></div>
                                 <p class="text-xs text-gray-500">Format: nom.3premièresLettresPrenom@zurcher.edu.mg</p>
-                            </div>
+                            </div> --}}
 
                             <div class="space-y-2">
                                 <label for="sexe" class="block text-sm font-medium text-gray-700">Sexe *</label>
@@ -388,8 +388,8 @@
                                 <select id="statut_interne" name="statut_interne" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent">
                                     <option value="">Sélectionnez le statut</option>
-                                    <option value="interne">Interne</option>
-                                    <option value="externe">Externe</option>
+                                    <option value="interne">Interne (résidant au dortoir)</option>
+                                    <option value="externe">Externe (résidant hors du campus)</option>
                                 </select>
                             </div>
                             <div class="flex items-center space-x-3 mt-6">
@@ -1298,29 +1298,44 @@
     function generateEmail() {
         const nom = getValue('nom');
         const prenom = getValue('prenom');
-
         if (nom) {
-            const nomFormatted = nom.toLowerCase().trim();
-            let email;
+            // Normalize and strip spaces/diacritics/invalid chars from last name
+            let nomFormatted = nom.toLowerCase().trim();
+            // remove accents
+            try {
+                nomFormatted = nomFormatted.normalize('NFD').replace(/[,\u0300-\u036f]/g, '');
+            } catch (e) {
+                // normalize may not be supported; fall back to original
+            }
+            // remove any non-alphanumeric characters (including spaces)
+            nomFormatted = nomFormatted.replace(/[^a-z0-9]/g, '');
 
+            let email;
             if (!prenom) {
-                // Si pas de prénom, utiliser uniquement le nom
+                // No first name: use normalized last name only
                 email = `${nomFormatted}@zurcher.edu.mg`;
             } else {
-                // Si prénom existe, traiter les prénoms composés
-                const prenomFormatted = prenom.toLowerCase().trim();
-                const prenomParts = prenomFormatted.split(' '); // Séparer les parties du prénom
-                const premierPrenom = prenomParts[0]; // Prendre le premier prénom
+                // Normalize first name and handle composed first names
+                let prenomFormatted = prenom.toLowerCase().trim();
+                try {
+                    prenomFormatted = prenomFormatted.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                } catch (e) {}
+                // take the first token of the first name (before any space)
+                const premierPrenom = (prenomFormatted.split(/\s+/)[0] || prenomFormatted).replace(/[^a-z0-9]/g, '');
                 const troisLettresPrenom = premierPrenom.slice(0, 3);
                 email = `${nomFormatted}.${troisLettresPrenom}@zurcher.edu.mg`;
             }
 
             document.getElementById('email').value = email;
-            document.getElementById('generated-email').textContent = email;
-            document.getElementById('email-preview').classList.remove('hidden');
+            const previewEl = document.getElementById('generated-email');
+            if (previewEl) previewEl.textContent = email;
+            const previewContainer = document.getElementById('email-preview');
+            if (previewContainer) previewContainer.classList.remove('hidden');
         } else {
-            document.getElementById('email').value = '';
-            document.getElementById('email-preview').classList.add('hidden');
+            const emailField = document.getElementById('email');
+            if (emailField) emailField.value = '';
+            const previewContainer = document.getElementById('email-preview');
+            if (previewContainer) previewContainer.classList.add('hidden');
         }
     }
 

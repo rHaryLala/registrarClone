@@ -10,7 +10,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
+        ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
             'dean' => \App\Http\Middleware\DeanMiddleware::class,
@@ -19,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'teacher' => \App\Http\Middleware\TeacherMiddleware::class,
             'employe' => \App\Http\Middleware\EmployeeMiddleware::class,
             'parent' => \App\Http\Middleware\ParentMiddleware::class,
+            'accountant' => \App\Http\Middleware\AccountantMiddleware::class,
+            'setlocale' => \App\Http\Middleware\SetLocale::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -186,9 +186,9 @@
                             <h1 class="text-3xl font-bold mb-2">Liste des détails finances</h1>
                             <p class="text-blue-100">Gestion des frais universitaires</p>
                         </div>
-                        <a href="{{ route('superadmin.financedetails.create') }}" class="bg-white text-blue-600 px-6 py-3 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center font-semibold shadow-lg hover:shadow-xl transform hover:scale-105">
+                        {{-- <a href="{{ route('superadmin.financedetails.create') }}" class="bg-white text-blue-600 px-6 py-3 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center font-semibold shadow-lg hover:shadow-xl transform hover:scale-105">
                             <i class="fas fa-plus mr-2"></i> Ajouter un détail finance
-                        </a>
+                        </a> --}}
                     </div>
                 </div>
                 
@@ -196,60 +196,27 @@
                     <table class="min-w-full">
                         <thead class="table-header">
                             <tr class="relative z-10">
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Statut</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Type de frais</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Mention</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Frais généraux</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Ecolage</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Laboratoire</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Dortoir</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Cafétéria</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Actions</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Niveau d'étude</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Année académique</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Semestre</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Coût</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Notes</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white">
                             @forelse($details as $index => $detail)
-                                <tr class="table-row cursor-pointer" style="animation-delay: {{ $index * 0.1 }}s"
-                                    onclick="window.location='{{ route('superadmin.financedetails.show', $detail->id) }}'">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                            {{ ucfirst($detail->statut_etudiant) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                                        {{ $detail->mention ? $detail->mention->nom : '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700 font-semibold">
-                                        {{ number_format($detail->frais_generaux, 0, ',', ' ') }} Ar
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700 font-semibold">
-                                        {{ number_format($detail->ecolage, 0, ',', ' ') }} Ar
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700 font-semibold">
-                                        {{ number_format($detail->laboratory, 0, ',', ' ') }} Ar
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700 font-semibold">
-                                        {{ number_format($detail->dortoir, 0, ',', ' ') }} Ar
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700 font-semibold">
-                                        {{ number_format($detail->cafeteria, 0, ',', ' ') }} Ar
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex space-x-2">
-                                            {{-- <a href="{{ route('superadmin.financedetails.show', $detail->id) }}" class="action-btn btn-view text-blue-600 hover:text-blue-800 flex items-center">
-                                                <i class="fas fa-eye mr-1"></i> Voir
-                                            </a> --}}
-                                            <a href="{{ route('superadmin.financedetails.edit', $detail->id) }}" class="action-btn btn-edit text-yellow-600 hover:text-yellow-800 flex items-center">
-                                                <i class="fas fa-edit mr-1"></i> Modifier
-                                            </a>
-                                            <form action="{{ route('superadmin.financedetails.destroy', $detail->id) }}" method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer ce détail finance ?');" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="action-btn btn-delete text-red-600 hover:text-red-800 flex items-center">
-                                                    <i class="fas fa-trash-alt mr-1"></i> Supprimer
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
+                                <tr class="table-row cursor-pointer" style="animation-delay: {{ $index * 0.02 }}s">
+                                    <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $detail->id }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700">{{ $detail->feeType ? $detail->feeType->name : ($detail->fee_type_id ?? '-') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700">{{ $detail->mention ? $detail->mention->nom : '-' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700">{{ $detail->yearLevel ? $detail->yearLevel->label : ($detail->year_level_id ?? '-') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700">{{ $detail->academicYear ? $detail->academicYear->libelle : ($detail->academic_year_id ?? '-') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700">{{ $detail->semester ? $detail->semester->nom : ($detail->semester_id ?? '-') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700 font-semibold">{{ number_format($detail->amount ?? 0, 0, ',', ' ') }} Ar</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700">{{ $detail->notes ?? '-' }}</td>
                                 </tr>
                             @empty
                                 <tr>

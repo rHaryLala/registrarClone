@@ -3,51 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Fiche d'inscription - {{ $student->prenom }} {{ $student->nom }}</title>
-    <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 9px; }
-        .head { border-bottom: 1px solid #6b6969; margin-bottom: 5px; }
-        .infotitre { background-color: #7d7a8c; color: white; border-top-left-radius: 8px; border-top-right-radius: 8px; padding-left: 15px; height: 20px; padding-top: 5px; }
-        .informationbox { border: 1px solid #6b6969; margin: 0px; }
-        .tbl { width: 100%; border-collapse: collapse; }
-        .tbl td, .tbl th { border: 1px solid #c8cae4; padding: 2px 6px; height: 8px; } /* Hauteur réduite ici */
-        .tbl th { background: #dfe0ef; }
-        /* Smaller table style for compact sections (payment breakdown) */
-        .payment-table td, .payment-table th {
-            padding: 1px 4px;
-            font-size: 7px;
-            height: 8px;
-        }
-        .payment-table input {
-            font-size: 8px;
-            padding: 1px;
-        }
-        /* Date input that fills the parent column and shows a border bounded by the left column */
-        .date-input {
-            display: block;
-            width: 100%;
-            padding: 2px 4px;
-            font-size: 8px;
-            background: transparent;
-            border: none !important;
-            outline: none !important;
-            box-shadow: none !important;
-        }
-        .marck { background-color: #e8e6e6; font-weight: bold; }
-        .center { text-align: center; }
-        .inline { display: inline-grid; width: 100%; }
-        .flex { display: flex; padding-left: 10px; padding-right: 10px; padding-top: 5px; padding-bottom: 5px; width: 90%; }
-        .footer { border-top: 1px solid black; height: 200px; }
-        .signature-table td { border: none !important; }
-        /* Interligne plus petit */
-        table, tr, td, th, p, div, span, b, h2, h3, h4 {
-            line-height: 1 !important;
-        }
-        th {
-            text-align: left;
-        }
-    </style>
+    @include('layouts.pdf-style')
 </head>
-<body>a
+<body>
 <!-- HEADER UAZ -->
 <table style="width: 100%; color : black; border-bottom: 1px solid #8e9bb2;">
     <tr>
@@ -84,41 +42,31 @@
             <table style="width:100%;">
                 <tr>
                     <td style="width:80%; vertical-align:top; font-size:9px; line-height:1.25;">
-                        <div style="margin-bottom: 4px;">
-                            <b>Matricule :</b> {{ $student->matricule }} &nbsp; 
-                        </div>
-                        <div style="margin-bottom: 4px;">
-                            <b>N° de compte :</b> {{ $student->account_code }} &nbsp;
-                        </div>
-                        <div style="margin-bottom: 4px;">
-                            <b>Nom :</b> {{ $student->nom }} {{ $student->prenom }} &nbsp; 
-                        </div>
-                        <div style="margin-bottom: 4px;">
-                            <b>Mention :</b> {{ $student->mention ? $student->mention->nom : '-' }}
-                        </div>
-                        <div style="margin-bottom: 4px;">
-                            <b>Parcours :</b> {{ $student->parcours ? $student->parcours->nom : '-' }}
-                        </div>
-                        <div style="margin-bottom: 4px;">
-                            <b>Niveau d'étude :</b> {{ $student->yearLevel ? $student->yearLevel->label : ($student->annee_etude ?? '-') }}
-                        </div>
-                        <div style="margin-bottom: 4px;">
-                            <b>Email / Tél:</b> {{ $student->email }} / {{ $student->telephone }} &nbsp; 
-                        </div>
-                        <div style="margin-bottom: 4px;">
-                            <b>Adresse :</b> {{ $student->adresse }}
-                        </div>
-                        <div>
-                            <b>Résidence :</b> {{ $student->statut_interne }}</b>
-                        </div>
+                        <table style="width:100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="width:40%; vertical-align:top; padding-right:8px;">
+                                    <div style="margin-bottom:4px;"><b>Matricule :</b> {{ $student->matricule }}</div>
+                                    <div style="margin-bottom:4px;"><b>N° de compte :</b> {{ $student->account_code }}</div>
+                                    <div style="margin-bottom:4px;"><b>Nom :</b> {{ $student->nom }} {{ $student->prenom }}</div>
+                                    <div style="margin-bottom:4px;"><b>Mention :</b> {{ $student->mention ? $student->mention->nom : '-' }}</div>
+                                    <div style="margin-bottom:4px;"><b>Parcours :</b> {{ $student->parcours ? $student->parcours->nom : '-' }}</div>
+                                    <div style="margin-bottom:4px;"><b>Niveau d'étude :</b> {{ $student->yearLevel ? $student->yearLevel->label : ($student->annee_etude ?? '-') }}</div>
+                                </td>
+                                <td style="width:60%; vertical-align:top;">
+                                    <div style="margin-bottom:4px;"><b>Email / Tél:</b> {{ $student->email }} / {{ $student->telephone }}</div>
+                                    <div style="margin-bottom:4px;"><b>Adresse :</b> {{ $student->adresse }}</div>
+                                    <div><b>Résidence :</b> {{ $student->statut_interne }}</div>
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                     <td style="width:20%; text-align:right; vertical-align:top;">
                         @if($student->image)
                             <img src="{{ public_path($student->image) }}"
                                  alt="Photo de profil"
-                                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #aaa; margin-top: 18px; margin-right: 18px; display: inline-block;">
+                                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #aaa; margin-top: 1px; margin-right: 10px; display: inline-block;">
                         @else
-                            <div style="width: 100px; height: 100px; background: #eaeaea; border-radius: 8px; border: 1px solid #aaa; display: flex; align-items: center; justify-content: center; color: #888; font-size: 32px; margin-top: 18px; margin-right: 18px;">
+                            <div style="width: 100px; height: 100px; background: #eaeaea; border-radius: 8px; border: 1px solid #aaa; display: flex; align-items: center; justify-content: center; color: #888; font-size: 32px; margin-top: -6px; margin-right: 10px;">
                                 
                             </div>
                         @endif
@@ -171,77 +119,126 @@
             </div>
             <br>
             <!-- Tableau Finance adapté ici -->
-            <div class="informationbox col-lg-12" style="border-radius: 0px; margin-bottom: 15px;">
+            <div  style="border-radius: 0px; margin-bottom: 15px;">
                 @php
+                    // Try to load precomputed fees from StudentSemesterFee for the student's current academic year & semester
+                    $ssf = null;
+                    if(isset($student->academic_year_id) && isset($student->semester_id)) {
+                        $ssf = \App\Models\StudentSemesterFee::where('student_id', $student->id)
+                            ->where('academic_year_id', $student->academic_year_id)
+                            ->where('semester_id', $student->semester_id)
+                            ->first();
+                    }
+
                     // Détection L1 (Licence 1)
                     $isL1 = false;
                     if(isset($student->yearLevel)) {
                         $label = strtolower($student->yearLevel->label ?? '');
                         $isL1 = (strpos($label, '1') !== false || strpos($label, 'l1') !== false || $label === 'l1' || $label === '1');
                     }
-                    $fraisGeneraux = $isL1 ? 250000 : (isset($student->frais_generaux) ? $student->frais_generaux : 0);
+
+                    // Compute fallbacks (as before) but prefer stored SSF values when available
                     $totalCredits = 0;
                     $laboCount = 0;
                     foreach($student->courses()->wherePivot('deleted_at', null)->get() as $course) {
                         $totalCredits += $course->credits;
-                        if ($course->besoin_labo) $laboCount++;
+                        if ($course->labo_info) $laboCount++;
                     }
-                    $coutCredit = $totalCredits * 19000;
-                    $coutDortoir = (isset($student->statut_interne) && $student->statut_interne) ? (3000 * 123) : (isset($student->cout_dortoir) ? $student->cout_dortoir : 0);
-                    $coutCantine = (isset($student->abonne_caf) && $student->abonne_caf) ? (8000 * 123) : (isset($student->cout_cantine) ? $student->cout_cantine : 0);
+                    $coutCredit = $ssf ? ($ssf->ecolage ?? ($totalCredits * 19000)) : ($totalCredits * 19000);
+                    $fraisGeneraux = $ssf ? ($ssf->frais_generaux ?? ($isL1 ? 250000 : 0)) : ($isL1 ? 250000 : (isset($student->frais_generaux) ? $student->frais_generaux : 0));
+                    $coutDortoir = $ssf ? ($ssf->dortoir ?? ((isset($student->statut_interne) && $student->statut_interne) ? (3000 * 123) : (isset($student->cout_dortoir) ? $student->cout_dortoir : 0))) : ((isset($student->statut_interne) && $student->statut_interne) ? (3000 * 123) : (isset($student->cout_dortoir) ? $student->cout_dortoir : 0));
+                    $coutCantine = $ssf ? ($ssf->cantine ?? ((isset($student->abonne_caf) && $student->abonne_caf) ? (8000 * 123) : (isset($student->cout_cantine) ? $student->cout_cantine : 0))) : ((isset($student->abonne_caf) && $student->abonne_caf) ? (8000 * 123) : (isset($student->cout_cantine) ? $student->cout_cantine : 0));
                     // Coût labo : 35 000 par cours nécessitant le labo, plafonné à 70 000
-                    $coutLabo = $laboCount > 0 ? min($laboCount * 35000, 70000) : 0;
-                    $voyage_etude = 150000;
-                    $totalFinance = $fraisGeneraux + $coutCredit + $coutLabo + $voyage_etude;
+                    $coutLabo = $ssf ? (($ssf->labo_info + $ssf->labo_comm + $ssf->labo_langue) ?: ($laboCount > 0 ? min($laboCount * 35000, 70000) : 0)) : ($laboCount > 0 ? min($laboCount * 35000, 70000) : 0);
+                    $voyage_etude = $ssf ? ($ssf->voyage_etude ?? 150000) : 150000;
+                    $colloque = $ssf ? ($ssf->colloque ?? 0) : 0;
+                    $costume = $ssf ? ($ssf->frais_costume ?? 0) : 0;
+
+                    $totalFinance = ($fraisGeneraux ?? 0) + ($coutCredit ?? 0) + ($coutLabo ?? 0) + ($voyage_etude ?? 0) + ($colloque ?? 0) + ($costume ?? 0);
                     if(isset($student->statut_interne) && $student->statut_interne) $totalFinance += $coutDortoir;
                     if(isset($student->abonne_caf) && $student->abonne_caf) $totalFinance += $coutCantine;
                 @endphp
-                <table class="tbl">
-                    <thead>
-                        <tr>
-                            <th>Frais généraux</th>
-                            <th>Coût total des crédits</th>
-                            @if($laboCount > 0)
-                                <th>Laboratoire</th>
-                            @endif
-                            @if(isset($student->statut_interne) && $student->statut_interne)
-                                <th>Dortoir</th>
-                            @endif
-                            @if(isset($student->abonne_caf) && $student->abonne_caf)
-                                <th>Cantine</th>
-                            @endif
-                            <th>Voyage d'étude</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                {{ number_format($fraisGeneraux, 0, ',', ' ') }} Ar
-                            </td>
-                            <td>
-                                {{ number_format($coutCredit, 0, ',', ' ') }} Ar
-                            </td>
-                            @if($laboCount > 0)
-                                <td>
-                                    {{ number_format($coutLabo, 0, ',', ' ') }} Ar
-                                </td>
-                            @endif
-                            @if(isset($student->statut_interne) && $student->statut_interne)
-                                <td>
-                                    {{ number_format($coutDortoir, 0, ',', ' ') }} Ar
-                                </td>
-                            @endif
-                            @if(isset($student->abonne_caf) && $student->abonne_caf)
-                                <td>
-                                    {{ number_format($coutCantine, 0, ',', ' ') }} Ar
-                                </td>
-                            @endif
-                            <td>
-                                {{ number_format($voyage_etude, 0, ',', ' ') }} Ar
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                @php
+                    // Labo info separated (prefer stored value)
+                    $labo_info = $ssf ? ($ssf->labo_info ?? 0) : ($laboCount > 0 ? min($laboCount * 35000, 70000) : 0);
+
+                    // Subtotals
+                    $subtotal1 = ($fraisGeneraux ?? 0) + ($coutCredit ?? 0) + ($labo_info ?? 0);
+                    if(isset($student->statut_interne) && $student->statut_interne) $subtotal1 += ($coutDortoir ?? 0);
+                    if(isset($student->abonne_caf) && $student->abonne_caf) $subtotal1 += ($coutCantine ?? 0);
+
+                    // Voyage / Colloque and costume
+                    $voyage_or_colloque = ($colloque && $colloque > 0) ? $colloque : $voyage_etude;
+                    $subtotal2 = ($voyage_or_colloque ?? 0) + ($costume ?? 0);
+
+                    // Determine payment mode (plan) from latest finance row for this student (by matricule)
+                    $modeP = \App\Models\Finance::where('student_id', $student->matricule)
+                        ->orderByDesc('date_entry')
+                        ->value('plan') ?? 'A';
+
+                    // Montant sans frais généraux = montant total à payer (totalFinance) - fraisGeneraux
+                    $Montant_sans_frais_Generaux = ($totalFinance ?? 0) - ($fraisGeneraux ?? 0);
+                @endphp
+
+                <div style="display:flex; gap:24px;">
+                    <!-- Part 1 -->
+                    <div style="flex:1; padding:6px;">
+                        <table class="tbl">
+                            <thead>
+                                <tr>
+                                    <th>Frais généraux</th>
+                                    <th>Écolage</th>
+                                    <th>Laboratoire (Info)</th>
+                                    @if(isset($student->statut_interne) && $student->statut_interne)
+                                        <th>Dortoir</th>
+                                    @endif
+                                    @if(isset($student->abonne_caf) && $student->abonne_caf)
+                                        <th>Cantine</th>
+                                    @endif
+                                    <th>Sous-total</th>
+                                    <th>Mode de paiement</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ number_format($fraisGeneraux ?? 0, 0, ',', ' ') }} Ar</td>
+                                    <td>{{ number_format($coutCredit ?? 0, 0, ',', ' ') }} Ar</td>
+                                    <td>{{ number_format($labo_info ?? 0, 0, ',', ' ') }} Ar</td>
+                                    @if(isset($student->statut_interne) && $student->statut_interne)
+                                        <td>{{ number_format($coutDortoir ?? 0, 0, ',', ' ') }} Ar</td>
+                                    @endif
+                                    @if(isset($student->abonne_caf) && $student->abonne_caf)
+                                        <td>{{ number_format($coutCantine ?? 0, 0, ',', ' ') }} Ar</td>
+                                    @endif
+                                    <td><strong><span>{{ number_format($subtotal1, 0, ',', ' ') }} Ar</span></strong></td>
+                                    <td style="text-align:center;"><strong><span>{{ $modeP ?? 'A' }}</span></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Part 2 -->
+                    <div style="flex:1; padding:6px;">
+                        <table class="tbl">
+                            <thead>
+                                <tr>
+                                    <th>Voyage d'étude / Colloque</th>
+                                    <th>Costume</th>
+                                    <th>Sous-total</th>
+                                    <th>Plan de paiement</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ number_format($voyage_or_colloque ?? 0, 0, ',', ' ') }} Ar</td>
+                                    <td>{{ number_format($costume ?? 0, 0, ',', ' ') }} Ar</td>
+                                    <td><strong><span>{{ number_format($subtotal2, 0, ',', ' ') }} Ar</span></strong></td>
+                                    <td><strong><span>à payer pendant le semestre</span></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
             <!-- Fin tableau Finance -->
             <div style="text-align:left; font-size:15px; font-weight:bold; margin-bottom:10px;">
@@ -252,96 +249,94 @@
                 <!-- Colonne gauche -->
                 <td style="width:30%; padding:1px; min-height:120px; font-size:8px; vertical-align:top;">
                 @php
-                    // Determine payment mode (plan) from latest finance row for this student (by matricule)
-                    $modeP = \App\Models\Finance::where('student_id', $student->matricule)
-                        ->orderByDesc('date_entry')
-                        ->value('plan') ?? 'A';
-
                     // Montant sans frais généraux = montant total à payer (totalFinance) - fraisGeneraux
-                    $Montant_sans_frais_Generaux = ($totalFinance ?? 0) - ($fraisGeneraux ?? 0);
+                    $Montant_sans_frais_Generaux = ($totalFinance ?? 0) - ($fraisGeneraux ?? 0) - ($costume ?? 0) - ($voyage_or_colloque ?? 0);
                 @endphp
 
                 <div style="width:100%;">
-                    <p></p>
-                    <b class="text-xl">Mode de paiement</b>
-                    <table class="tbl mb-2 payment-table">
-                        <thead>
-                            <tr>
-                                <th colspan="3" class="text-center text-bold">{{ number_format($Montant_sans_frais_Generaux, 0, ',', ' ') }} ar</th>
-                            </tr>
-                            <tr>
-                                <th colspan="3" class="text-center text-bold">Payé en tranches de TYPE {{ $modeP }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if($modeP === 'A')
+                    @if(!empty($student->bursary_status) && ($student->bursary_status == 1 || $student->bursary_status === true))
+                            <p style="margin:0 0 8px 0; font-size:3em; line-height:1;"><strong>Boursier par {{ trim(($student->sponsor_nom ?? '') . ' ' . ($student->sponsor_prenom ?? '')) ?: '—' }}</strong></p>
+                    @else
+                        <b class="text-xl">Mode de paiement</b>
+                        <table class="tbl mb-2 payment-table">
+                            <thead>
                                 <tr>
-                                    <td>100 %</td>
-                                    <td class="text-right">{{ number_format($Montant_sans_frais_Generaux, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Mercredi, 16 octobre 2024"></td>
-                                </tr>
-                            @elseif($modeP === 'B')
-                                <tr>
-                                    <td>50 %</td>
-                                    <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 50) / 100, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Mercredi, 16 octobre 2024"></td>
+                                    <th colspan="3" class="text-center text-bold">Ecolage + Labo + Dortoir + Cantine</th>
                                 </tr>
                                 <tr>
-                                    <td>50 %</td>
-                                    <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 50) / 100, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Vendredi, 17 janvier 2025"></td>
+                                    <th colspan="3" class="text-center text-bold">À payer en tranches de TYPE {{ $modeP }} : {{ number_format($Montant_sans_frais_Generaux, 0, ',', ' ') }} ar </th>
                                 </tr>
-                            @elseif($modeP === 'C')
-                                <tr>
-                                    <td>75 %</td>
-                                    <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 75) / 100, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Mercredi, 16 octobre 2024"></td>
-                                </tr>
-                                <tr>
-                                    <td>25 %</td>
-                                    <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Vendredi, 17 janvier 2025"></td>
-                                </tr>
-                            @elseif($modeP === 'D')
-                                <tr>
-                                    <td>40 %</td>
-                                    <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 40) / 100, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Mercredi, 16 octobre 2024"></td>
-                                </tr>
-                                <tr>
-                                    <td>30 %</td>
-                                    <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 30) / 100, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Vendredi, 22 novembre 2024"></td>
-                                </tr>
-                                <tr>
-                                    <td>30 %</td>
-                                    <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 30) / 100, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Vendredi, 20 décembre 2024"></td>
-                                </tr>
-                            @elseif($modeP === 'E')
-                                <tr>
-                                    <td>25 %</td>
-                                    <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Mercredi, 16 octobre 2024"></td>
-                                </tr>
-                                <tr>
-                                    <td>25 %</td>
-                                    <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Vendredi, 22 novembre 2024"></td>
-                                </tr>
-                                <tr>
-                                    <td>25 %</td>
-                                    <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Vendredi, 20 décembre 2024"></td>
-                                </tr>
-                                <tr>
-                                    <td>25 %</td>
-                                    <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
-                                    <td><input type="text" class="date-input" value="Vendredi, 17 janvier 2025"></td>
-                                </tr>
-                            @endif
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @if($modeP === 'A')
+                                    <tr>
+                                        <td>100 %</td>
+                                        <td class="text-right">{{ number_format($Montant_sans_frais_Generaux, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="3-oct.-25"></td>
+                                    </tr>
+                                @elseif($modeP === 'B')
+                                    <tr>
+                                        <td>50 %</td>
+                                        <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 50) / 100, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="3-oct.-25"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>50 %</td>
+                                        <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 50) / 100, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="30-janv.-26"></td>
+                                    </tr>
+                                @elseif($modeP === 'C')
+                                    <tr>
+                                        <td>50 %</td>
+                                        <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 50) / 100, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="3-oct.-25"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>25 %</td>
+                                        <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="19-déc.-25"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>25 %</td>
+                                        <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="30-janv.-26"></td>
+                                    </tr>
+                                @elseif($modeP === 'D')
+                                    <tr>
+                                        <td>75 %</td>
+                                        <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 75) / 100, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="3-oct.-25"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>25 %</td>
+                                        <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="30-janv.-26"></td>
+                                    </tr>
+                                @elseif($modeP === 'E')
+                                    <tr>
+                                        <td>25 %</td>
+                                        <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="24-oct.-25"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>25 %</td>
+                                        <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="28-nov.-25"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>25 %</td>
+                                        <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="19-déc.-25"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>25 %</td>
+                                        <td class="text-right">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td><input type="text" class="date-input" value="30-janv.-26"></td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    @endif
                 </div>
 
                 </td>

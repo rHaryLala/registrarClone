@@ -12,7 +12,6 @@ use App\Models\AcademicYear;
 use App\Models\AccessCode;
 use App\Models\Parcours;
 use App\Models\YearLevel;
-use App\Models\FinanceDetail;
 use App\Models\AccountCode;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -27,7 +26,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             MentionSeeder::class,
             UserSeeder::class,
-            // StudentSeeder::class,
+            StudentSeeder::class,
             TeacherSeeder::class,
             YearLevelSeeder::class,
             AcademicYearSeeder::class,
@@ -35,9 +34,10 @@ class DatabaseSeeder extends Seeder
             AccessCodeSeeder::class,
             ParcoursSeeder::class,
             CourseSeeder::class,
-            FinanceDetailSeeder::class,
-            FinancePlanSeeder::class,
             AccountCodeSeeder::class,
+            \Database\Seeders\FeeTypeSeeder::class,
+            \Database\Seeders\PaymentModeSeeder::class,
+            \Database\Seeders\AcademicFeeSeeder::class,
         ]);
     }
 }

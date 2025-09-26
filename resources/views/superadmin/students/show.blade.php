@@ -125,8 +125,8 @@
                         <i class="fas fa-arrow-left text-lg"></i>
                         <span>Retour</span>
                     </a>
-                    <a href="{{ route('recap.pdf', ['id' => $student->id]) }}" target="_blank"
-                       class="bg-blue-700 text-white px-6 py-4 rounded-2xl transition-all duration-300 flex items-center space-x-3 border border-blue-800 font-semibold hover:bg-blue-800 hover:scale-105 hover:shadow-xl">
+                          <a href="{{ url('/preview') }}?ptype=Fiche_inscription&student_id={{ $student->id }}" target="_blank"
+                              class="bg-blue-700 text-white px-6 py-4 rounded-2xl transition-all duration-300 flex items-center space-x-3 border border-blue-800 font-semibold hover:bg-blue-800 hover:scale-105 hover:shadow-xl">
                         <i class="fas fa-file-pdf text-lg"></i>
                         <span>Fiche d'inscription PDF</span>
                     </a>
@@ -710,6 +710,8 @@
                     } else {
                         span.textContent = (newValue === '' ? '-' : newValue);
                     }
+                    // Recompute semester fees after a successful inline update
+                    try { recomputeSemesterFee(); } catch(e) { console.error(e); }
                 } else {
                     span.textContent = (value === '' ? '-' : value);
                     alert(data && data.message ? data.message : 'Erreur lors de la sauvegarde');
@@ -774,23 +776,38 @@
         const value = (rawValue === '-' || rawValue === 'N/A') ? '' : rawValue;
         let input;
 
-        // Use select built from YEAR_LEVELS for year_level_id
+        // Use styled select built from YEAR_LEVELS for year_level_id
         if (field === 'year_level_id') {
             input = document.createElement('select');
+            // Apply the same classes as the form select for consistent styling
+            input.id = 'year_level_id';
+            input.name = 'year_level_id';
+            input.required = true;
+            input.className = 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] focus:border-transparent';
+
             const placeholder = document.createElement('option');
             placeholder.value = '';
-            placeholder.textContent = '-- Sélectionner --';
+            placeholder.textContent = 'Sélectionnez l\'année';
             input.appendChild(placeholder);
+
             YEAR_LEVELS.forEach(l => {
                 const o = document.createElement('option');
                 o.value = l.id;
                 o.textContent = l.label;
                 input.appendChild(o);
             });
-            // If current value corresponds to a yearLevel label, select it
+
+            // Try to preselect by id (if current span contains an id value) or by label
             if (value) {
-                const found = YEAR_LEVELS.find(y => y.label.toLowerCase() === value.toLowerCase());
-                if (found) input.value = found.id;
+                // If the span currently shows a label, find matching label and select its id
+                const byLabel = YEAR_LEVELS.find(y => (y.label || '').toLowerCase() === value.toLowerCase());
+                if (byLabel) {
+                    input.value = byLabel.id;
+                } else {
+                    // If the span contained an id (unlikely), try to select by id
+                    const byId = YEAR_LEVELS.find(y => String(y.id) === String(value));
+                    if (byId) input.value = byId.id;
+                }
             }
         } else {
             // ...existing code for other fields...
@@ -938,6 +955,8 @@
                     } else {
                         span.textContent = (newValue === '' ? '-' : newValue);
                     }
+                    // Recompute semester fees after a successful inline update
+                    try { recomputeSemesterFee(); } catch(e) { console.error(e); }
                 } else {
                     span.textContent = (value === '' ? '-' : value);
                     alert(data && data.message ? data.message : 'Erreur lors de la sauvegarde');
@@ -976,6 +995,41 @@
 });
     </script>
     <script>
+    // Recompute StudentSemesterFee via AJAX and show a small notification
+    async function recomputeSemesterFee() {
+        try {
+            const res = await fetch("{{ url('/superadmin/students/' . $student->id . '/recompute-semester-fee') }}", {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({'_token': '{{ csrf_token() }}'})
+            });
+            if (!res.ok) {
+                const txt = await res.text().catch(()=>null);
+                console.warn('Recompute returned not-ok', res.status, txt);
+                return;
+            }
+            const data = await res.json().catch(()=>null);
+            if (!data || !data.success) {
+                console.warn('Recompute failed', data);
+                return;
+            }
+            // Show a lightweight toast if totals changed
+            const beforeTotal = data.before ? (data.before.total_amount || 0) : 0;
+            const afterTotal = data.after ? (data.after.total_amount || 0) : 0;
+            if (beforeTotal !== afterTotal) {
+                console.info('Les frais semestriels ont changé: ' + beforeTotal + ' → ' + afterTotal);
+            } else {
+                console.info('Recompute done, no change in student semester fee total');
+            }
+        } catch (e) {
+            console.error('Erreur lors du recalcul des frais semestriels:', e);
+        }
+    }
+
     (function() {
         const toast = document.getElementById('last-change-toast');
         if (!toast) return;

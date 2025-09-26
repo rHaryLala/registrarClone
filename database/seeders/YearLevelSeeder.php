@@ -10,14 +10,19 @@ class YearLevelSeeder extends Seeder
     public function run(): void
     {
         $levels = [
-            ['code' => 'L1', 'label' => 'Licence 1'],
-            ['code' => 'L2', 'label' => 'Licence 2'],
-            ['code' => 'L3', 'label' => 'Licence 3'],
-            ['code' => 'M1', 'label' => 'Master 1'],
-            ['code' => 'M2', 'label' => 'Master 2'],
+            ['code' => 'L1R', 'label' => 'Licence 1 (Remise à niveau)', 'track' => 'restreint'],
+            ['code' => 'L1',  'label' => 'Licence 1', 'track' => 'normal'],
+            ['code' => 'L2',  'label' => 'Licence 2', 'track' => 'normal'],
+            ['code' => 'L3',  'label' => 'Licence 3', 'track' => 'normal'],
+            ['code' => 'M1',  'label' => 'Master 1',  'track' => 'normal'],
+            ['code' => 'M2',  'label' => 'Master 2',  'track' => 'normal'],
         ];
+
         foreach ($levels as $level) {
-            YearLevel::firstOrCreate(['code' => $level['code']], $level);
+            YearLevel::updateOrCreate(
+                ['code' => $level['code']],
+                ['label' => $level['label'], 'track' => $level['track']]
+            );
         }
     }
 }

@@ -12,7 +12,7 @@ class YearLevel extends Model
 
     public function courses()
     {
-        return $this->hasMany(Course::class);
+        return $this->belongsToMany(Course::class, 'course_yearlevel', 'year_level_id', 'course_id');
     }
 
     public function students()

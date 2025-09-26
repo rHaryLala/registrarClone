@@ -174,53 +174,49 @@
                     <div class="stats-card rounded-2xl p-8 border border-gray-100 hover:border-blue-200">
                         <div class="flex items-center">
                             <div class="icon-container p-4 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600 mr-6">
-                                <i class="fas fa-users-class text-2xl"></i>
+                                <i class="fas fa-users text-2xl"></i>
                             </div>
                             <div>
                                 <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Total Étudiants</p>
                                 <h3 class="number-counter text-3xl font-bold text-slate-800 mt-1">{{ $totalStudents }}</h3>
                             </div>
                         </div>
-                        <div class="mt-6 pt-4 border-t border-gray-100">
+                        {{-- <div class="mt-6 pt-4 border-t border-gray-100">
                             <p class="text-emerald-600 text-sm flex items-center font-semibold">
                                 <i class="fas fa-arrow-up mr-2"></i> 8% depuis le mois dernier
                             </p>
-                        </div>
+                        </div> --}}
                     </div>
                     
                     <!-- Added placeholder for additional stats cards with consistent styling -->
                     <div class="stats-card rounded-2xl p-8 border border-gray-100 hover:border-green-200">
                         <div class="flex items-center">
                             <div class="icon-container p-4 rounded-2xl bg-gradient-to-br from-green-100 to-green-200 text-green-600 mr-6">
-                                <i class="fas fa-graduation-cap text-2xl"></i>
+                                <i class="fas fa-book text-2xl"></i>
                             </div>
                             <div>
-                                <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Diplômés</p>
-                                <h3 class="number-counter text-3xl font-bold text-slate-800 mt-1">{{ $graduates ?? '-' }}</h3>
+                                <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Total Cours</p>
+                                <h3 class="number-counter text-3xl font-bold text-slate-800 mt-1">{{ $totalCourses ?? 0 }}</h3>
                             </div>
                         </div>
-                        <div class="mt-6 pt-4 border-t border-gray-100">
-                            <p class="text-emerald-600 text-sm flex items-center font-semibold">
-                                <i class="fas fa-arrow-up mr-2"></i> 12% depuis l'année dernière
-                            </p>
-                        </div>
+                        {{-- <div class="mt-6 pt-4 border-t border-gray-100">
+                            <p class="text-slate-500 text-sm">Nombre de cours disponibles dans la mention</p>
+                        </div> --}}
                     </div>
 
                     <div class="stats-card rounded-2xl p-8 border border-gray-100 hover:border-purple-200">
                         <div class="flex items-center">
                             <div class="icon-container p-4 rounded-2xl bg-gradient-to-br from-purple-100 to-purple-200 text-purple-600 mr-6">
-                                <i class="fas fa-chart-line text-2xl"></i>
+                                <i class="fas fa-chalkboard-teacher text-2xl"></i>
                             </div>
                             <div>
-                                <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Taux de Réussite</p>
-                                <h3 class="number-counter text-3xl font-bold text-slate-800 mt-1">{{ $successRate ?? '-' }}%</h3>
+                                <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Total Enseignants</p>
+                                <h3 class="number-counter text-3xl font-bold text-slate-800 mt-1">{{ $totalTeachers ?? 0 }}</h3>
                             </div>
                         </div>
-                        <div class="mt-6 pt-4 border-t border-gray-100">
-                            <p class="text-emerald-600 text-sm flex items-center font-semibold">
-                                <i class="fas fa-arrow-up mr-2"></i> 3% depuis le semestre dernier
-                            </p>
-                        </div>
+                        {{-- <div class="mt-6 pt-4 border-t border-gray-100">
+                            <p class="text-slate-500 text-sm">Nombre total d'enseignants dans la mention</p>
+                        </div> --}}
                     </div>
                 </div>
 

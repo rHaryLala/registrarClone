@@ -114,13 +114,17 @@
                                 <label for="academic_year" class="block text-sm font-medium text-white mb-2">
                                     <i class="fas fa-calendar mr-2"></i>Année académique
                                 </label>
+                                @php
+                                    // Load academic years from DB so the select matches the seeded table
+                                    $academicYears = \App\Models\AcademicYear::orderByDesc('date_debut')->get();
+                                @endphp
                                 <select name="academic_year" 
                                         id="academic_year" 
                                         class="modern-select modern-input w-full px-4 py-3 rounded-xl border-0 focus:ring-0 text-gray-900 appearance-none">
                                     <option value="">Toutes les années</option>
-                                    @for($year = date('Y'); $year >= 2020; $year--)
-                                        <option value="{{ $year }}-{{ $year+1 }}">{{ $year }}-{{ $year+1 }}</option>
-                                    @endfor
+                                    @foreach($academicYears as $ay)
+                                        <option value="{{ $ay->libelle }}">{{ $ay->libelle }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -321,7 +325,10 @@
                     
                     let filtered = students.filter(student => {
                         let matchMention = !mentionId || student.mention_id == mentionId;
-                        let matchYear = !academicYear || student.academic_year === academicYear;
+                        // Normalize values for comparison
+                        const studentAY = (student.academic_year || '').toString().trim();
+                        const selectedAY = (academicYear || '').toString().trim();
+                        let matchYear = !selectedAY || studentAY === selectedAY;
                         let matchSearch = !q || (
                             student.matricule.toLowerCase().includes(q) ||
                             student.nom.toLowerCase().includes(q) ||

@@ -13,7 +13,7 @@ class Course extends Model
 {
     use TracksLastChange;
     protected $fillable = [
-        'sigle', 'nom', 'credits', 'teacher_id', 'mention_id', 'year_level_id', 'besoin_labo', 'categorie'
+        'sigle', 'nom', 'credits', 'teacher_id', 'mention_id', 'labo_info', 'categorie'
     ];
 
     public function teacher()
@@ -31,8 +31,8 @@ class Course extends Model
         return $this->belongsTo(Mention::class);
     }
     
-    public function yearLevel()
+    public function yearLevels()
     {
-        return $this->belongsTo(YearLevel::class);
+        return $this->belongsToMany(YearLevel::class, 'course_yearlevel', 'course_id', 'year_level_id');
     }
 }

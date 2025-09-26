@@ -8,8 +8,13 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\ParcoursController;
 use App\Http\Controllers\FinanceDetailController;
 use App\Http\Controllers\DeanController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\AccountantController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
+// Apply locale middleware to all web routes so app locale is set on every request
+Route::middleware('setlocale')->group(function () {
 
 // Page d'accueil
 Route::view('/', 'welcome');
@@ -38,6 +43,11 @@ Route::middleware(['auth'])->get('/dashboard', function () {
     if (auth()->user()->isDean()) {
         return redirect()->route('dean.dashboard');
     }
+    
+    // Redirect accountants to their dashboard
+    if (auth()->user()->isAccountant()) {
+        return redirect()->route('accountant.dashboard');
+    }
 })->name('dashboard');
 
 // API pour charger les parcours d'une mention (AJAX)
@@ -50,6 +60,7 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
     // Gestion des cours
     Route::prefix('superadmin/courses')->name('superadmin.courses.')->group(function () {
         Route::get('/', [SuperAdminController::class, 'coursesList'])->name('list');
+        Route::get('/{course}/export-students', [SuperAdminController::class, 'exportCourseStudents'])->name('export');
         Route::get('/create', [SuperAdminController::class, 'createCourse'])->name('create');
         Route::post('/', [SuperAdminController::class, 'storeCourse'])->name('store');
         Route::get('/{course}/edit', [SuperAdminController::class, 'editCourse'])->name('edit');
@@ -102,6 +113,8 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
         Route::post('/{student}/add-course', [SuperAdminController::class, 'storeCourseToStudent'])->name('courses.store');
         Route::patch('/{student}/courses/{course}/remove', [SuperAdminController::class, 'removeCourseFromStudent'])->name('courses.remove');
         Route::get('/{student}/courses/history', [SuperAdminController::class, 'showStudentCourses'])->name('courses.history');
+        // AJAX endpoint: recompute a student's semester fee and return the record (before/after)
+        Route::post('/{student}/recompute-semester-fee', [\App\Http\Controllers\SuperAdminController::class, 'recomputeStudentSemesterFee'])->name('recomputeSemesterFee');
     });
    
     // Paramètres globaux
@@ -134,7 +147,8 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
     });
 
     // Route pour générer le PDF récapitulatif de l'inscription d'un étudiant
-    Route::get('/recap/{id}/pdf', [\App\Http\Controllers\SuperAdminController::class, 'exportStudentPdf'])->name('recap.pdf');
+    Route::get('/recap/{id}/pdf', [SuperAdminController::class, 'exportStudentPdf'])->name('recap.pdf');
+    
 });
 
 
@@ -161,9 +175,14 @@ Route::middleware(['auth', 'dean'])->prefix('dean')->name('dean.')->group(functi
         Route::get('/create', [DeanController::class, 'createTeacher'])->name('create');
         Route::post('/', [DeanController::class, 'storeTeacher'])->name('store');
     });
+
+    // Payments: choose payment mode and generate installments
+    Route::post('/students/{id}/payment-mode', [PaymentController::class, 'choosePaymentMode'])->name('students.payment.choose');
     
     // Course management  
     Route::prefix('courses')->name('courses.')->group(function () {
+        // Export students enrolled in a course (CSV)
+        Route::get('/{id}/export-students', [DeanController::class, 'exportStudents'])->name('export');
         Route::get('/', [DeanController::class, 'coursesList'])->name('list');
         Route::get('/create', [DeanController::class, 'createCourse'])->name('create');
         Route::post('/', [DeanController::class, 'storeCourse'])->name('store');
@@ -177,6 +196,12 @@ Route::middleware(['auth', 'dean'])->prefix('dean')->name('dean.')->group(functi
     Route::put('/settings', [DeanController::class, 'updateSettings'])->name('settings.update');
 });
 
+// Accountant routes
+Route::middleware(['auth', 'accountant'])->prefix('accountant')->name('accountant.')->group(function () {
+    Route::get('/dashboard', [AccountantController::class, 'dashboard'])->name('dashboard');
+    Route::patch('/students/{student}/fee-check', [AccountantController::class, 'updateFeeCheck'])->name('students.fee_check');
+});
+
 // Gestion des utilisateurs
 Route::resource('users', UserController::class)->except(['edit', 'update', 'destroy']);
 Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
@@ -187,4 +212,13 @@ Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.
 Route::get('/students', [StudentController::class, 'index'])->name('students.index');
 
 // Routes pour le doyen
+
+
+// Preview endpoints for export content - accessible only to superadmin
+Route::middleware(['auth', 'superadmin'])->group(function () {
+    Route::get('/preview', [SuperAdminController::class, 'previewIndex']);
+    Route::get('/preview/content', [SuperAdminController::class, 'previewContent']);
+});
+
+});
 

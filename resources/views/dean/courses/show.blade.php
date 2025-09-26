@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <style>
         body { 
             font-family: 'Work Sans', sans-serif; 
@@ -207,11 +208,17 @@
 
             <!-- Modernized students table -->
             <div class="glass-card rounded-2xl p-8 fade-in fade-in-delay-2">
-                <div class="flex items-center mb-6">
+                <div class="flex items-center mb-6 justify-between">
                     <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-4">
                         <i class="fas fa-users text-white text-xl"></i>
                     </div>
                     <h2 class="text-2xl font-bold text-gray-800 font-['Work_Sans']">Étudiants inscrits</h2>
+                    <div class="ml-4">
+                        <a href="{{ route('dean.courses.export', $course->id) }}" 
+                           class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-file-pdf mr-2"></i>Exporter
+                        </a>
+                    </div>
                 </div>
                 
                 @if($course->students && count($course->students))

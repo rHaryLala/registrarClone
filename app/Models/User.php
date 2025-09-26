@@ -17,7 +17,10 @@ class User extends Authenticatable
         'password',
         'plain_password',
         'role',
-        'mention_id'
+        'mention_id',
+        'lang',
+        'notif_email',
+        'notif_sms',
     ];
 
     protected $hidden = [
@@ -67,6 +70,11 @@ class User extends Authenticatable
     public function isParent(): bool
     {
         return $this->role === 'parent';
+    }
+
+    public function isAccountant(): bool
+    {
+        return $this->role === 'accountant';
     }
 
     // Vérification d'accès multiple

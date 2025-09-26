@@ -30,6 +30,7 @@ class Student extends Model
         'sponsor_nom', 'sponsor_prenom', 'sponsor_telephone', 'sponsor_adresse',
             'year_level_id', 'mention_id', 'parcours_id', 'semester_id', 'matricule', 'account_code', 'image',
             'taille',
+            'fee_check',
         'abonne_caf', 'statut_interne', 'password', 'plain_password', 'academic_year_id'
     ];
 
@@ -42,6 +43,7 @@ class Student extends Model
         'passport_status' => 'boolean',
         'bursary_status' => 'boolean',
         'abonne_caf' => 'boolean',
+        'fee_check' => 'boolean',
         'statut_interne' => 'string',
     ];
 
@@ -85,6 +87,27 @@ class Student extends Model
     public function finances()
     {
         return $this->hasMany(Finance::class, 'student_id', 'matricule');
+    }
+
+    // student installments and payments relations
+    public function installments()
+    {
+        return $this->hasMany(StudentInstallment::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(StudentPayment::class);
+    }
+
+    /**
+     * Compute current balance (sum of due - sum of paid) across generated installments
+     */
+    public function balance()
+    {
+        $due = $this->installments()->sum('amount_due');
+        $paid = $this->installments()->sum('amount_paid');
+        return round($due - $paid, 2);
     }
 
     public function generateAccountCode()

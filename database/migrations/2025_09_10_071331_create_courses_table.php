@@ -19,11 +19,11 @@ return new class extends Migration
             $table->string('nom');
             $table->integer('credits');
             $table->enum('categorie', ['général', 'majeur'])->default('général');
-            $table->unsignedBigInteger('year_level_id')->nullable();
             $table->foreign('teacher_id')->references('id')->on('teachers')->onDelete('set null'); 
             $table->foreign('mention_id')->references('id')->on('mentions')->onDelete('cascade');
-            $table->foreign('year_level_id')->references('id')->on('year_levels')->onDelete('set null');
-            $table->boolean('besoin_labo')->default(false);
+            $table->boolean('labo_info')->default(false);
+            $table->boolean('labo_comm')->default(false);
+            $table->boolean('labo_langue')->default(false);
             $table->unsignedBigInteger('last_change_user_id')->nullable();
             $table->dateTime('last_change_datetime')->nullable();
             $table->timestamps();

@@ -24,7 +24,7 @@ class TeacherSeeder extends Seeder
             ],
             [
                 'name' => 'Andriamanjato Bruno',
-                'email' => 'randrianarisoa.hery@zurcher.edu.mg',
+                'email' => 'randriamanjatob@zurcher.edu.mg ',
                 'telephone' => '034 08 725 37',
                 'diplome' => "Master en théologie, MA (finance), PhD en cours"
             ],
@@ -44,7 +44,7 @@ class TeacherSeeder extends Seeder
                 'name' => 'Andriamiarintsoa Laurent',
                 'email' => 'laurentandriamiarintsoa@gmail.com ',
                 'telephone' => '034 67 914 82',
-                'diplome' => 'DMin, en cours'
+                'diplome' => 'PhD, en cours'
             ],
             [
                 'name' => 'Rajaonarison Velomanantsoa',

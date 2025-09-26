@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
         .sidebar { width: 260px; transition: all 0.3s; }
@@ -76,11 +77,16 @@
                         <p class="text-blue-100 text-lg font-['Open_Sans']">Gestion des inscriptions aux cours</p>
                     </div>
                     
-                    <div class="animate-slide-in-right">
+                    <div class="animate-slide-in-right flex items-center space-x-3">    
                         <a href="{{ route('dean.students.courses.add', $student->id) }}" 
-                        class="inline-flex items-center space-x-3 bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl hover:bg-white/30 transition-all duration-300 transform hover:scale-105 hover:shadow-xl border border-white/20 group">
+                           class="inline-flex items-center space-x-3 bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl hover:bg-white/30 transition-all duration-300 transform hover:scale-105 hover:shadow-xl border border-white/20 group">
                             <i class="fas fa-plus text-lg group-hover:rotate-90 transition-transform duration-300"></i>
                             <span class="font-semibold">Ajouter un cours</span>
+                        </a>
+                        <a href="{{ route('dean.students.show', $student->id) }}"
+                            class="inline-flex items-center space-x-2 bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-200 border border-white/10">
+                            <i class="fas fa-arrow-left"></i>
+                            <span class="font-medium">Retour</span>
                         </a>
                     </div>
                 </div>
@@ -92,11 +98,12 @@
                 <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full table-fixed">
                         <thead>
-                            <tr class="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
+                                <tr class="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
                                 <th class="w-1/5 px-6 py-4 text-left text-sm font-bold text-blue-900 uppercase tracking-wider font-['Work_Sans']">Sigle</th>
                                 <th class="w-2/5 px-6 py-4 text-left text-sm font-bold text-blue-900 uppercase tracking-wider font-['Work_Sans']">Nom</th>
                                 <th class="w-1/5 px-6 py-4 text-left text-sm font-bold text-blue-900 uppercase tracking-wider font-['Work_Sans']">Date d'ajout</th>
                                 <th class="w-1/5 px-6 py-4 text-left text-sm font-bold text-blue-900 uppercase tracking-wider font-['Work_Sans']">Date de retrait</th>
+                                <th class="w-1/5 px-6 py-4 text-left text-sm font-bold text-blue-900 uppercase tracking-wider font-['Work_Sans']">Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -127,6 +134,25 @@
                                                 -
                                             @endif
                                         </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if(!$course->pivot->deleted_at)
+                                            <form action="{{ route('dean.students.courses.remove', [$student->id, $course->id]) }}" method="POST" 
+                                                onsubmit="return confirm('Retirer ce cours ?');" class="inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" 
+                                                        class="inline-flex items-center px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all duration-300 transform hover:scale-105 text-sm font-medium group">
+                                                    <i class="fas fa-times mr-2 group-hover:rotate-90 transition-transform duration-300"></i>
+                                                    Retirer
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-500 rounded-lg text-sm font-medium">
+                                                <i class="fas fa-check mr-2"></i>
+                                                Retiré
+                                            </span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

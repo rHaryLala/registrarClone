@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique(); // ex: L1, L2, L3, M1, M2
             $table->string('label'); // ex: Licence 1, Master 1, etc.
+            $table->enum('track', ['normal', 'restreint'])->default('normal');
             $table->timestamps();
         });
     }

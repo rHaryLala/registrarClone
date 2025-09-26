@@ -23,6 +23,7 @@ class SemesterSeeder extends Seeder
             'ordre' => 1,
             'date_debut' => '2025-09-29',
             'date_fin' => '2026-02-13',
+            'duration' => 118,
             'academic_year_id' => $year->id,
         ]);
 
