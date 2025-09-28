@@ -40,6 +40,7 @@ class UserSeeder extends Seeder
                 'role' => 'dean',
                 'mention_id' => 1,
             ],
+            //Dean
             [
                 'name' => 'Kancel Christelle',
                 'email' => 'christelle.kancel@zurcher.edu.mg',
@@ -105,12 +106,34 @@ class UserSeeder extends Seeder
                 'role' => 'accountant',
             ],
             [
+                'name' => 'Ramiadamanana Samoela',
+                'email' => 'ramiadamanana.s@zurcher.edu.mg',
+                'password' => Hash::make('accountantPass123'),
+                'plain_password' => 'accountantPass123',
+                'role' => 'accountant',
+            ],
+            [
                 'name' => 'Comptable Secondaire',
                 'email' => 'accountant2@zurcher.edu.mg',
                 'password' => Hash::make('accountantPass456'),
                 'plain_password' => 'accountantPass456',
                 'role' => 'accountant',
             ],
+            // Multimedia Responsible
+            [
+                'name' => 'Filamatriniaina Taniah',
+                'email' => 'uaz.assistante@zurcher.edu.mg',
+                'password' => Hash::make('multimediaPass123'),
+                'plain_password' => 'multimediaPass123',
+                'role' => 'multimedia',
+            ],
+            [
+                'name' => 'Fanomezanirina Sombiniaina Mireille',
+                'email' => 'fanomezanirina.s@zurcher.edu.mg',
+                'password' => Hash::make('FANOMEZANIRINA'),
+                'plain_password' => 'FANOMEZANIRINA',
+                'role' => 'multimedia',
+            ]
         ];
 
         foreach ($users as $userData) {

@@ -10,6 +10,7 @@ use App\Http\Controllers\FinanceDetailController;
 use App\Http\Controllers\DeanController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AccountantController;
+use App\Http\Controllers\MultimediaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -44,9 +45,12 @@ Route::middleware(['auth'])->get('/dashboard', function () {
         return redirect()->route('dean.dashboard');
     }
     
-    // Redirect accountants to their dashboard
     if (auth()->user()->isAccountant()) {
         return redirect()->route('accountant.dashboard');
+    }
+
+    if (auth()->user()->isMultimedia()) {
+        return redirect()->route('multimedia.dashboard');
     }
 })->name('dashboard');
 
@@ -200,6 +204,16 @@ Route::middleware(['auth', 'dean'])->prefix('dean')->name('dean.')->group(functi
 Route::middleware(['auth', 'accountant'])->prefix('accountant')->name('accountant.')->group(function () {
     Route::get('/dashboard', [AccountantController::class, 'dashboard'])->name('dashboard');
     Route::patch('/students/{student}/fee-check', [AccountantController::class, 'updateFeeCheck'])->name('students.fee_check');
+});
+
+// Multimedia routes
+Route::middleware(['auth', 'multimedia'])->prefix('multimedia')->name('multimedia.')->group(function () {
+    Route::get('/dashboard', [MultimediaController::class, 'dashboard'])->name('dashboard');
+    // Student routes for multimedia
+    Route::prefix('students')->name('students.')->group(function () {
+        Route::get('/{student}', [MultimediaController::class, 'show'])->name('show');
+        Route::put('/{student}', [MultimediaController::class, 'update'])->name('update');
+    });
 });
 
 // Gestion des utilisateurs

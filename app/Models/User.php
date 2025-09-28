@@ -77,6 +77,11 @@ class User extends Authenticatable
         return $this->role === 'accountant';
     }
 
+    public function isMultimedia(): bool
+    {
+        return $this->role === 'responsable_multimedia' || $this->role === 'multimedia';
+    }
+
     // Vérification d'accès multiple
     public function hasRole(array $roles): bool
     {

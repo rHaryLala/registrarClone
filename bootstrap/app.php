@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'parent' => \App\Http\Middleware\ParentMiddleware::class,
             'accountant' => \App\Http\Middleware\AccountantMiddleware::class,
             'setlocale' => \App\Http\Middleware\SetLocale::class,
+            'multimedia' => \App\Http\Middleware\MultimediaMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

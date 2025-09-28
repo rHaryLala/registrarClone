@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('plain_password')->nullable();
-            $table->enum('role', ['superadmin', 'dean', 'employe', 'teacher', 'student', 'parent', 'accountant'])->default('student');
+            $table->enum('role', ['superadmin', 'multimedia', 'dean', 'employe', 'teacher', 'student', 'parent', 'accountant'])->default('student');
             $table->foreignId('mention_id')->nullable()->constrained()->onDelete('set null');
             $table->string('lang')->default('fr');
             $table->boolean('notif_email')->default(false);
