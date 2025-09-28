@@ -11,6 +11,9 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('academic_year_id')->nullable();
             $table->foreign('academic_year_id')->references('id')->on('academic_years')->onDelete('set null');
+            // Optional: semester can be specific to a mention (department)
+            $table->unsignedBigInteger('mention_id')->nullable();
+            $table->foreign('mention_id')->references('id')->on('mentions')->onDelete('set null');
             $table->string('nom'); // Premier semestre, Semestre d'été, etc.
             $table->unsignedTinyInteger('ordre'); // 1 à 4
             $table->date('date_debut')->nullable();

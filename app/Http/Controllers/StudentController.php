@@ -194,7 +194,7 @@ class StudentController extends Controller
             $totalCredits = $totalCredits ?? 0;
 
             // Determine default plan (category) from finance_plan table if the model exists
-            $planCategory = 'A'; // default
+            $planCategory = 'E'; // default
             try {
                 if (class_exists(\App\Models\FinancePlan::class)) {
                     $planRow = \App\Models\FinancePlan::orderBy('id')->first();

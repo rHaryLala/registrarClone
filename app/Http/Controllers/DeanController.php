@@ -105,12 +105,12 @@ class DeanController extends Controller
         $coursesQuery = Course::where('mention_id', $student->mention_id)
             ->whereNotIn('id', $takenCourseIds);
 
-        // Restrict courses to those matching the student's year level code when available.
-        // Example: if student's year level code is 'L1R', only show courses associated with 'L1R'.
+        // If the student is in Licence 1 (L1), exclude courses meant for L1R (remise à niveau)
+        // Courses are linked to year levels via the `yearLevels` relation; exclude those with code 'L1R'.
         $studentYearLevelCode = optional($student->yearLevel)->code ?? null;
-        if ($studentYearLevelCode) {
-            $coursesQuery->whereHas('yearLevels', function ($q) use ($studentYearLevelCode) {
-                $q->where('code', $studentYearLevelCode);
+        if ($studentYearLevelCode === 'L1') {
+            $coursesQuery->whereDoesntHave('yearLevels', function ($q) {
+                $q->where('code', 'L1R');
             });
         }
 

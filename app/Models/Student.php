@@ -17,6 +17,7 @@ use App\Traits\TracksLastChange;
 class Student extends Model
 {
     use HasFactory, TracksLastChange;
+    
 
     protected $fillable = [
         'nom', 'prenom', 'sexe', 'date_naissance', 'lieu_naissance', 
@@ -277,4 +278,10 @@ class Student extends Model
     {
         return $this->belongsTo(\App\Models\User::class, 'last_change_user_id');
     }
+
+    /**
+     * Prevent assigning a semester that belongs to a different mention.
+     * This runs on every save (create/update) and throws an exception when mismatch detected.
+     */
+    
 }

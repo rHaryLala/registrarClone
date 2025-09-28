@@ -18,6 +18,7 @@ class Semester extends Model
         'date_fin',
         'duration',
         'academic_year_id',
+        'mention_id',
     ];
 
     public function academicYear()

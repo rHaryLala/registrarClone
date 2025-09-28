@@ -73,13 +73,82 @@ class InstallmentService
         $student->load('mention', 'yearLevel');
 
     // load semester to get number of days (duration) to apply per-day fees
+    $originalSemesterId = $semesterId;
     $semester = \App\Models\Semester::find($semesterId);
+
+    // Resolve mismatches: if the provided semester belongs to a different mention than the student,
+    // try to find a semester with the same 'ordre' for the student's mention. If not found,
+    // fall back to the semester_id that is already set on the student (if any).
+    try {
+        if ($semester && !empty($semester->mention_id) && intval($semester->mention_id) !== intval($student->mention_id)) {
+            // try to find equivalent semester (same ordre) for student's mention
+            $alt = \App\Models\Semester::where('mention_id', $student->mention_id)
+                ->where('ordre', $semester->ordre)
+                ->first();
+
+            if ($alt) {
+                logger()->info('computeSemesterFees: semester mapped to mention-specific semester', [
+                    'original_semester_id' => $originalSemesterId,
+                    'mapped_semester_id' => $alt->id,
+                    'student_id' => $student->id,
+                    'student_mention_id' => $student->mention_id,
+                ]);
+                $semester = $alt;
+                $semesterId = $alt->id;
+            } else {
+                // try student's own semester_id if available
+                if (!empty($student->semester_id)) {
+                    $studentSem = \App\Models\Semester::find($student->semester_id);
+                    if ($studentSem) {
+                        logger()->info('computeSemesterFees: falling back to student->semester_id', [
+                            'original_semester_id' => $originalSemesterId,
+                            'student_semester_id' => $studentSem->id,
+                            'student_id' => $student->id,
+                        ]);
+                        $semester = $studentSem;
+                        $semesterId = $studentSem->id;
+                    } else {
+                        logger()->warning('computeSemesterFees: semester mismatch and no alternative semester found; using original', [
+                            'original_semester_id' => $originalSemesterId,
+                            'student_id' => $student->id,
+                            'student_mention_id' => $student->mention_id,
+                        ]);
+                    }
+                } else {
+                    logger()->warning('computeSemesterFees: semester mismatch and student has no semester_id; using original', [
+                        'original_semester_id' => $originalSemesterId,
+                        'student_id' => $student->id,
+                        'student_mention_id' => $student->mention_id,
+                    ]);
+                }
+            }
+        }
+    } catch (\Throwable $e) {
+        logger()->warning('computeSemesterFees: error while resolving semester mismatch: ' . $e->getMessage());
+    }
+
     $daysInSemester = 0;
     if ($semester) {
         $daysInSemester = $semester->duration ?? 0;
         if (!$daysInSemester && $semester->date_debut && $semester->date_fin) {
             $daysInSemester = Carbon::parse($semester->date_debut)->diffInDays(Carbon::parse($semester->date_fin)) + 1;
         }
+    }
+
+    // Debug logging: record semester and computed days
+    try {
+        logger()->info('computeSemesterFees: semester debug', [
+            'semester_id' => $semester ? $semester->id : null,
+            'semester_duration' => $semester ? $semester->duration : null,
+            'semester_date_debut' => $semester ? $semester->date_debut : null,
+            'semester_date_fin' => $semester ? $semester->date_fin : null,
+            'daysInSemester' => $daysInSemester,
+            'student_id' => $student->id,
+            'student_mention_id' => $student->mention_id,
+            'academic_year_id' => $academicYearId,
+        ]);
+    } catch (\Throwable $e) {
+        // don't break fee computation on logging failure
     }
 
     $fraisGeneraux = 0;
@@ -110,28 +179,66 @@ class InstallmentService
 
         // 2) dortoir
         if ($student->statut_interne === 'interne') {
+            // Prefer a mention-specific dortoir fee, then fall back to academic-year generic, then any
             $dortoirAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Dortoir'); })
+                ->where('mention_id', $student->mention_id)
                 ->where('academic_year_id', $academicYearId)
                 ->first();
+            if (!$dortoirAF) {
+                $dortoirAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Dortoir'); })
+                    ->where('academic_year_id', $academicYearId)
+                    ->first();
+            }
+            if (!$dortoirAF) {
+                $dortoirAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Dortoir'); })->first();
+            }
+
             if ($dortoirAF) {
-                // if semester length is known, assume AcademicFee amount is a per-day rate and multiply
-                $dortoir = $dortoirAF->amount;
+                try {
+                    logger()->info('computeSemesterFees: dortoir AcademicFee selected', [
+                        'academic_fee_id' => $dortoirAF->id,
+                        'amount' => $dortoirAF->amount,
+                    ]);
+                } catch (\Throwable $e) {}
+
+                // Treat AcademicFee amount as a per-day rate when semester length is known
                 if ($daysInSemester > 0) {
                     $dortoir = round($dortoirAF->amount * $daysInSemester, 2);
+                } else {
+                    // Fallback: use the amount as-is
+                    $dortoir = $dortoirAF->amount;
                 }
             }
         }
 
         // 3) cantine
         if ($student->abonne_caf) {
+            // Prefer a mention-specific cantine fee, then fall back to academic-year generic, then any
             $cantineAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Cantine'); })
+                ->where('mention_id', $student->mention_id)
                 ->where('academic_year_id', $academicYearId)
                 ->first();
+            if (!$cantineAF) {
+                $cantineAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Cantine'); })
+                    ->where('academic_year_id', $academicYearId)
+                    ->first();
+            }
+            if (!$cantineAF) {
+                $cantineAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Cantine'); })->first();
+            }
+
             if ($cantineAF) {
-                // if semester length is known, assume AcademicFee amount is a per-day rate and multiply
-                $cantine = $cantineAF->amount;
+                try {
+                    logger()->info('computeSemesterFees: cantine AcademicFee selected', [
+                        'academic_fee_id' => $cantineAF->id,
+                        'amount' => $cantineAF->amount,
+                    ]);
+                } catch (\Throwable $e) {}
+
                 if ($daysInSemester > 0) {
                     $cantine = round($cantineAF->amount * $daysInSemester, 2);
+                } else {
+                    $cantine = $cantineAF->amount;
                 }
             }
         }
@@ -275,8 +382,8 @@ class InstallmentService
             }
         }
 
-    // 7) costume for new theology students: only for Theologie (mention_id==1), first year AND first semester (ordre == 1)
-    if ($isTheology && ($student->year_level_id == 1 || $student->year_level_id == '1')) {
+    // 7) costume for Theologie students: if the semester ordre == 1 (first semester) apply costume
+    if ($isTheology) {
             $isFirstSemester = false;
             try {
                 if ($semester && isset($semester->ordre)) {
@@ -288,9 +395,29 @@ class InstallmentService
             }
 
             if ($isFirstSemester) {
-                $costAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Graduation')->orWhere('name','Costume'); })
-                    ->where('academic_year_id', $academicYearId)
-                    ->first();
+                // Prefer the explicit AcademicFee with id=10 for costume when available
+                $costAF = AcademicFee::find(10);
+                if (!$costAF) {
+                    // Fallback: look for FeeType named Graduation or Costume in the academic year
+                    $costAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Graduation')->orWhere('name','Costume'); })
+                        ->where('academic_year_id', $academicYearId)
+                        ->first();
+                }
+                // Final fallback: any AcademicFee with FeeType containing 'costume' or 'graduation' across all years
+                if (!$costAF) {
+                    try {
+                        $candidate = AcademicFee::whereHas('feeType', function($q){
+                            $q->whereRaw('LOWER(name) LIKE ?', ['%costume%'])
+                              ->orWhereRaw('LOWER(name) LIKE ?', ['%graduation%']);
+                        })->first();
+                        if ($candidate) {
+                            $costAF = $candidate;
+                            logger()->info('computeSemesterFees: costume AcademicFee fallback used (any year)', ['academic_fee_id' => $candidate->id, 'student_id' => $student->id]);
+                        }
+                    } catch (\Throwable $e) {
+                        // ignore and proceed
+                    }
+                }
                 if ($costAF) $costume = $costAF->amount;
             }
         }
