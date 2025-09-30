@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use App\Models\Course;
+use App\Observers\CourseObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,5 +37,13 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('activeLink', function ($patterns) {
             return "<?php echo Route::is($patterns) ? 'bg-blue-900 text-blue-100' : ''; ?>";
         });
+
+        // Register model observers
+        try {
+            Course::observe(CourseObserver::class);
+        } catch (\Throwable $e) {
+            // In some contexts (e.g., during migrations) models may not be available; log and continue
+            logger()->info('AppServiceProvider: unable to register CourseObserver: ' . $e->getMessage());
+        }
     }
 }

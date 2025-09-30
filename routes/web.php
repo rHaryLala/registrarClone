@@ -52,6 +52,10 @@ Route::middleware(['auth'])->get('/dashboard', function () {
     if (auth()->user()->isMultimedia()) {
         return redirect()->route('multimedia.dashboard');
     }
+
+    if (auth()->user()->isChiefAccountant()) {
+        return redirect()->route('chief.accountant.dashboard');
+    }
 })->name('dashboard');
 
 // API pour charger les parcours d'une mention (AJAX)
@@ -204,6 +208,11 @@ Route::middleware(['auth', 'dean'])->prefix('dean')->name('dean.')->group(functi
 Route::middleware(['auth', 'accountant'])->prefix('accountant')->name('accountant.')->group(function () {
     Route::get('/dashboard', [AccountantController::class, 'dashboard'])->name('dashboard');
     Route::patch('/students/{student}/fee-check', [AccountantController::class, 'updateFeeCheck'])->name('students.fee_check');
+});
+
+// Chief accountant routes (separate role)
+Route::middleware(['auth', 'chief.accountant'])->prefix('chief-accountant')->name('chief.accountant.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\ChiefAccountantController::class, 'dashboard'])->name('dashboard');
 });
 
 // Multimedia routes

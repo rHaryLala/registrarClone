@@ -245,64 +245,65 @@ class InstallmentService
 
         // 4) laboratoire: check per-course lab requirements using the three lab flags on `courses`
         // and fetch the corresponding AcademicFee amounts for each lab type if any course requires it.
-        $hasLaboInfo = false;
-        $hasLaboComm = false;
-        $hasLaboLang = false;
+        // Count how many courses require each lab type (so fee scales with number of lab courses)
+        $countLaboInfo = 0;
+        $countLaboComm = 0;
+        $countLaboLang = 0;
         try {
-            // Check Informatique lab flag
+            // Check Informatique lab flag count
             if (Schema::hasColumn('courses', 'labo_info')) {
-                $hasLaboInfo = \DB::table('course_student')
+                $countLaboInfo = (int) \DB::table('course_student')
                     ->join('courses','course_student.course_id','=','courses.id')
                     ->where('course_student.student_id',$student->id)
                     ->whereNull('course_student.deleted_at')
                     ->where('courses.labo_info', true)
-                    ->exists();
+                    ->count();
             }
 
-            // Check Communication lab flag
+            // Check Communication lab flag count
             if (Schema::hasColumn('courses', 'labo_comm')) {
-                $hasLaboComm = \DB::table('course_student')
+                $countLaboComm = (int) \DB::table('course_student')
                     ->join('courses','course_student.course_id','=','courses.id')
                     ->where('course_student.student_id',$student->id)
                     ->whereNull('course_student.deleted_at')
                     ->where('courses.labo_comm', true)
-                    ->exists();
+                    ->count();
             }
 
-            // Check Langue lab flag
+            // Check Langue lab flag count
             if (Schema::hasColumn('courses', 'labo_langue')) {
-                $hasLaboLang = \DB::table('course_student')
+                $countLaboLang = (int) \DB::table('course_student')
                     ->join('courses','course_student.course_id','=','courses.id')
                     ->where('course_student.student_id',$student->id)
                     ->whereNull('course_student.deleted_at')
                     ->where('courses.labo_langue', true)
-                    ->exists();
+                    ->count();
             }
         } catch (\Throwable $e) {
-            logger()->warning('Unable to detect course lab requirement: ' . $e->getMessage());
+            logger()->warning('Unable to detect course lab requirement counts: ' . $e->getMessage());
         }
 
-        // For each lab type required, fetch its AcademicFee for the given academic year (fallback to any if year-specific not found)
-        if ($hasLaboInfo) {
+        // For each lab type required, fetch its AcademicFee for the given academic year and multiply by count
+        if ($countLaboInfo > 0) {
             $labInfoAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Laboratoire Informatique'); })->where('academic_year_id', $academicYearId)->first();
             if (!$labInfoAF) {
                 $labInfoAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Laboratoire Informatique'); })->first();
             }
-            if ($labInfoAF) $labo_info = $labInfoAF->amount;
+            if ($labInfoAF) $labo_info = $labInfoAF->amount * $countLaboInfo;
         }
-        if ($hasLaboComm) {
+        if ($countLaboComm > 0) {
             $labCommAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Laboratoire Communication'); })->where('academic_year_id', $academicYearId)->first();
             if (!$labCommAF) {
                 $labCommAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Laboratoire Communication'); })->first();
             }
-            if ($labCommAF) $labo_comm = $labCommAF->amount;
+            if ($labCommAF) $labo_comm = $labCommAF->amount * $countLaboComm;
         }
-        if ($hasLaboLang) {
+        if ($countLaboLang > 0) {
             $labLangAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Laboratoire Langue'); })->where('academic_year_id', $academicYearId)->first();
             if (!$labLangAF) {
                 $labLangAF = AcademicFee::whereHas('feeType', function($q){ $q->where('name','Laboratoire Langue'); })->first();
             }
-            if ($labLangAF) $labo_langue = $labLangAF->amount;
+            if ($labLangAF) $labo_langue = $labLangAF->amount * $countLaboLang;
         }
 
         // 5) ecolage: total credits * per-credit rate. Find 'Écolage' AcademicFee
@@ -312,6 +313,7 @@ class InstallmentService
                 $credits = \DB::table('course_student')
                     ->join('courses','course_student.course_id','=','courses.id')
                     ->where('course_student.student_id',$student->id)
+                    ->whereNull('course_student.deleted_at')
                     ->sum('courses.credits');
             } else {
                 // no credits column -> default to 0

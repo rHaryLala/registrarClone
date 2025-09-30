@@ -72,6 +72,9 @@
                     <div>
                         <h1 class="text-3xl font-bold mb-2">Liste des cours</h1>
                         <p class="text-blue-100">Gérez les cours de votre université</p>
+                        <p class="text-blue-100 text-sm mt-2">Total des cours: <span id="totalCourses">{{ $courses->count() }}</span>
+                            — Affichés: <span id="visibleCount">{{ $courses->count() }}</span>
+                        </p>
                     </div>
                     {{-- <a href="{{ route('dean.courses.create') }}" class="bg-white text-blue-800 px-6 py-3 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center justify-center md:justify-start font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                         <i class="fas fa-plus mr-2"></i> Nouveau cours
@@ -121,12 +124,6 @@
                             </th>
                             <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">
                                 <div class="flex items-center gap-2">
-                                    <i class="fas fa-graduation-cap text-blue-200"></i>
-                                    Mention
-                                </div>
-                            </th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">
-                                <div class="flex items-center gap-2">
                                     <i class="fas fa-layer-group text-blue-200"></i>
                                     Catégorie
                                 </div>
@@ -162,15 +159,6 @@
                                 </td>
                                 <td class="px-6 py-5">
                                     <div class="text-sm text-gray-600">{{ $course->teacher->name ?? 'Non attribué' }}</div>
-                                </td>
-                                <td class="px-6 py-5">
-                                    @if($course->mention)
-                                        <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                            {{ $course->mention->nom }}
-                                        </span>
-                                    @else
-                                        <span class="text-gray-400 text-sm">-</span>
-                                    @endif
                                 </td>
                                 <td class="px-6 py-5">
                                     <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
@@ -216,7 +204,7 @@
                     <div class="course-card bg-white rounded-2xl p-6 shadow-lg border border-gray-100" 
                          data-sigle="{{ strtolower($course->sigle) }}" 
                          data-nom="{{ strtolower($course->nom) }}" 
-                         data-mention="{{ strtolower($course->mention->nom ?? '') }}">
+                         data-mention="{{ strtolower($course->mentions && $course->mentions->count() ? $course->mentions->pluck('nom')->join(', ') : ($course->mention->nom ?? '')) }}">
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex items-center">
                                 <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
@@ -241,7 +229,11 @@
                                 <p class="text-xs text-gray-500 uppercase tracking-wider">Mention</p>
                                 @if($course->mention)
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                        {{ $course->mention->nom }}
+                                        @if(isset($course->mentions) && $course->mentions->count())
+                                            {{ $course->mentions->pluck('nom')->join(', ') }}
+                                        @else
+                                            {{ $course->mention->nom ?? 'Mention non définie' }}
+                                        @endif
                                     </span>
                                 @else
                                     <span class="text-gray-400 text-sm">-</span>

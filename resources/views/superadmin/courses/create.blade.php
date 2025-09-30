@@ -57,6 +57,16 @@
             <div class="bg-white shadow rounded-lg p-8">
                 <form action="{{ route('superadmin.courses.store') }}" method="POST">
                     @csrf
+                    @if($errors->any())
+                        <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded">
+                            <strong>Erreur :</strong>
+                            <ul class="mt-2 list-disc list-inside">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     <div class="mb-4">
                         <label class="block text-gray-700 font-semibold mb-2">Sigle</label>
                         <input type="text" name="sigle" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
@@ -79,24 +89,31 @@
                         </select>
                     </div>
                     <div class="mb-6">
-                        <label class="block text-gray-700 font-semibold mb-2">Mention</label>
-                        <select name="mention_id" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                            <option value="">Sélectionnez la mention</option>
+                        <label class="block text-gray-700 font-semibold mb-2">Mention(s)</label>
+                        <select name="mention_ids[]" class="w-full border border-gray-300 rounded-lg px-3 py-2" multiple size="4">
                             @foreach($mentions as $mention)
-                                <option value="{{ $mention->id }}" @if(old('mention_id') == $mention->id) selected @endif>{{ $mention->nom }}</option>
+                                <option value="{{ $mention->id }}" @if(is_array(old('mention_ids', [])) && in_array($mention->id, old('mention_ids', []))) selected @endif>{{ $mention->nom }}</option>
                             @endforeach
                         </select>
+                        <p class="text-sm text-gray-500 mt-2">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs mentions.</p>
                     </div>
                     <div class="mb-6">
-                        <label class="block text-gray-700 font-semibold mb-2">Niveau</label>
-                        <select name="year_level_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                            <option value="">Sélectionnez le niveau</option>
+                        <label class="block text-gray-700 font-semibold mb-2">Niveau(x) d'étude</label>
+                        <select name="year_level_ids[]" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" multiple size="4" required>
                             @foreach($yearLevels as $level)
-                                <option value="{{ $level->id }}" @if(old('year_level_id') == $level->id) selected @endif>{{ $level->label }}</option>
+                                <option value="{{ $level->id }}" @if(is_array(old('year_level_ids', [])) && in_array($level->id, old('year_level_ids', []))) selected @endif>{{ $level->label }}</option>
                             @endforeach
                         </select>
+                        <p class="text-sm text-gray-500 mt-2">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs niveaux.</p>
                     </div>
                     <div class="flex justify-end">
+                        <div class="mr-4">
+                            <label class="block text-gray-700 font-semibold mb-2">Catégorie</label>
+                            <select name="categorie" class="border border-gray-300 rounded-lg px-3 py-2">
+                                <option value="général" @if(old('categorie') == 'général') selected @endif>général</option>
+                                <option value="majeur" @if(old('categorie') == 'majeur') selected @endif>majeur</option>
+                            </select>
+                        </div>
                         <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded-lg hover:bg-blue-800 transition flex items-center">
                             <i class="fas fa-save mr-2"></i> Enregistrer
                         </button>

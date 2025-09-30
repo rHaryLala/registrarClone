@@ -10,6 +10,7 @@ use App\Models\YearLevel;
 use App\Models\Teacher;
 use App\Services\InstallmentService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Schema;
 
 class DeanController extends Controller
 {
@@ -101,20 +102,51 @@ class DeanController extends Controller
         // Exclure les cours déjà pris (non retirés)
         $takenCourseIds = $student->courses()->wherePivot('deleted_at', null)->pluck('courses.id')->toArray();
 
-        // Build base query for available courses in the student's mention
-        $coursesQuery = Course::where('mention_id', $student->mention_id)
+        // Build base query for available courses in the student's mention.
+        // Include courses that either have mention_id = student's mention
+        // or that are attached to the mention through the course_mention pivot (shared courses).
+        $coursesQuery = Course::where(function ($q) use ($student) {
+                $q->where('mention_id', $student->mention_id)
+                  ->orWhereHas('mentions', function ($q2) use ($student) {
+                      $q2->where('mentions.id', $student->mention_id);
+                  });
+            })
             ->whereNotIn('id', $takenCourseIds);
 
-        // If the student is in Licence 1 (L1), exclude courses meant for L1R (remise à niveau)
-        // Courses are linked to year levels via the `yearLevels` relation; exclude those with code 'L1R'.
-        $studentYearLevelCode = optional($student->yearLevel)->code ?? null;
-        if ($studentYearLevelCode === 'L1') {
-            $coursesQuery->whereDoesntHave('yearLevels', function ($q) {
-                $q->where('code', 'L1R');
-            });
+        // If the student has a year_level set, filter courses to those that either
+        // - have the single-column `year_level_id` equal to one of the student's compatible levels, OR
+        // - are attached to one of those year levels via the pivot `course_yearlevel`.
+        // Keep compatibility with seeded courses using either approach.
+        if (!empty($student->year_level_id)) {
+            $studentYearLevelId = $student->year_level_id;
+
+            // Allowed year level ids: only the student's own level.
+            // NOTE: for L1R we intentionally do NOT include L1 here. That ensures L1R students
+            // see courses for L1R and courses explicitly attached to L1R (including shared L1R+L1),
+            // but not courses dedicated only to L1.
+            $allowedYearLevelIds = [$studentYearLevelId];
+
+            if (count($allowedYearLevelIds) > 0) {
+                // Only use the direct column filter if the courses table actually has that column.
+                if (Schema::hasColumn('courses', 'year_level_id')) {
+                    $coursesQuery->where(function ($q) use ($allowedYearLevelIds) {
+                        $q->whereIn('year_level_id', $allowedYearLevelIds)
+                          ->orWhereHas('yearLevels', function ($q2) use ($allowedYearLevelIds) {
+                              $q2->whereIn('year_levels.id', $allowedYearLevelIds);
+                          });
+                    });
+                } else {
+                    // Fallback: filter only by pivot relation using allowed ids
+                    $coursesQuery->whereHas('yearLevels', function ($q2) use ($allowedYearLevelIds) {
+                        $q2->whereIn('year_levels.id', $allowedYearLevelIds);
+                    });
+                }
+            }
         }
 
-        $courses = $coursesQuery->get();
+    // Eager-load related mention(s), teacher and year levels so the view can
+    // display either the primary mention or any pivot-attached mentions.
+    $courses = $coursesQuery->with('teacher', 'yearLevels', 'mention', 'mentions')->get();
 
         return view('dean.students.courses-add', compact('student', 'courses'));
     }
@@ -162,8 +194,14 @@ class DeanController extends Controller
             abort(403, 'Unauthorized - No mention assigned');
         }
 
+        // Include both courses owned by this mention and shared courses attached via pivot
         $courses = Course::with('teacher', 'yearLevels')
-            ->where('mention_id', $mention->id)
+            ->where(function ($q) use ($mention) {
+                                $q->where('mention_id', $mention->id)
+                                    ->orWhereHas('mentions', function ($q2) use ($mention) {
+                                            $q2->where('mentions.id', $mention->id);
+                                    });
+            })
             ->get();
 
         $yearLevels = YearLevel::all();

@@ -195,9 +195,20 @@
                                class="input-focus w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80"
                                placeholder="Votre mot de passe">
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                            </svg>
+                            <!-- Toggle password visibility button -->
+                            <button type="button" id="toggle-password" aria-label="Afficher/masquer le mot de passe" class="text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-0">
+                                <!-- Eye (visible) -->
+                                <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <!-- Eye off (hidden) - hidden by default -->
+                                <svg id="icon-eye-off" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.269-2.943-9.543-7a9.969 9.969 0 012.223-3.274" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.1 6.1L18 18" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.88 9.88A3 3 0 0114.12 14.12" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -235,3 +246,28 @@
     </div>
 </body>
 </html>
+<script>
+    (function(){
+        var toggle = document.getElementById('toggle-password');
+        if(!toggle) return;
+        var pwd = document.getElementById('password');
+        var eye = document.getElementById('icon-eye');
+        var eyeOff = document.getElementById('icon-eye-off');
+
+        toggle.addEventListener('click', function(e){
+            e.preventDefault();
+            if(!pwd) return;
+            if(pwd.type === 'password'){
+                pwd.type = 'text';
+                if(eye) eye.classList.add('hidden');
+                if(eyeOff) eyeOff.classList.remove('hidden');
+            } else {
+                pwd.type = 'password';
+                if(eye) eye.classList.remove('hidden');
+                if(eyeOff) eyeOff.classList.add('hidden');
+            }
+            // keep focus on password input after toggle
+            pwd.focus();
+        });
+    })();
+</script>

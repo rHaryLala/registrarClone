@@ -21,4 +21,10 @@ class Mention extends Model
     {
         return $this->hasMany(\App\Models\Parcours::class, 'mention_id');
     }
+
+    // Many-to-many: courses that are shared across mentions
+    public function courses()
+    {
+        return $this->belongsToMany(\App\Models\Course::class, 'course_mention', 'mention_id', 'course_id');
+    }
 }

@@ -287,8 +287,8 @@
                             <div class="grid gap-3">
                                 @foreach($courses as $index => $course)
                                     <!-- Ajout de la classe compact pour réduire la taille -->
-                                    <div class="course-item course-item-compact rounded-xl border-2 border-transparent hover:border-blue-200" 
-                                         style="animation-delay: {{ $index * 0.1 }}s">
+                             <div class="course-item course-item-compact rounded-xl border-2 border-transparent hover:border-blue-200" 
+                                 style="animation-delay: {{ $index * 0.1 }}s" data-credits="{{ $course->credits }}">
                                         <label for="course_{{ $course->id }}" class="flex items-center gap-3 cursor-pointer">
                                             <input type="checkbox" 
                                                    name="course_id[]" 
@@ -303,11 +303,25 @@
                                                     </span>
                                                     <!-- Réduction de la taille du titre -->
                                                     <h3 class="font-semibold text-gray-800 text-base">{{ $course->nom }}</h3>
+                                                    <!-- Afficher le nombre de crédits -->
+                                                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold ml-2">
+                                                        {{ $course->credits }} cr
+                                                    </span>
                                                 </div>
                                                 <!-- Réduction de la taille du texte -->
                                                 <p class="text-gray-600 flex items-center text-sm">
                                                     <i class="fas fa-graduation-cap mr-2 text-gray-400"></i>
-                                                    {{ $course->mention->nom ?? 'Mention non définie' }}
+                                                    @if($course->mention)
+                                                        @if(isset($course->mentions) && $course->mentions->count())
+                                                            {{ $course->mentions->pluck('nom')->join(', ') }}
+                                                        @else
+                                                            {{ $course->mention->nom ?? 'Mention non définie' }}
+                                                        @endif
+                                                    @elseif(isset($course->mentions) && $course->mentions->count())
+                                                        {{ $course->mentions->pluck('nom')->join(', ') }}
+                                                    @else
+                                                        <span class="text-gray-400">Mention non définie</span>
+                                                    @endif
                                                 </p>
                                             </div>
                                             
@@ -319,6 +333,11 @@
                                 @endforeach
                             </div>
                         </div>
+                            <!-- Totaux sélectionnés -->
+                            <div class="mb-6 text-right fade-in fade-in-delay-3">
+                                <p class="text-gray-700 font-medium">Cours sélectionnés: <span id="selectedCount">0</span></p>
+                                <p class="text-gray-700 font-medium">Total crédits sélectionnés: <span id="totalCredits">0</span></p>
+                            </div>
                         
                         <!-- Bouton modernisé avec effets -->
                         <div class="flex justify-end fade-in fade-in-delay-3">
@@ -370,6 +389,8 @@
                     btnIcon.className = 'fas fa-check-double';
                     selectAllBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
                 }
+                // Recalculate totals after toggling
+                recalcTotals();
             });
             
             courseItems.forEach((item, index) => {
@@ -412,8 +433,31 @@
                         btnIcon.className = 'fas fa-check-double';
                         selectAllBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
                     }
+                    // Recalculate totals after any individual change
+                    recalcTotals();
                 });
             });
+
+            // Recalculate totals function
+            function recalcTotals() {
+                // Query checked checkboxes live from the DOM to avoid stale NodeList issues
+                const selected = Array.from(document.querySelectorAll('.course-checkbox:checked'));
+                const selectedCountEl = document.getElementById('selectedCount');
+                const totalCreditsEl = document.getElementById('totalCredits');
+
+                let totalCredits = 0;
+                selected.forEach(cb => {
+                    const item = cb.closest('.course-item');
+                    const credits = Number(item && item.dataset && item.dataset.credits ? item.dataset.credits : 0) || 0;
+                    totalCredits += credits;
+                });
+
+                selectedCountEl.textContent = selected.length;
+                totalCreditsEl.textContent = totalCredits;
+            }
+
+            // Initial calc
+            recalcTotals();
         });
     </script>
 </body>

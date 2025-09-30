@@ -51,9 +51,11 @@ class SuperAdminController extends Controller
 
     public function coursesList()
     {
-    $courses = Course::with('teacher', 'yearLevels')->get();
+        // Only load courses that are linked to at least one year level (present in course_yearlevel pivot)
+        $courses = Course::whereHas('yearLevels')->with('teacher', 'yearLevels')->get();
         $yearLevels = YearLevel::all();
-        return view('superadmin.courses.list', compact('courses', 'yearLevels'));
+        $mentions = Mention::all();
+        return view('superadmin.courses.list', compact('courses', 'yearLevels', 'mentions'));
     }
 
     public function createCourse()
@@ -66,23 +68,65 @@ class SuperAdminController extends Controller
 
     public function storeCourse(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'sigle' => 'required|unique:courses,sigle|max:10',
             'nom' => 'required|max:255',
             'credits' => 'required|integer|min:1|max:10',
             'teacher_id' => 'nullable|exists:teachers,id',
+            // support both single and multiple mentions/year levels for backward compatibility
             'mention_id' => 'nullable|exists:mentions,id',
+            'mention_ids' => 'nullable|array',
+            'mention_ids.*' => 'exists:mentions,id',
+            'year_level_id' => 'nullable|exists:year_levels,id',
+            'year_level_ids' => 'nullable|array',
+            'year_level_ids.*' => 'exists:year_levels,id',
             'categorie' => 'required|in:général,majeur',
         ]);
 
-        Course::create([
-            'sigle' => $request->sigle,
-            'nom' => $request->nom,
-            'credits' => $request->credits,
-            'teacher_id' => $request->teacher_id,
-            'mention_id' => $request->mention_id,
-            'categorie' => $request->categorie,
+        // Create course with basic scalar values. We'll set legacy columns if present below.
+        $course = Course::create([
+            'sigle' => $validated['sigle'],
+            'nom' => $validated['nom'],
+            'credits' => $validated['credits'],
+            'teacher_id' => $validated['teacher_id'] ?? null,
+            'categorie' => $validated['categorie'],
         ]);
+
+        // If the courses table still contains single mention/year_level columns, set them to the first provided value
+        if (Schema::hasColumn('courses', 'mention_id')) {
+            $firstMention = null;
+            if (!empty($validated['mention_ids'] ?? null)) {
+                $firstMention = $validated['mention_ids'][0];
+            } elseif (!empty($validated['mention_id'] ?? null)) {
+                $firstMention = $validated['mention_id'];
+            }
+            $course->mention_id = $firstMention;
+        }
+
+        if (Schema::hasColumn('courses', 'year_level_id')) {
+            $firstYear = null;
+            if (!empty($validated['year_level_ids'] ?? null)) {
+                $firstYear = $validated['year_level_ids'][0];
+            } elseif (!empty($validated['year_level_id'] ?? null)) {
+                $firstYear = $validated['year_level_id'];
+            }
+            $course->year_level_id = $firstYear;
+        }
+
+        $course->save();
+
+        // Sync pivot relations: mentions and year levels
+        if (!empty($validated['mention_ids'] ?? null)) {
+            $course->mentions()->sync($validated['mention_ids']);
+        } elseif (!empty($validated['mention_id'] ?? null)) {
+            $course->mentions()->sync([$validated['mention_id']]);
+        }
+
+        if (!empty($validated['year_level_ids'] ?? null)) {
+            $course->yearLevels()->sync($validated['year_level_ids']);
+        } elseif (!empty($validated['year_level_id'] ?? null)) {
+            $course->yearLevels()->sync([$validated['year_level_id']]);
+        }
 
         return redirect()->route('superadmin.courses.list')->with('success', 'Cours créé avec succès.');
     }
@@ -99,15 +143,65 @@ class SuperAdminController extends Controller
     public function updateCourse(Request $request, $id)
     {
         $course = Course::findOrFail($id);
+
         $validated = $request->validate([
             'sigle' => 'required|string|max:255|unique:courses,sigle,' . $id,
             'nom' => 'required|string|max:255',
             'credits' => 'required|integer|min:1',
             'teacher_id' => 'nullable|exists:teachers,id',
+            // support both single and multiple mentions/year levels for backward compatibility
             'mention_id' => 'nullable|exists:mentions,id',
+            'mention_ids' => 'nullable|array',
+            'mention_ids.*' => 'exists:mentions,id',
+            'year_level_id' => 'nullable|exists:year_levels,id',
+            'year_level_ids' => 'nullable|array',
+            'year_level_ids.*' => 'exists:year_levels,id',
             'categorie' => 'required|in:général,majeur',
         ]);
-        $course->update($validated);
+
+        // Update basic scalar columns
+        $course->sigle = $validated['sigle'];
+        $course->nom = $validated['nom'];
+        $course->credits = $validated['credits'];
+        $course->teacher_id = $validated['teacher_id'] ?? null;
+        $course->categorie = $validated['categorie'];
+
+        // If the courses table still contains single mention/year_level columns, set them to the first provided value
+        if (Schema::hasColumn('courses', 'mention_id')) {
+            $firstMention = null;
+            if (!empty($validated['mention_ids'] ?? null)) {
+                $firstMention = $validated['mention_ids'][0];
+            } elseif (!empty($validated['mention_id'] ?? null)) {
+                $firstMention = $validated['mention_id'];
+            }
+            $course->mention_id = $firstMention;
+        }
+
+        if (Schema::hasColumn('courses', 'year_level_id')) {
+            $firstYear = null;
+            if (!empty($validated['year_level_ids'] ?? null)) {
+                $firstYear = $validated['year_level_ids'][0];
+            } elseif (!empty($validated['year_level_id'] ?? null)) {
+                $firstYear = $validated['year_level_id'];
+            }
+            $course->year_level_id = $firstYear;
+        }
+
+        $course->save();
+
+        // Sync pivot relations: mentions and year levels
+        if (!empty($validated['mention_ids'] ?? null)) {
+            $course->mentions()->sync($validated['mention_ids']);
+        } elseif (!empty($validated['mention_id'] ?? null)) {
+            $course->mentions()->sync([$validated['mention_id']]);
+        }
+
+        if (!empty($validated['year_level_ids'] ?? null)) {
+            $course->yearLevels()->sync($validated['year_level_ids']);
+        } elseif (!empty($validated['year_level_id'] ?? null)) {
+            $course->yearLevels()->sync([$validated['year_level_id']]);
+        }
+
         return redirect()->route('superadmin.courses.list')->with('success', 'Cours modifié avec succès.');
     }
 
@@ -889,14 +983,30 @@ class SuperAdminController extends Controller
     }
 
     // FINANCES
-    public function financesList()
+    public function financesList(Request $request)
     {
-        // Eager-load student (with their installments ordered by sequence), semester and lastChangedBy
-        $finances = Finance::with([
+        // If a specific student is requested, only load finances related to that student.
+        // The finance.student_id column stores the student's matricule, but callers may submit the internal student id.
+        $with = [
             'student.installments' => function($q) { $q->orderBy('sequence'); },
             'semester',
             'lastChangedBy'
-        ])->orderByDesc('date_entry')->get();
+        ];
+
+        if ($request->filled('student_id')) {
+            $studentFilter = $request->get('student_id');
+            $student = \App\Models\Student::find($studentFilter);
+            if ($student) {
+                // use student's matricule stored in finance.student_id
+                $finances = Finance::with($with)->where('student_id', $student->matricule)->orderByDesc('date_entry')->get();
+            } else {
+                // fallback: assume provided value is a matricule or exact student_id stored in finance
+                $finances = Finance::with($with)->where('student_id', $studentFilter)->orderByDesc('date_entry')->get();
+            }
+        } else {
+            // Eager-load student (with their installments ordered by sequence), semester and lastChangedBy
+            $finances = Finance::with($with)->orderByDesc('date_entry')->get();
+        }
 
         // determine the most recent change across finance rows (if any)
         $lastChange = Finance::whereNotNull('last_change_datetime')
@@ -935,6 +1045,13 @@ class SuperAdminController extends Controller
                 'ecolage' => 0,
                 'cantine' => 0,
                 'dortoir' => 0,
+                'labo_info' => 0,
+                'labo_comm' => 0,
+                'labo_langue' => 0,
+                'voyage_etude' => 0,
+                'colloque' => 0,
+                'frais_costume' => 0,
+                'total_amount' => 0,
                 'total_due' => 0,
             ];
 
@@ -970,23 +1087,82 @@ class SuperAdminController extends Controller
                     }
                 }
 
-                // dortoir (only if student is interne / statut_interne truthy)
-                $isInterne = false;
-                if (in_array($student->statut_interne, [true, 'true', '1', 1, 'interne', 'Interne', 'intern'])) {
-                    $isInterne = true;
-                }
-                if ($isInterne) {
+                // dortoir (only if student is interne) -- use same rule as InstallmentService (string 'interne')
+                if ($student->statut_interne === 'interne') {
                     if (isset($feeTypes['Dortoir'])) {
                         $dRow = $fees->firstWhere('fee_type_id', $feeTypes['Dortoir']->id) ?? $fees->get('Dortoir');
                         $computed['dortoir'] = $dRow->amount ?? 0;
                     }
                 }
 
-                $computed['total_due'] = array_sum([$computed['frais_generaux'], $computed['ecolage'], $computed['cantine'], $computed['dortoir']]);
+                // keep a total_amount / total_due shape similar to StudentSemesterFee
+                $computed['total_amount'] = array_sum([
+                    $computed['frais_generaux'], $computed['ecolage'], $computed['cantine'], $computed['dortoir'],
+                    $computed['labo_info'], $computed['labo_comm'], $computed['labo_langue'], $computed['voyage_etude'], $computed['colloque'], $computed['frais_costume']
+                ]);
+                $computed['total_due'] = $computed['total_amount'];
             }
 
-            // Attach computed array to finance model so the view can use it
-            $finance->computed = (object)$computed;
+            // Prefer persisted StudentSemesterFee when available (more authoritative)
+            $ssf = null;
+            if ($student && isset($student->academic_year_id) && isset($student->semester_id)) {
+                $ssf = \App\Models\StudentSemesterFee::where('student_id', $student->id)
+                    ->where('academic_year_id', $student->academic_year_id)
+                    ->where('semester_id', $student->semester_id)
+                    ->first();
+            }
+
+            if ($ssf) {
+                // Map SSF fields into the computed object (keep names the view expects)
+                $finance->computed = (object)[
+                    'frais_generaux' => $ssf->frais_generaux ?? 0,
+                    'ecolage' => $ssf->ecolage ?? 0,
+                    'cantine' => $ssf->cantine ?? 0,
+                    'dortoir' => $ssf->dortoir ?? 0,
+                    'labo_info' => $ssf->labo_info ?? 0,
+                    'labo_comm' => $ssf->labo_comm ?? 0,
+                    'labo_langue' => $ssf->labo_langue ?? 0,
+                    'voyage_etude' => $ssf->voyage_etude ?? 0,
+                    'colloque' => $ssf->colloque ?? 0,
+                    'frais_costume' => $ssf->frais_costume ?? 0,
+                    'total_amount' => $ssf->total_amount ?? 0,
+                    // keep backward-compatible key used previously
+                    'total_due' => $ssf->total_amount ?? ($computed['total_due'] ?? 0),
+                ];
+            } else {
+                // If SSF is missing but we have enough context, try to compute & persist it using the InstallmentService
+                if ($student && isset($student->academic_year_id) && isset($student->semester_id)) {
+                    try {
+                        $service = new \App\Services\InstallmentService();
+                        $record = $service->computeSemesterFees($student->fresh(), $student->academic_year_id, $student->semester_id, auth()->id() ?? null);
+                        if ($record) {
+                            // map persisted record
+                            $finance->computed = (object)[
+                                'frais_generaux' => $record->frais_generaux ?? 0,
+                                'ecolage' => $record->ecolage ?? 0,
+                                'cantine' => $record->cantine ?? 0,
+                                'dortoir' => $record->dortoir ?? 0,
+                                'labo_info' => $record->labo_info ?? 0,
+                                'labo_comm' => $record->labo_comm ?? 0,
+                                'labo_langue' => $record->labo_langue ?? 0,
+                                'voyage_etude' => $record->voyage_etude ?? 0,
+                                'colloque' => $record->colloque ?? 0,
+                                'frais_costume' => $record->frais_costume ?? 0,
+                                'total_amount' => $record->total_amount ?? 0,
+                                'total_due' => $record->total_amount ?? ($computed['total_due'] ?? 0),
+                            ];
+                        } else {
+                            $finance->computed = (object)$computed;
+                        }
+                    } catch (\Throwable $e) {
+                        // If compute fails, fall back to the in-memory computed values
+                        logger()->warning('financesList: failed to compute StudentSemesterFee for student ' . ($student->id ?? 'unknown') . ': ' . $e->getMessage());
+                        $finance->computed = (object)$computed;
+                    }
+                } else {
+                    $finance->computed = (object)$computed;
+                }
+            }
         }
 
         return view('superadmin.finances.list', compact('finances', 'lastChangedBy', 'lastChangedAt'));

@@ -77,6 +77,11 @@ class User extends Authenticatable
         return $this->role === 'accountant';
     }
 
+    public function isChiefAccountant(): bool
+    {
+        return $this->role === 'chief_accountant';
+    }
+
     public function isMultimedia(): bool
     {
         return $this->role === 'responsable_multimedia' || $this->role === 'multimedia';

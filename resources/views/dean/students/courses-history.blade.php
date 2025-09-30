@@ -69,12 +69,29 @@
                 <div class="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-x-16 -translate-y-16 animate-float"></div>
                 <div class="absolute bottom-0 right-0 w-24 h-24 bg-white/5 rounded-full translate-x-12 translate-y-12 animate-float-delayed"></div>
                 
+                @php
+                    // Courses actually taken (not soft-removed)
+                    $takenCourses = $student->courses()->wherePivot('deleted_at', null)->get();
+                    $takenCount = $takenCourses->count();
+                    $takenCredits = $takenCourses->sum('credits');
+                @endphp
+
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 relative z-10">
                     <div class="animate-slide-in-left">
                         <h1 class="text-3xl md:text-4xl font-bold text-white mb-2 font-['Work_Sans']">
                             Cours de {{ $student->prenom }} {{ $student->nom }}
                         </h1>
                         <p class="text-blue-100 text-lg font-['Open_Sans']">Gestion des inscriptions aux cours</p>
+                        <div class="mt-3 flex items-center space-x-3">
+                            <span class="inline-flex items-center bg-white/20 text-white px-3 py-1 rounded-lg text-sm font-medium">
+                                <i class="fas fa-list mr-2"></i>
+                                Cours pris: <strong class="ml-2">{{ $takenCount }}</strong>
+                            </span>
+                            <span class="inline-flex items-center bg-white/20 text-white px-3 py-1 rounded-lg text-sm font-medium">
+                                <i class="fas fa-coins mr-2"></i>
+                                Total crédits: <strong class="ml-2">{{ $takenCredits }}</strong>
+                            </span>
+                        </div>
                     </div>
                     
                     <div class="animate-slide-in-right flex items-center space-x-3">    

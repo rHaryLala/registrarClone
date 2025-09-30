@@ -10,7 +10,14 @@
 
     <style>
         body { font-family: 'Open Sans', sans-serif; }
-        .sidebar { width: 260px; transition: all 0.3s; }
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1954b4 0%, #0b2d5c 100%);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+        }
         .main-content { margin-left: 260px; transition: all 0.3s; }
         @media (max-width: 768px) {
             .sidebar { margin-left: -260px; }
@@ -48,10 +55,10 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 min-h-screen font-body">
-    @include('superadmin.components.sidebar')
+    @include('multimedia.components.sidebar')
     
     <div class="main-content min-h-screen">
-        @include('superadmin.components.header')
+        @include('multimedia.components.header')
         @if(isset($student) && $student->lastChangedBy)
             <div id="last-change-toast" class="fixed top-4 right-4 z-50 bg-white border border-gray-200 shadow-lg rounded-lg px-4 py-3 flex items-start gap-3" role="status" aria-live="polite">
                 <div class="text-blue-600 mt-1"><i class="fas fa-user-edit"></i></div>
@@ -661,7 +668,7 @@
     // Recompute StudentSemesterFee via AJAX and show a small notification
     async function recomputeSemesterFee() {
         try {
-            const res = await fetch("{{ url('/superadmin/students/' . $student->id . '/recompute-semester-fee') }}", {
+            const res = await fetch("{{ url('/multimedia/students/' . $student->id . '/recompute-semester-fee') }}", {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',

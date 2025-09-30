@@ -20,7 +20,10 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials, $request->remember)) {
+    // Normalize remember value to a boolean. Checkbox sends its name only when checked.
+    $remember = $request->has('remember');
+
+    if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
             // Redirection selon le rôle

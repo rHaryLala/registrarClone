@@ -17,23 +17,28 @@
     <nav class="p-4 flex-1 overflow-y-auto">
         <ul class="space-y-1">
             <li>
+                @php $mmDashboardActive = request()->routeIs('multimedia.dashboard'); @endphp
                 <a href="{{ route('multimedia.dashboard') }}"
-                   class="nav-item group flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-700/50 hover:translate-x-1 {{ request()->routeIs('dean.dashboard') ? 'bg-blue-900/80 text-blue-100 shadow-lg' : 'hover:text-blue-100' }}">
+                   class="nav-item group flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-700/50 hover:translate-x-1 {{ $mmDashboardActive ? 'bg-blue-900/80 text-blue-100 shadow-lg' : 'hover:text-blue-100' }}"
+                   {{ $mmDashboardActive ? 'aria-current="page"' : '' }}>
                     <div class="w-5 h-5 flex items-center justify-center">
                         <i class="fas fa-tachometer-alt text-sm group-hover:scale-110 transition-transform duration-200"></i>
                     </div>
                     <span class="font-medium">Tableau de bord</span>
-                    <div class="ml-auto w-1 h-6 bg-blue-300 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 {{ request()->routeIs('dean.dashboard') ? 'opacity-100' : '' }}"></div>
+                    <div class="ml-auto w-1 h-6 bg-blue-300 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 {{ $mmDashboardActive ? 'opacity-100' : '' }}"></div>
                 </a>
             </li>
             <li>
-                <a href="{{ route('dean.students.index') }}"
-                   class="nav-item group flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-700/50 hover:translate-x-1 {{ request()->routeIs('dean.students.*') ? 'bg-blue-900/80 text-blue-100 shadow-lg' : 'hover:text-blue-100' }}">
+                {{-- Link prompts for a student id then navigates to /multimedia/students/{id} --}}
+                @php $studentsActive = request()->routeIs('multimedia.students.*'); @endphp
+                <a href="#" onclick="event.preventDefault(); const sid = prompt('Entrez l\'ID de l\'étudiant (ex: 123)'); if(sid) { window.location = '/multimedia/students/' + encodeURIComponent(sid); }"
+                   class="nav-item group flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-700/50 hover:translate-x-1 {{ $studentsActive ? 'bg-blue-900/80 text-blue-100 shadow-lg' : 'hover:text-blue-100' }}"
+                   {{ $studentsActive ? 'aria-current="page"' : '' }}>
                     <div class="w-5 h-5 flex items-center justify-center">
                         <i class="fas fa-graduation-cap text-sm group-hover:scale-110 transition-transform duration-200"></i>
                     </div>
                     <span class="font-medium">Étudiants</span>
-                    <div class="ml-auto w-1 h-6 bg-blue-300 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 {{ request()->routeIs('dean.students.*') ? 'opacity-100' : '' }}"></div>
+                    <div class="ml-auto w-1 h-6 bg-blue-300 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 {{ $studentsActive ? 'opacity-100' : '' }}"></div>
                 </a>
             </li>
         </ul>

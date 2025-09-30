@@ -78,6 +78,26 @@
             <h3 style="text-align: left">LISTE DES COURS</h3>
         </center>
         <div style="min-height: 300px;">
+            @php
+                // Load taken courses once and compute totals.
+                $takenCourses = $student->courses()->wherePivot('deleted_at', null)->with('yearLevels')->get();
+                $totalCredits = 0; // credits counted towards the main credit total (excludes L1R-only courses)
+                $l1r_cost = 0; // monetary cost for courses that belong only to L1R
+                $laboCount = 0;
+
+                foreach($takenCourses as $course) {
+                    $codes = $course->yearLevels->pluck('code')->map(function($c){ return strtoupper($c); })->filter()->values()->toArray();
+                    // If the course is attached only to L1R (all year codes are L1R), treat specially
+                    if(count($codes) > 0 && collect($codes)->unique()->count() === 1 && strtoupper($codes[0]) === 'L1R') {
+                        $l1r_cost += ($course->credits * 19000);
+                    } else {
+                        $totalCredits += $course->credits;
+                    }
+                    if ($course->labo_info) $laboCount++;
+                }
+
+            @endphp
+
             <div class="informationbox col-lg-12" style="border-radius: 0px;">
                 <table class="tbl">
                     <thead>
@@ -90,14 +110,21 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            $totalCredits = 0;
-                        @endphp
-                        @foreach($student->courses()->wherePivot('deleted_at', null)->get() as $course)
+                        @foreach($takenCourses as $course)
+                            @php
+                                $codes = $course->yearLevels->pluck('code')->map(function($c){ return strtoupper($c); })->filter()->values()->toArray();
+                                $isOnlyL1R = (count($codes) > 0 && collect($codes)->unique()->count() === 1 && strtoupper($codes[0]) === 'L1R');
+                            @endphp
                             <tr>
                                 <td>{{ $course->sigle }}</td>
                                 <td>{{ $course->nom }}</td>
-                                <td>{{ $course->credits }}</td>
+                                <td>
+                                    @if($isOnlyL1R)
+                                        -
+                                    @else
+                                        {{ $course->credits }}
+                                    @endif
+                                </td>
                                 <td>
                                     {{ $course->categorie ?? '-' }}
                                 </td>
@@ -105,10 +132,9 @@
                                     {{ number_format($course->credits * 19000, 0, ',', ' ') }} Ar
                                 </td>
                             </tr>
-                            @php $totalCredits += $course->credits; @endphp
                         @endforeach
                         <tr>
-                            <td class="marck">Cours : {{ $student->courses()->wherePivot('deleted_at', null)->count() }}</td>
+                            <td class="marck">Cours : {{ $takenCourses->count() }}</td>
                             <td></td>
                             <td class="marck">{{ $totalCredits }}</td>
                             <td></td>
@@ -121,7 +147,10 @@
             <!-- Tableau Finance adapté ici -->
             <div  style="border-radius: 0px; margin-bottom: 15px;">
                 @php
-                    // Try to load precomputed fees from StudentSemesterFee for the student's current academic year & semester
+                    // Read values directly from StudentSemesterFee (no calculation in the view)
+                    // Try to find the SSF that matches the student's current academic_year_id/semester_id.
+                    // If that fails (e.g. student record hasn't the same semester as the computed SSF),
+                    // fall back to the latest computed SSF for this student.
                     $ssf = null;
                     if(isset($student->academic_year_id) && isset($student->semester_id)) {
                         $ssf = \App\Models\StudentSemesterFee::where('student_id', $student->id)
@@ -130,54 +159,57 @@
                             ->first();
                     }
 
-                    // Détection L1 (Licence 1)
-                    $isL1 = false;
-                    if(isset($student->yearLevel)) {
-                        $label = strtolower($student->yearLevel->label ?? '');
-                        $isL1 = (strpos($label, '1') !== false || strpos($label, 'l1') !== false || $label === 'l1' || $label === '1');
+                    if(! $ssf) {
+                        // Fallback: pick the most recently computed SSF for the student.
+                        $ssf = \App\Models\StudentSemesterFee::where('student_id', $student->id)
+                            ->orderByDesc('computed_at')
+                            ->orderByDesc('updated_at')
+                            ->first();
                     }
 
-                    // Compute fallbacks (as before) but prefer stored SSF values when available
-                    $totalCredits = 0;
-                    $laboCount = 0;
-                    foreach($student->courses()->wherePivot('deleted_at', null)->get() as $course) {
-                        $totalCredits += $course->credits;
-                        if ($course->labo_info) $laboCount++;
-                    }
-                    $coutCredit = $ssf ? ($ssf->ecolage ?? ($totalCredits * 19000)) : ($totalCredits * 19000);
-                    $fraisGeneraux = $ssf ? ($ssf->frais_generaux ?? ($isL1 ? 250000 : 0)) : ($isL1 ? 250000 : (isset($student->frais_generaux) ? $student->frais_generaux : 0));
-                    $coutDortoir = $ssf ? ($ssf->dortoir ?? ((isset($student->statut_interne) && $student->statut_interne) ? (3000 * 123) : (isset($student->cout_dortoir) ? $student->cout_dortoir : 0))) : ((isset($student->statut_interne) && $student->statut_interne) ? (3000 * 123) : (isset($student->cout_dortoir) ? $student->cout_dortoir : 0));
-                    $coutCantine = $ssf ? ($ssf->cantine ?? ((isset($student->abonne_caf) && $student->abonne_caf) ? (8000 * 123) : (isset($student->cout_cantine) ? $student->cout_cantine : 0))) : ((isset($student->abonne_caf) && $student->abonne_caf) ? (8000 * 123) : (isset($student->cout_cantine) ? $student->cout_cantine : 0));
-                    // Coût labo : 35 000 par cours nécessitant le labo, plafonné à 70 000
-                    $coutLabo = $ssf ? (($ssf->labo_info + $ssf->labo_comm + $ssf->labo_langue) ?: ($laboCount > 0 ? min($laboCount * 35000, 70000) : 0)) : ($laboCount > 0 ? min($laboCount * 35000, 70000) : 0);
-                    $voyage_etude = $ssf ? ($ssf->voyage_etude ?? 150000) : 150000;
-                    $colloque = $ssf ? ($ssf->colloque ?? 0) : 0;
-                    $costume = $ssf ? ($ssf->frais_costume ?? 0) : 0;
+                    // When SSF exists, prefer its fields. Otherwise default to zero (we no longer compute from courses here).
+                    $fraisGeneraux = $ssf ? (float) ($ssf->frais_generaux ?? 0) : 0.0;
+                    $coutCredit = $ssf ? (float) ($ssf->ecolage ?? 0) : 0.0;
+                    $coutDortoir = $ssf ? (float) ($ssf->dortoir ?? 0) : 0.0;
+                    $coutCantine = $ssf ? (float) ($ssf->cantine ?? 0) : 0.0;
+                    $labo_info_only = $ssf ? (float) ($ssf->labo_info ?? 0) : 0.0;
+                    $labo_comm_only = $ssf ? (float) ($ssf->labo_comm ?? 0) : 0.0;
+                    $labo_lang_only = $ssf ? (float) ($ssf->labo_langue ?? 0) : 0.0;
+                    $labo_info = $labo_info_only + $labo_comm_only + $labo_lang_only;
+                    $voyage_etude = $ssf ? (float) ($ssf->voyage_etude ?? 0) : 0.0;
+                    $colloque = $ssf ? (float) ($ssf->colloque ?? 0) : 0.0;
+                    $costume = $ssf ? (float) ($ssf->frais_costume ?? 0) : 0.0;
+                    $totalFinance = $ssf ? (float) ($ssf->total_amount ?? 0) : 0.0;
 
-                    $totalFinance = ($fraisGeneraux ?? 0) + ($coutCredit ?? 0) + ($coutLabo ?? 0) + ($voyage_etude ?? 0) + ($colloque ?? 0) + ($costume ?? 0);
-                    if(isset($student->statut_interne) && $student->statut_interne) $totalFinance += $coutDortoir;
-                    if(isset($student->abonne_caf) && $student->abonne_caf) $totalFinance += $coutCantine;
-                @endphp
-                @php
-                    // Labo info separated (prefer stored value)
-                    $labo_info = $ssf ? ($ssf->labo_info ?? 0) : ($laboCount > 0 ? min($laboCount * 35000, 70000) : 0);
-
-                    // Subtotals
-                    $subtotal1 = ($fraisGeneraux ?? 0) + ($coutCredit ?? 0) + ($labo_info ?? 0);
-                    if(isset($student->statut_interne) && $student->statut_interne) $subtotal1 += ($coutDortoir ?? 0);
-                    if(isset($student->abonne_caf) && $student->abonne_caf) $subtotal1 += ($coutCantine ?? 0);
-
-                    // Voyage / Colloque and costume
+                    // Subtotals derived from persisted fields only
+                    $subtotal1 = $fraisGeneraux + $coutCredit + $labo_info + $coutDortoir + $coutCantine;
                     $voyage_or_colloque = ($colloque && $colloque > 0) ? $colloque : $voyage_etude;
-                    $subtotal2 = ($voyage_or_colloque ?? 0) + ($costume ?? 0);
+                    $subtotal2 = $voyage_or_colloque + $costume;
 
                     // Determine payment mode (plan) from latest finance row for this student (by matricule)
                     $modeP = \App\Models\Finance::where('student_id', $student->matricule)
                         ->orderByDesc('date_entry')
                         ->value('plan') ?? 'A';
 
-                    // Montant sans frais généraux = montant total à payer (totalFinance) - fraisGeneraux
-                    $Montant_sans_frais_Generaux = ($totalFinance ?? 0) - ($fraisGeneraux ?? 0);
+                    // Montant sans frais généraux = montant total à payer (persisted) - fraisGeneraux
+                    $Montant_sans_frais_Generaux = max(0, $totalFinance - $fraisGeneraux);
+
+                    // Detect if we should show the 'Costume' column: only for mention 'théologie'
+                    $mentionName = isset($student->mention->nom) ? $student->mention->nom : '';
+                    // Normalize accents without relying on iconv
+                    $map = [
+                        'À'=>'A','Á'=>'A','Â'=>'A','Ã'=>'A','Ä'=>'A','Å'=>'A','Æ'=>'AE',
+                        'Ç'=>'C','È'=>'E','É'=>'E','Ê'=>'E','Ë'=>'E','Ì'=>'I','Í'=>'I',
+                        'Î'=>'I','Ï'=>'I','Ð'=>'D','Ñ'=>'N','Ò'=>'O','Ó'=>'O','Ô'=>'O',
+                        'Õ'=>'O','Ö'=>'O','Ø'=>'O','Ù'=>'U','Ú'=>'U','Û'=>'U','Ü'=>'U',
+                        'Ý'=>'Y','Þ'=>'P','ß'=>'ss','à'=>'a','á'=>'a','â'=>'a','ã'=>'a',
+                        'ä'=>'a','å'=>'a','æ'=>'ae','ç'=>'c','è'=>'e','é'=>'e','ê'=>'e',
+                        'ë'=>'e','ì'=>'i','í'=>'i','î'=>'i','ï'=>'i','ð'=>'d','ñ'=>'n',
+                        'ò'=>'o','ó'=>'o','ô'=>'o','õ'=>'o','ö'=>'o','ø'=>'o','ù'=>'u',
+                        'ú'=>'u','û'=>'u','ü'=>'u','ý'=>'y','þ'=>'p','ÿ'=>'y'
+                    ];
+                    $mentionAscii = strtolower(strtr($mentionName, $map));
+                    $showCostume = (strpos($mentionAscii, 'theolog') !== false);
                 @endphp
 
                 <div style="display:flex; gap:24px;">
@@ -223,7 +255,9 @@
                             <thead>
                                 <tr>
                                     <th>Voyage d'étude / Colloque</th>
-                                    <th>Costume</th>
+                                    @if($showCostume)
+                                        <th>Costume</th>
+                                    @endif
                                     <th>Sous-total</th>
                                     <th>Plan de paiement</th>
                                 </tr>
@@ -231,7 +265,9 @@
                             <tbody>
                                 <tr>
                                     <td>{{ number_format($voyage_or_colloque ?? 0, 0, ',', ' ') }} Ar</td>
-                                    <td>{{ number_format($costume ?? 0, 0, ',', ' ') }} Ar</td>
+                                            @if($showCostume)
+                                                <td>{{ number_format($costume ?? 0, 0, ',', ' ') }} Ar</td>
+                                            @endif
                                     <td><strong><span>{{ number_format($subtotal2, 0, ',', ' ') }} Ar</span></strong></td>
                                     <td><strong><span>à payer pendant le semestre</span></strong></td>
                                 </tr>

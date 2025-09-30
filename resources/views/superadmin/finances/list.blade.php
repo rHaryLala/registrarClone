@@ -125,12 +125,14 @@
         }
         
         .table-row {
-            transition: all 0.2s ease;
+            /* remove transition/hover animation to keep table stable on hover */
+            transition: none;
         }
-        
+
         .table-row:hover {
-            background-color: #f8fafc;
-            transform: translateX(4px);
+            /* neutral hover: no background change and no transform */
+            background-color: transparent;
+            transform: none;
         }
         
         .amount-highlight {
@@ -140,6 +142,13 @@
             background-clip: text;
             font-weight: 600;
         }
+    .payment-table td { font-size: 1rem; }
+    .payment-table th { font-size: 0.95rem; }
+    .date-text { font-size: 1rem; font-weight: 600; color: #374151; }
+    /* Details (left column) sizing */
+    .details-table td { font-size: 1rem; padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .bg-gray-50 h3 { font-size: 1.05rem; }
+    .details-table tr.border-t td { font-size: 1.05rem; font-weight: 700; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
@@ -169,6 +178,8 @@
                     <div class="font-semibold text-gray-900">Dernière modification</div>
                     <div class="text-sm text-gray-600">Par {{ $lcName }}@if($lcWhen) • {{ $lcWhen }}@endif</div>
                 </div>
+
+                {{-- payment preview removed from toast (moved below) --}}
                 <button id="last-change-toast-close" class="ml-3 text-gray-400 hover:text-gray-600" aria-label="Fermer">&times;</button>
             </div>
             <script>
@@ -184,26 +195,20 @@
         @endif
 
         <main class="p-6 max-w-7xl mx-auto">
-            <!-- Header moderne avec gradient et fonctionnalités de recherche -->
+            <!-- Back button + Header moderne avec gradient et fonctionnalités de recherche -->
+            <div class="mb-4">
+                <button type="button" onclick="history.back()" aria-label="Retour" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm">
+                    <i class="fas fa-arrow-left"></i>
+                    <span class="font-medium">Retour</span>
+                </button>
+            </div>
             <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-2xl p-8 mb-8 text-white shadow-2xl fade-in">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                     <div>
                         <h1 class="text-3xl font-bold mb-2">Gestion des Finances Étudiantes</h1>
                         <p class="text-blue-100 text-lg">Gérez les paiements et frais de scolarité</p>
                     </div>
-                    
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <div class="search-container">
-                            <div class="relative">
-                                <input type="text" 
-                                       id="searchInput" 
-                                       placeholder="Rechercher un étudiant..." 
-                                       class="search-input w-full sm:w-80 px-4 py-3 pl-12 rounded-xl border-0 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0">
-                                <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            </div>
-                        </div>
-            
-                    </div>
+                
                 </div>
             </div>
 
@@ -214,10 +219,8 @@
                         <thead class="bg-gradient-to-r from-gray-50 to-blue-50">
                             <tr>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Étudiant</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Plan</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Crédits totaux</th>
-                                   <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Montant dû</th>
-                                   <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Détails</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Matricule</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Mode de paiement</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100" id="financeTableBody">
@@ -233,201 +236,209 @@
                                         </div>
                                         <div>
                                             <div class="font-semibold text-gray-900">{{ $finance->student->prenom ?? '' }} {{ $finance->student->nom ?? '' }}</div>
-                                            <div class="text-sm text-gray-500">ID: {{ $finance->student->matricule ?? '-' }}</div>
                                         </div>
                                     </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-600">{{ $finance->student->matricule ?? '-' }}</div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 plan-cell" data-finance-id="{{ $finance->id }}" title="Double-cliquer pour modifier">
                                         {{ $finance->plan ?? '-' }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-gray-900 font-medium">{{ $finance->total_credit ?? 0 }}</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="amount-highlight text-lg font-bold">{{ $finance->total_payment ?? '0' }}</span>
-                                </td>
                             </tr>
 
-                            {{-- Installments row (desktop): show student_installments for this finance's student --}}
-                            @php
-                                // Use the eager-loaded installments where possible. If student relation is missing,
-                                // try to resolve by matricule as a fallback and load installments ordered by sequence.
-                                $installments = collect();
-                                if (!empty($finance->student)) {
-                                    $installments = $finance->student->installments ?? collect();
-                                } elseif (!empty($finance->student_id)) {
-                                    $fallbackStudent = \App\Models\Student::where('matricule', $finance->student_id)->first();
-                                    if ($fallbackStudent) {
-                                        $installments = $fallbackStudent->installments()->orderBy('sequence')->get();
-                                    }
-                                }
-                            @endphp
-                            @if($installments->count())
-                            <tr class="bg-gray-50">
-                                <td colspan="5" class="px-6 py-3">
-                                    <div class="text-sm font-medium text-gray-700 mb-2">Échéances pour {{ $finance->student->prenom ?? '-' }} {{ $finance->student->nom ?? '-' }}</div>
-                                    <div class="overflow-x-auto">
-                                        <table class="min-w-full text-sm">
-                                            <thead>
-                                                <tr class="text-left text-gray-600 text-xs uppercase">
-                                                    <th class="px-2 py-1">#</th>
-                                                    <th class="px-2 py-1">Montant dû</th>
-                                                    <th class="px-2 py-1">Montant payé</th>
-                                                    <th class="px-2 py-1">Échéance</th>
-                                                    <th class="px-2 py-1">Statut</th>
-                                                    <th class="px-2 py-1">Référence</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($installments as $inst)
-                                                <tr class="border-t">
-                                                    <td class="px-2 py-1">{{ $inst->sequence }}</td>
-                                                    <td class="px-2 py-1">{{ number_format($inst->amount_due, 2, ',', ' ') }} FCFA</td>
-                                                    <td class="px-2 py-1">{{ number_format($inst->amount_paid, 2, ',', ' ') }} FCFA</td>
-                                                    <td class="px-2 py-1">{{ $inst->due_at ? \Carbon\Carbon::parse($inst->due_at)->format('d/m/Y') : '-' }}</td>
-                                                    <td class="px-2 py-1">{{ ucfirst($inst->status) }}</td>
-                                                    <td class="px-2 py-1">{{ $inst->reference ?? '-' }}</td>
-                                                </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endif
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-            </div>
 
-            {{-- duplicate desktop installments block removed (installments are rendered inline inside the table loop) --}}
+                {{-- Payment plan block shown at the bottom for the first finance's student (if available) --}}
+                @php
+                    $firstFinance = $finances->first() ?? null;
+                    $studentForPlan = $firstFinance->student ?? null;
+                    $computed = $firstFinance->computed ?? null;
+                    $Montant_sans_frais_Generaux = 0;
+                    // montant de base pour le calcul des tranches: Ecolage + Labo* + Dortoir + Cantine
+                    $Montant_tranche_base = 0;
+                    $modeP = $firstFinance->plan ?? 'A';
+                    if ($studentForPlan && $computed) {
+                        $Montant_sans_frais_Generaux = max(0, ($computed->total_due ?? 0) - ($computed->frais_generaux ?? 0));
+                        $Montant_tranche_base = (
+                            ($computed->ecolage ?? 0) +
+                            ($computed->labo_info ?? 0) +
+                            ($computed->labo_comm ?? 0) +
+                            ($computed->labo_langue ?? 0) +
+                            ($computed->dortoir ?? 0) +
+                            ($computed->cantine ?? 0)
+                        );
+                        $modeP = \App\Models\Finance::where('student_id', $studentForPlan->matricule)
+                                    ->orderByDesc('date_entry')
+                                    ->value('plan') ?? $modeP;
+                    }
+                @endphp
 
-            <!-- Version mobile avec cartes -->
-            <div class="lg:hidden space-y-4" id="financeCardsContainer">
-                @foreach($finances as $index => $finance)
-             <div class="finance-card bg-white rounded-xl p-6 shadow-lg stagger-{{ ($index % 4) + 1 }} finance-row"
-                 data-student="{{ strtolower($finance->student->prenom ?? '') }} {{ strtolower($finance->student->nom ?? '') }}"
-                 data-type="{{ strtolower($finance->plan ?? '') }}"
-                 data-status="{{ strtolower(($finance->total_payment ?? '0') != '0' ? 'payé' : 'en_attente') }}">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold mr-4">
-                                {{ substr($finance->student->prenom ?? 'U', 0, 1) }}{{ substr($finance->student->nom ?? 'N', 0, 1) }}
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-gray-900 text-lg">{{ $finance->student->prenom ?? '' }} {{ $finance->student->nom ?? '' }}</h3>
-                                <p class="text-gray-500 text-sm">ID: {{ $finance->student->id ?? '-' }}</p>
-                            </div>
-                        </div>
-                        <span class="status-badge inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                            @if($finance->status == 'payé') bg-green-100 text-green-800
-                            @elseif($finance->status == 'en_attente') bg-yellow-100 text-yellow-800
-                            @else bg-red-100 text-red-800 @endif">
-                            <i class="fas fa-circle mr-1 text-xs"></i>
-                            {{ ucfirst(str_replace('_', ' ', $finance->status)) }}
-                        </span>
-                        <div class="ml-4 text-right">
-                            <div><span class="amount-highlight text-lg font-bold">{{ number_format($finance->computed->total_due ?? 0, 0, ',', ' ') }} Ar</span></div>
-                            <div class="text-sm text-gray-600">
-                                <div>Frais généraux: {{ number_format($finance->computed->frais_generaux ?? 0, 0, ',', ' ') }} Ar</div>
-                                <div>Écolage: {{ number_format($finance->computed->ecolage ?? 0, 0, ',', ' ') }} Ar</div>
-                                <div>Cantine: {{ number_format($finance->computed->cantine ?? 0, 0, ',', ' ') }} Ar</div>
-                                <div>Dortoir: {{ number_format($finance->computed->dortoir ?? 0, 0, ',', ' ') }} Ar</div>
-                            </div>
-                        </div>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">Type</p>
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                <i class="fas fa-tag mr-1"></i>
-                                {{ $finance->type }}
-                            </span>
-                        </div>
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">Montant</p>
-                            <p class="amount-highlight text-xl font-bold">{{ number_format($finance->montant, 2) }} Ar</p>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4 grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">Matricule</p>
-                            <p class="text-gray-900 font-medium">{{ $finance->student->matricule ?? '-' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">Plan</p>
-                            <p class="text-gray-900 font-medium plan-cell" data-finance-id="{{ $finance->id }}">{{ $finance->plan ?? '-' }}</p>
-                        </div>
-                    </div>
+                @if($studentForPlan)
+                    <div class="bg-white rounded-2xl shadow-md p-6 mt-6">
 
-                    <div class="mb-4 grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">Crédits totaux</p>
-                            <p class="text-gray-900 font-medium">{{ $finance->total_credit ?? 0 }}</p>
-                        </div>
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">Total payé</p>
-                            <p class="text-gray-900 font-medium">{{ $finance->total_payment ?? '0' }}</p>
-                        </div>
-                    </div>
-                    
-                    {{-- Installments (mobile card) --}}
-                    @php
-                        $installments = collect();
-                        if (!empty($finance->student)) {
-                            $installments = $finance->student->installments ?? collect();
-                        } elseif (!empty($finance->student_id)) {
-                            $fallbackStudent = \App\Models\Student::where('matricule', $finance->student_id)->first();
-                            if ($fallbackStudent) {
-                                $installments = $fallbackStudent->installments()->orderBy('sequence')->get();
-                            }
-                        }
-                    @endphp
-                    @if($installments && $installments->count())
-                        <div class="mb-4">
-                            <h4 class="text-sm font-semibold text-gray-600 mb-2">Échéances</h4>
-                            <div class="space-y-2 text-sm text-gray-700">
-                                @foreach($installments as $inst)
-                                    <div class="flex items-center justify-between bg-gray-50 rounded px-3 py-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="font-medium">#{{ $inst->sequence }}</div>
-                                            <div class="text-gray-600">{{ number_format($inst->amount_due, 2, ',', ' ') }} FCFA</div>
-                                        </div>
-                                        <div class="text-right text-sm">
-                                            <div class="text-gray-700">{{ $inst->due_at ? \Carbon\Carbon::parse($inst->due_at)->format('d/m/Y') : '-' }}</div>
-                                            <div class="text-xs text-gray-500">{{ ucfirst($inst->status) }} • {{ $inst->reference ?? '-' }}</div>
+                        {{-- expose montant to JS so we can rebuild the payment table dynamically --}}
+                        <input type="hidden" id="montant-sans-frais" value="{{ $Montant_sans_frais_Generaux }}">
+                        {{-- base pour tranches = ecolage + labos + dortoir + cantine --}}
+                        <input type="hidden" id="montant-tranche-base" value="{{ $Montant_tranche_base }}">
+
+                        <div class="flex flex-col lg:flex-row gap-6 mt-4 items-start">
+                            {{-- Left column: breakdown from student_semester_fees (via $computed)
+                                 Right column: payment table (tranches) --}}
+                            <div class="bg-gray-50 rounded-lg p-4 shadow-sm">
+                                <h3 class="font-semibold mb-3">Détails</h3>
+                                <table class="w-full text-sm text-gray-700 details-table">
+                                    <tbody>
+                                        <tr>
+                                            <td class="py-2">Frais généraux</td>
+                                            <td class="py-2 text-right font-medium">{{ number_format($computed->frais_generaux ?? 0, 0, ',', ' ') }} ar</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2">Dortoir</td>
+                                            <td class="py-2 text-right font-medium">{{ number_format($computed->dortoir ?? 0, 0, ',', ' ') }} ar</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2">Cantine</td>
+                                            <td class="py-2 text-right font-medium">{{ number_format($computed->cantine ?? 0, 0, ',', ' ') }} ar</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2">Labo info</td>
+                                            <td class="py-2 text-right font-medium">{{ number_format($computed->labo_info ?? 0, 0, ',', ' ') }} ar</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2">Labo comm</td>
+                                            <td class="py-2 text-right font-medium">{{ number_format($computed->labo_comm ?? 0, 0, ',', ' ') }} ar</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2">Labo langue</td>
+                                            <td class="py-2 text-right font-medium">{{ number_format($computed->labo_langue ?? 0, 0, ',', ' ') }} ar</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2">Ecolage</td>
+                                            <td class="py-2 text-right font-medium">{{ number_format($computed->ecolage ?? 0, 0, ',', ' ') }} ar</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2">Voyage d'étude</td>
+                                            <td class="py-2 text-right font-medium">{{ number_format($computed->voyage_etude ?? 0, 0, ',', ' ') }} ar</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2">Colloque</td>
+                                            <td class="py-2 text-right font-medium">{{ number_format($computed->colloque ?? 0, 0, ',', ' ') }} ar</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2">Frais costume</td>
+                                            <td class="py-2 text-right font-medium">{{ number_format($computed->frais_costume ?? 0, 0, ',', ' ') }} ar</td>
+                                        </tr>
+                                        <tr class="border-t mt-2">
+                                            <td class="py-3 font-semibold">Total</td>
+                                            <td class="py-3 text-right font-semibold">{{ number_format($computed->total_amount ?? $computed->total_due ?? 0, 0, ',', ' ') }} ar</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {{-- vertical separator on large screens --}}
+                            <div class="hidden lg:block w-px bg-gray-200"></div>
+
+                            {{-- Right column: payment plan card --}}
+                            <div class="w-full lg:w-1/2">
+                                <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                                    <div class="mb-3 flex items-center justify-between">
+                                        <div>
+                                            <h4 class="font-semibold text-lg">Plan de paiement — TYPE {{ $modeP }}</h4>
+                                            <div class="text-sm text-gray-500">Montant: {{ number_format($Montant_tranche_base, 0, ',', ' ') }} ar</div>
                                         </div>
                                     </div>
-                                @endforeach
+
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-100 payment-table" style="text-align:left; table-layout:fixed;">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-3 py-2 text-left text-sm font-medium text-gray-700" style="width:25%">Tranche</th>
+                                                    <th class="px-3 py-2 text-right pr-6 text-sm font-medium text-gray-700" style="width:25%">Montant</th>
+                                                    <th class="px-3 py-2 pl-6 text-left text-sm font-medium text-gray-700" style="width:50%">Échéance</th>
+                                                </tr>
+                                            </thead>
+                                                <tbody id="paymentTableBody" class="bg-white divide-y divide-gray-100">
+                                @if($modeP === 'A')
+                                    <tr>
+                                        <td class="px-3 py-2">100 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format($Montant_tranche_base, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">3 octobre 2025</span></td>
+                                    </tr>
+                                @elseif($modeP === 'B')
+                                    <tr>
+                                        <td class="px-3 py-2">50 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format(($Montant_tranche_base * 50) / 100, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">3 octobre 2025</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2">50 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format(($Montant_tranche_base * 50) / 100, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">30 janvier 2026</span></td>
+                                    </tr>
+                                @elseif($modeP === 'C')
+                                    <tr>
+                                        <td class="px-3 py-2">50 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format(($Montant_tranche_base * 50) / 100, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">3 octobre 2025</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2">25 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format(($Montant_tranche_base * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">19 décembre 2025</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2">25 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format(($Montant_tranche_base * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">30 janvier 2026</span></td>
+                                    </tr>
+                                @elseif($modeP === 'D')
+                                    <tr>
+                                        <td class="px-3 py-2">75 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format(($Montant_tranche_base * 75) / 100, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">3 octobre 2025</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2">25 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format(($Montant_tranche_base * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">30 janvier 2026</span></td>
+                                    </tr>
+                                @elseif($modeP === 'E')
+                                    <tr>
+                                        <td class="px-3 py-2">25 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format(($Montant_tranche_base * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">24 octobre 2025</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2">25 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format(($Montant_tranche_base * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">28 novembre 2025</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2">25 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">19 décembre 2025</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2">25 %</td>
+                                        <td class="px-3 py-2 text-right pr-6">{{ number_format(($Montant_sans_frais_Generaux * 25) / 100, 0, ',', ' ') }} ar</td>
+                                        <td class="px-3 py-2 pl-6"><span class="date-text text-sm text-gray-700">30 janvier 2026</span></td>
+                                    </tr>
+                                @endif
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    @endif
-                    
-                    <div class="flex justify-end space-x-2 pt-4 border-t border-gray-100">
-                        {{-- <a href="{{ route('superadmin.finances.show', $finance->id) }}" 
-                           class="action-btn bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 flex items-center gap-2">
-                            <i class="fas fa-eye"></i>
-                            <span>Voir</span>
-                        </a> --}}
-                        <a href="{{ route('superadmin.finances.edit', $finance->id) }}" 
-                           class="action-btn bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg hover:bg-yellow-200 flex items-center gap-2">
-                            <i class="fas fa-edit"></i>
-                            <span>Modifier</span>
-                        </a>
-                        <form action="{{ route('superadmin.finances.destroy', $finance->id) }}" method="POST" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette finance ?');">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="action-btn bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 flex items-center gap-2">
-                                <i class="fas fa-trash"></i>
-                                <span>Supprimer</span>
-                            </button>
-                        </form>
                     </div>
-                </div>
-                @endforeach
-            </div>
+                @endif
+
         </main>
     </div>
 
@@ -526,13 +537,27 @@
                         },
                         body: JSON.stringify({ plan: select.value })
                     }).then(r => r.json()).then(data => {
+                        const newPlan = data.plan || select.value;
                         const span = document.createElement('span');
                         span.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 plan-cell';
                         span.dataset.financeId = financeId;
-                        span.textContent = data.plan || select.value;
+                        span.textContent = newPlan;
                         select.replaceWith(span);
                         // reattach dblclick
                         span.addEventListener('dblclick', () => makePlanEditable(span));
+
+                        // Rebuild the payment table for the student if montant is present
+                        try {
+                            const montantInput = document.getElementById('montant-sans-frais');
+                            const montant = montantInput ? parseFloat(montantInput.value) : null;
+                            if (montant !== null && !isNaN(montant)) {
+                                buildPaymentTable(newPlan, montant);
+                            }
+                        } catch (e) {
+                            // silent fail — table will remain as-is
+                            console.error('Failed to rebuild payment table:', e);
+                        }
+
                     }).catch(err => {
                         // revert on error
                         const span = document.createElement('span');
@@ -562,6 +587,77 @@
         // Attach dblclick handlers to initial plan cells
         document.querySelectorAll('.plan-cell').forEach(el => {
             el.addEventListener('dblclick', () => makePlanEditable(el));
+        });
+
+        // Rebuilds the payment table tbody (#paymentTableBody) according to mode and montant
+        function buildPaymentTable(mode, montant) {
+            const tbody = document.getElementById('paymentTableBody');
+            if (!tbody) return;
+            // prefer the tranche base if provided by the server
+            const trancheBaseInput = document.getElementById('montant-tranche-base');
+            const trancheBase = trancheBaseInput ? Number(trancheBaseInput.value) : null;
+            montant = Number(trancheBase !== null && !isNaN(trancheBase) && trancheBase > 0 ? trancheBase : montant) || 0;
+            const fmt = (v) => v.toLocaleString('fr-FR', {maximumFractionDigits:0});
+            const rows = [];
+
+            if (mode === 'A') {
+                rows.push([ '100 %', `${fmt(montant)} ar`, '<span class="date-text">3 octobre 2025</span>' ]);
+            } else if (mode === 'B') {
+                const v = Math.round(montant * 0.5);
+                rows.push([ '50 %', `${fmt(v)} ar`, '<span class="date-text">3 octobre 2025</span>' ]);
+                rows.push([ '50 %', `${fmt(v)} ar`, '<span class="date-text">30 janvier 2026</span>' ]);
+            } else if (mode === 'C') {
+                const v1 = Math.round(montant * 0.5);
+                const v2 = Math.round(montant * 0.25);
+                rows.push([ '50 %', `${fmt(v1)} ar`, '<span class="date-text">3 octobre 2025</span>' ]);
+                rows.push([ '25 %', `${fmt(v2)} ar`, '<span class="date-text">19 décembre 2025</span>' ]);
+                rows.push([ '25 %', `${fmt(v2)} ar`, '<span class="date-text">30 janvier 2026</span>' ]);
+            } else if (mode === 'D') {
+                const v1 = Math.round(montant * 0.75);
+                const v2 = Math.round(montant * 0.25);
+                rows.push([ '75 %', `${fmt(v1)} ar`, '<span class="date-text">3 octobre 2025</span>' ]);
+                rows.push([ '25 %', `${fmt(v2)} ar`, '<span class="date-text">30 janvier 2026</span>' ]);
+            } else if (mode === 'E') {
+                const v = Math.round(montant * 0.25);
+                rows.push([ '25 %', `${fmt(v)} ar`, '<span class="date-text">24 octobre 2025</span>' ]);
+                rows.push([ '25 %', `${fmt(v)} ar`, '<span class="date-text">28 novembre 2025</span>' ]);
+                rows.push([ '25 %', `${fmt(v)} ar`, '<span class="date-text">19 décembre 2025</span>' ]);
+                rows.push([ '25 %', `${fmt(v)} ar`, '<span class="date-text">30 janvier 2026</span>' ]);
+            }
+
+            // build html
+            tbody.innerHTML = '';
+            rows.forEach(r => {
+                const tr = document.createElement('tr');
+                const td1 = document.createElement('td'); td1.className = 'px-3 py-2'; td1.innerText = r[0];
+                const td2 = document.createElement('td'); td2.className = 'px-3 py-2 text-right pr-6'; td2.innerHTML = r[1];
+                const td3 = document.createElement('td'); td3.className = 'px-3 py-2 pl-6';
+                // create a container for the date input to ensure full-width alignment
+                const wrapper = document.createElement('div'); wrapper.style.width = '100%';
+                // if r[2] is an input html string, set innerHTML safely
+                wrapper.innerHTML = r[2];
+                const input = wrapper.querySelector('input');
+                if (input) {
+                    input.classList.add('w-full','text-left','border','rounded','px-2','py-1');
+                    // ensure input stretches
+                    input.style.boxSizing = 'border-box';
+                }
+                td3.appendChild(wrapper);
+                tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+                tbody.appendChild(tr);
+            });
+        }
+
+        // initialize payment table on page load using server mode and montant
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const montantInput = document.getElementById('montant-sans-frais');
+                const montant = montantInput ? Number(montantInput.value) : 0;
+                const serverMode = '{{ $modeP ?? 'A' }}';
+                if (montant && serverMode) buildPaymentTable(serverMode, montant);
+            } catch (e) {
+                // ignore
+            }
         });
     </script>
 </body>

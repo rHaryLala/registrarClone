@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'employe' => \App\Http\Middleware\EmployeeMiddleware::class,
             'parent' => \App\Http\Middleware\ParentMiddleware::class,
             'accountant' => \App\Http\Middleware\AccountantMiddleware::class,
+            'chief.accountant' => \App\Http\Middleware\ChiefAccountantMiddleware::class,
             'setlocale' => \App\Http\Middleware\SetLocale::class,
             'multimedia' => \App\Http\Middleware\MultimediaMiddleware::class,
         ]);

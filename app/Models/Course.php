@@ -25,10 +25,15 @@ class Course extends Model
     {
         return $this->belongsToMany(Student::class, 'course_student', 'course_id', 'student_id');
     }
+
+    public function mentions()
+    {
+        return $this->belongsToMany(Mention::class, 'course_mention', 'course_id', 'mention_id');
+    }
     
     public function mention()
     {
-        return $this->belongsTo(Mention::class);
+        return $this->belongsTo(Mention::class, 'mention_id');
     }
     
     public function yearLevels()

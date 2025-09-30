@@ -306,7 +306,11 @@
                                                 <!-- Réduction de la taille du texte -->
                                                 <p class="text-gray-600 flex items-center text-sm">
                                                     <i class="fas fa-graduation-cap mr-2 text-gray-400"></i>
-                                                    {{ $course->mention->nom ?? 'Mention non définie' }}
+                                                    @if(isset($course->mentions) && $course->mentions->count())
+                                                        {{ $course->mentions->pluck('nom')->join(', ') }}
+                                                    @else
+                                                        {{ $course->mention->nom ?? 'Mention non définie' }}
+                                                    @endif
                                                 </p>
                                             </div>
                                             

@@ -76,22 +76,22 @@
                             </select>
                         </div>
                         <div class="mb-6">
-                            <label class="block text-gray-700 font-semibold mb-2">Mention</label>
-                            <select name="mention_id" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                                <option value="">Sélectionnez la mention</option>
+                            <label class="block text-gray-700 font-semibold mb-2">Mentions (sélection multiple possible)</label>
+                            <select name="mention_ids[]" multiple class="w-full border border-gray-300 rounded-lg px-3 py-2" size="5">
                                 @foreach($mentions as $mention)
-                                    <option value="{{ $mention->id }}" @if(old('mention_id', $course->mention_id) == $mention->id) selected @endif>{{ $mention->nom }}</option>
+                                    <option value="{{ $mention->id }}" @if(in_array($mention->id, old('mention_ids', $course->mentions()->pluck('mentions.id')->toArray()))) selected @endif>{{ $mention->nom }}</option>
                                 @endforeach
                             </select>
+                            <p class="text-sm text-gray-500 mt-2">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs mentions.</p>
                         </div>
                         <div class="mb-6">
-                            <label class="block text-gray-700 font-semibold mb-2">Niveau</label>
-                            <select name="year_level_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                                <option value="">Sélectionnez le niveau</option>
+                            <label class="block text-gray-700 font-semibold mb-2">Niveaux (sélection multiple possible)</label>
+                            <select name="year_level_ids[]" multiple class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" size="5" required>
                                 @foreach($yearLevels as $level)
-                                    <option value="{{ $level->id }}" @if(old('year_level_id', $course->year_level_id) == $level->id) selected @endif>{{ $level->label }}</option>
+                                    <option value="{{ $level->id }}" @if(in_array($level->id, old('year_level_ids', $course->yearLevels()->pluck('year_levels.id')->toArray()))) selected @endif>{{ $level->label }}</option>
                                 @endforeach
                             </select>
+                            <p class="text-sm text-gray-500 mt-2">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs niveaux.</p>
                         </div>
                         <div class="mb-6">
                             <label class="block text-gray-700 font-semibold mb-2">Catégorie</label>

@@ -86,6 +86,14 @@
                             <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         </div>
                     </div>
+                    <div class="w-full md:w-64">
+                        <select id="mentionFilter" class="w-full rounded-xl px-4 py-3 text-gray-800 focus:ring-2 focus:ring-white/30">
+                            <option value="">Toutes les mentions</option>
+                            @foreach($mentions as $m)
+                                <option value="{{ strtolower($m->nom) }}">{{ $m->nom }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -127,6 +135,12 @@
                             <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">
                                 <div class="flex items-center gap-2">
                                     <i class="fas fa-layer-group text-blue-200"></i>
+                                    Niveau d'étude
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-layer-group text-blue-200"></i>
                                     Catégorie
                                 </div>
                             </th>
@@ -140,7 +154,12 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100" id="courseTableBody">
                         @forelse($courses as $course)
-                            <tr class="cursor-pointer course-card hover:bg-blue-50/50 transition-all duration-300" onclick="window.location='{{ route('superadmin.courses.show', $course->id) }}'"> 
+                            <tr class="cursor-pointer course-card hover:bg-blue-50/50 transition-all duration-300" 
+                                data-sigle="{{ strtolower($course->sigle) }}" 
+                                data-nom="{{ strtolower($course->nom) }}" 
+                                data-mention="{{ strtolower($course->mentions && $course->mentions->count() ? $course->mentions->pluck('nom')->join(', ') : ($course->mention->nom ?? '')) }}"
+                                data-yearlevels="{{ strtolower($course->yearLevels->pluck('label')->join(', ')) }}"
+                                onclick="window.location='{{ route('superadmin.courses.show', $course->id) }}'"> 
                                 <td class="px-6 py-5">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold mr-4">
@@ -165,8 +184,23 @@
                                 <td class="px-6 py-5">
                                     @if($course->mention)
                                         <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                            {{ $course->mention->nom }}
+                                            @if(isset($course->mentions) && $course->mentions->count())
+                                                {{ $course->mentions->pluck('nom')->join(', ') }}
+                                            @else
+                                                {{ $course->mention->nom ?? 'Mention non définie' }}
+                                            @endif
                                         </span>
+                                    @else
+                                        <span class="text-gray-400 text-sm">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-5">
+                                    @if($course->yearLevels && $course->yearLevels->count())
+                                        <div class="flex flex-wrap gap-2">
+                                            @foreach($course->yearLevels as $yl)
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ $yl->label }}</span>
+                                            @endforeach
+                                        </div>
                                     @else
                                         <span class="text-gray-400 text-sm">-</span>
                                     @endif
@@ -196,7 +230,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-12 text-center">
+                                <td colspan="8" class="px-6 py-12 text-center">
                                     <div class="text-gray-400">
                                         <i class="fas fa-book text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">Aucun cours trouvé</p>
@@ -212,10 +246,11 @@
             <!-- Added mobile cards layout -->
             <div class="mobile-cards space-y-4" id="mobileCourseCards">
                 @forelse($courses as $course)
-                    <div class="course-card bg-white rounded-2xl p-6 shadow-lg border border-gray-100" 
-                         data-sigle="{{ strtolower($course->sigle) }}" 
-                         data-nom="{{ strtolower($course->nom) }}" 
-                         data-mention="{{ strtolower($course->mention->nom ?? '') }}">
+                <div class="course-card bg-white rounded-2xl p-6 shadow-lg border border-gray-100" 
+                    data-sigle="{{ strtolower($course->sigle) }}" 
+                    data-nom="{{ strtolower($course->nom) }}" 
+                    data-mention="{{ strtolower($course->mentions && $course->mentions->count() ? $course->mentions->pluck('nom')->join(', ') : ($course->mention->nom ?? '')) }}"
+                    data-yearlevels="{{ strtolower($course->yearLevels->pluck('label')->join(', ')) }}">
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex items-center">
                                 <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
@@ -240,7 +275,11 @@
                                 <p class="text-xs text-gray-500 uppercase tracking-wider">Mention</p>
                                 @if($course->mention)
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                        {{ $course->mention->nom }}
+                                        @if(isset($course->mentions) && $course->mentions->count())
+                                            {{ $course->mentions->pluck('nom')->join(', ') }}
+                                        @else
+                                            {{ $course->mention->nom ?? 'Mention non définie' }}
+                                        @endif
                                     </span>
                                 @else
                                     <span class="text-gray-400 text-sm">-</span>
@@ -251,6 +290,18 @@
                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
                                     {{ $course->categorie }}
                                 </span>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider">Niveau d'étude</p>
+                                @if($course->yearLevels && $course->yearLevels->count())
+                                    <div class="flex flex-wrap gap-2">
+                                        @foreach($course->yearLevels as $yl)
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ $yl->label }}</span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 text-sm">-</span>
+                                @endif
                             </div>
                         </div>
                         
@@ -292,13 +343,14 @@
             // Desktop table
             const tableRows = document.querySelectorAll('#courseTableBody tr');
             tableRows.forEach(row => {
-                // Récupère les valeurs à partir du contenu des cellules
-                const sigle = (row.querySelector('td:nth-child(1) .text-sm.font-semibold')?.textContent || '').toLowerCase();
-                const nom = (row.querySelector('td:nth-child(2) .text-sm.font-medium')?.textContent || '').toLowerCase();
-                const mention = (row.querySelector('td:nth-child(5) span')?.textContent || '').toLowerCase();
+                // Prefer using data attributes for reliable values
+                const sigle = (row.getAttribute('data-sigle') || '').toLowerCase();
+                const nom = (row.getAttribute('data-nom') || '').toLowerCase();
+                const mention = (row.getAttribute('data-mention') || '').toLowerCase();
 
                 const matchesSearch = sigle.includes(searchTerm) || nom.includes(searchTerm);
-                const matchesMention = !mentionFilter || mention === mentionFilter;
+                // Allow substring match to be more forgiving (accents/whitespace)
+                const matchesMention = !mentionFilter || (mention && mention.includes(mentionFilter));
 
                 if (matchesSearch && matchesMention) {
                     row.style.display = '';
@@ -310,12 +362,12 @@
             // Mobile cards
             const mobileCards = document.querySelectorAll('#mobileCourseCards .course-card');
             mobileCards.forEach(card => {
-                const sigle = (card.querySelector('h3')?.textContent || '').toLowerCase();
-                const nom = (card.querySelector('p.text-gray-600')?.textContent || '').toLowerCase();
-                const mention = (card.querySelector('span.bg-purple-100')?.textContent || '').toLowerCase();
+                const sigle = (card.getAttribute('data-sigle') || '').toLowerCase();
+                const nom = (card.getAttribute('data-nom') || '').toLowerCase();
+                const mention = (card.getAttribute('data-mention') || '').toLowerCase();
 
                 const matchesSearch = sigle.includes(searchTerm) || nom.includes(searchTerm);
-                const matchesMention = !mentionFilter || mention === mentionFilter;
+                const matchesMention = !mentionFilter || (mention && mention.includes(mentionFilter));
 
                 if (matchesSearch && matchesMention) {
                     card.style.display = '';
