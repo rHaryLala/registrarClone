@@ -1,3 +1,22 @@
+<?php
+    // Encodage logo (favicon)
+    $logoPath = public_path('favicon.png');
+    $logoBase64 = '';
+    if (file_exists($logoPath)) {
+        $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+    }
+
+    // Encodage photo étudiant
+    $studentPhotoBase64 = '';
+    if (!empty($student->image)) {
+        $studentImagePath = public_path($student->image);
+        if (file_exists($studentImagePath)) {
+            $mime = mime_content_type($studentImagePath);
+            $studentPhotoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($studentImagePath));
+        }
+    }
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,26 +25,7 @@
     <?php echo $__env->make('layouts.pdf-style', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 </head>
 <body>
-<!-- HEADER UAZ -->
-<table style="width: 100%; color : black; border-bottom: 1px solid #8e9bb2;">
-    <tr>
-        <td style="width: 20%;"><img src="<?php echo e(public_path('favicon.png')); ?>" style="height: 100px;"></td>
-        <td style="width: 60%; text-align: center;">
-            <p>UNIVERSITÉ ADVENTISTE ZURCHER</p>
-            <b>BUREAU DES AFFAIRES ACADÉMIQUES</b>
-            <p class="text-xs">BP 325, Antsirabe 110, MADAGASCAR 
-                <br>Tél : 034 18 810 86 / 034 46 000 08 / 034 38 180 81 
-                <br> Email : registraroffice@zurcher.edu.mg 
-                <br>
-                <span style="font-style: italic; font-family: 'Old English Text MT', 'Gothic', cursive, serif;">
-                    "Préparer aujourd'hui les leaders de demain"
-                </span>
-            </p>
-        </td>
-        <td style="width: 20%;"></td>
-    </tr>
-</table>
-<!-- END HEADER UAZ -->
+<?php echo $__env->make('partials.pdf-header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 <div class="col-lg-8">
     <div class="head">
         <center>
@@ -60,17 +60,16 @@
                             </tr>
                         </table>
                     </td>
-                    <td style="width:20%; text-align:right; vertical-align:top;">
-                        <?php if($student->image): ?>
-                            <img src="<?php echo e(public_path($student->image)); ?>"
-                                 alt="Photo de profil"
-                                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #aaa; margin-top: 1px; margin-right: 10px; display: inline-block;">
-                        <?php else: ?>
-                            <div style="width: 100px; height: 100px; background: #eaeaea; border-radius: 8px; border: 1px solid #aaa; display: flex; align-items: center; justify-content: center; color: #888; font-size: 32px; margin-top: -6px; margin-right: 10px;">
-                                
-                            </div>
-                        <?php endif; ?>
-                    </td>
+<td style="width:20%; text-align:right; vertical-align:top;">
+    <?php if($studentPhotoBase64): ?>
+        <img src="<?php echo e($studentPhotoBase64); ?>"
+             alt="Photo de profil"
+             style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #aaa; margin-top: 1px; margin-right: 10px; display: inline-block;">
+    <?php else: ?>
+        <div style="width: 100px; height: 100px; background: #eaeaea; border-radius: 8px; border: 1px solid #aaa; display: flex; align-items: center; justify-content: center; color: #888; font-size: 32px; margin-top: -6px; margin-right: 10px;">
+        </div>
+    <?php endif; ?>
+</td>
                 </tr>
             </table>
         </div>

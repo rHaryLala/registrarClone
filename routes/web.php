@@ -11,6 +11,7 @@ use App\Http\Controllers\DeanController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AccountantController;
 use App\Http\Controllers\MultimediaController;
+use App\Http\Controllers\ChiefAccountantController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -90,6 +91,8 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
     // Gestion des utilisateurs
     Route::prefix('superadmin/users')->name('superadmin.users.')->group(function () {
         Route::get('/', [SuperAdminController::class, 'usersList'])->name('list');
+        // Export users (name, email, plain_password) as PDF
+        Route::get('/export-pdf', [SuperAdminController::class, 'exportUsersPdf'])->name('export_pdf');
         Route::get('/create', [SuperAdminController::class, 'createUser'])->name('create');
         Route::post('/', [SuperAdminController::class, 'storeUser'])->name('store');
         Route::get('/{user}/edit', [SuperAdminController::class, 'editUser'])->name('edit');
@@ -111,6 +114,8 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
     // Gestion des étudiants
     Route::prefix('superadmin/students')->name('superadmin.students.')->group(function () {
         Route::get('/', [SuperAdminController::class, 'studentsList'])->name('list');
+        // Export students filtered from modal (POST /superadmin/students/export)
+        Route::post('/export', [SuperAdminController::class, 'exportStudents'])->name('export');
         Route::get('/create', [SuperAdminController::class, 'createStudent'])->name('create');
         Route::post('/', [SuperAdminController::class, 'storeStudent'])->name('store');
         Route::get('/{student}/edit', [SuperAdminController::class, 'editStudent'])->name('edit');
@@ -121,8 +126,10 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
         Route::post('/{student}/add-course', [SuperAdminController::class, 'storeCourseToStudent'])->name('courses.store');
         Route::patch('/{student}/courses/{course}/remove', [SuperAdminController::class, 'removeCourseFromStudent'])->name('courses.remove');
         Route::get('/{student}/courses/history', [SuperAdminController::class, 'showStudentCourses'])->name('courses.history');
-        // AJAX endpoint: recompute a student's semester fee and return the record (before/after)
-        Route::post('/{student}/recompute-semester-fee', [\App\Http\Controllers\SuperAdminController::class, 'recomputeStudentSemesterFee'])->name('recomputeSemesterFee');
+    // AJAX endpoint: recompute a student's semester fee and return the record (before/after)
+    Route::post('/{student}/recompute-semester-fee', [SuperAdminController::class, 'recomputeStudentSemesterFee'])->name('recomputeSemesterFee');
+    // Export students CSV (filters: academic_year_id, year_level_id, mention_id)
+    Route::post('/export', [SuperAdminController::class, 'exportStudents'])->name('export');
     });
    
     // Paramètres globaux
@@ -143,6 +150,9 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
         Route::delete('/{finance}', [SuperAdminController::class, 'destroyFinance'])->name('destroy');
     });
 
+    // Export access codes (PDF)
+    Route::get('/superadmin/access-codes/export-pdf', [SuperAdminController::class, 'exportAccessCodesPdf'])->name('superadmin.accesscodes.export_pdf');
+
     // Gestion des détails de finances
     Route::prefix('superadmin/financedetails')->name('superadmin.financedetails.')->group(function () {
         Route::get('/', [SuperAdminController::class, 'index'])->name('index');
@@ -155,7 +165,7 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
     });
 
     // Route pour générer le PDF récapitulatif de l'inscription d'un étudiant
-    Route::get('/recap/{id}/pdf', [SuperAdminController::class, 'exportStudentPdf'])->name('recap.pdf');
+    // (kept for SuperAdmin group originally but moved to consolidated auth group below)
     
 });
 
@@ -210,9 +220,46 @@ Route::middleware(['auth', 'accountant'])->prefix('accountant')->name('accountan
     Route::patch('/students/{student}/fee-check', [AccountantController::class, 'updateFeeCheck'])->name('students.fee_check');
 });
 
-// Chief accountant routes (separate role)
+// Consolidated preview endpoints for all authenticated users.
+// Previously there were two sets of preview routes (SuperAdmin and ChiefAccountant).
+// Keep a single implementation (SuperAdminController@preview*) under auth and
+// provide backward-compatible redirects for the chief-accountant paths.
+Route::middleware(['auth'])->group(function () {
+    Route::get('/preview', [SuperAdminController::class, 'previewIndex'])->name('preview.index');
+    Route::get('/preview/content', [SuperAdminController::class, 'previewContent'])->name('preview.content');
+
+    // Recap PDF endpoint accessible to authenticated users (SuperAdmin, ChiefAccountant, etc.)
+    Route::get('/recap/{id}/pdf', [SuperAdminController::class, 'exportStudentPdf'])->name('recap.pdf');
+});
+
 Route::middleware(['auth', 'chief.accountant'])->prefix('chief-accountant')->name('chief.accountant.')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\ChiefAccountantController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [ChiefAccountantController::class, 'dashboard'])->name('dashboard');
+    Route::prefix('students')->name('students.')->group(function () {
+        Route::get('/', [ChiefAccountantController::class, 'studentsList'])->name('list');
+        Route::get('/{student}', [ChiefAccountantController::class, 'showStudent'])->name('show');
+            // PDF recap export for chief accountant
+            Route::get('/{student}/recap/pdf', [ChiefAccountantController::class, 'exportStudentPdf'])->name('recap.pdf');
+        Route::delete('/{student}', [ChiefAccountantController::class, 'destroyStudent'])->name('destroy');
+            Route::match(['put','patch'], '/{student}', [ChiefAccountantController::class, 'updateStudent'])->name('update');
+            // Student courses management (history, add, store, remove) handled by ChiefAccountantController
+            Route::get('/{student}/courses/history', [ChiefAccountantController::class, 'showStudentCourses'])->name('courses.history');
+            Route::get('/{student}/add-course', [ChiefAccountantController::class, 'addCourseToStudent'])->name('courses.add');
+            Route::post('/{student}/add-course', [ChiefAccountantController::class, 'storeCourseToStudent'])->name('courses.store');
+            Route::patch('/{student}/courses/{course}/remove', [ChiefAccountantController::class, 'removeCourseFromStudent'])->name('courses.remove');
+            // AJAX endpoint to recompute a student's semester fee (view calls url('/chief-accountant/students/{id}/recompute-semester-fee'))
+            Route::post('/{student}/recompute-semester-fee', [ChiefAccountantController::class, 'recomputeStudentSemesterFee'])->name('recomputeSemesterFee');
+    });
+        // Finances: handled by ChiefAccountantController locally
+        Route::prefix('finances')->name('finances.')->group(function () {
+            Route::get('/', [ChiefAccountantController::class, 'financesList'])->name('list');
+            Route::get('/create', [ChiefAccountantController::class, 'createFinance'])->name('create');
+            Route::post('/', [ChiefAccountantController::class, 'storeFinance'])->name('store');
+            Route::get('/{finance}/edit', [ChiefAccountantController::class, 'editFinance'])->name('edit');
+            Route::put('/{finance}', [ChiefAccountantController::class, 'updateFinance'])->name('update');
+            Route::delete('/{finance}', [ChiefAccountantController::class, 'destroyFinance'])->name('destroy');
+            // AJAX update plan
+            Route::patch('/{finance}/plan', [ChiefAccountantController::class, 'updateFinancePlan'])->name('updatePlan');
+        });
 });
 
 // Multimedia routes
@@ -236,12 +283,6 @@ Route::get('/students', [StudentController::class, 'index'])->name('students.ind
 
 // Routes pour le doyen
 
-
-// Preview endpoints for export content - accessible only to superadmin
-Route::middleware(['auth', 'superadmin'])->group(function () {
-    Route::get('/preview', [SuperAdminController::class, 'previewIndex']);
-    Route::get('/preview/content', [SuperAdminController::class, 'previewContent']);
-});
 
 });
 

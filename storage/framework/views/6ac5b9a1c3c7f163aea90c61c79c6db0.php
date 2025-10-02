@@ -57,9 +57,15 @@
                             <i class="fas fa-question-circle mr-3 w-4"></i>Aide
                         </a>
                         <hr class="my-2 border-gray-200">
-                        <a href="#logout" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                            <i class="fas fa-sign-out-alt mr-3 w-4"></i>Déconnexion
+                        <a href="<?php echo e(route('logout')); ?>"
+                            class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                <i class="fas fa-sign-out-alt mr-3 w-4"></i>Déconnexion
                         </a>
+
+                        <form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" class="hidden">
+                            <?php echo csrf_field(); ?>
+                        </form>
                     </div>
                 </div>
             </div>

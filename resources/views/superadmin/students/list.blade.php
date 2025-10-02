@@ -329,13 +329,22 @@
                         const studentAY = (student.academic_year || '').toString().trim();
                         const selectedAY = (academicYear || '').toString().trim();
                         let matchYear = !selectedAY || studentAY === selectedAY;
+
+                        // Guard string fields before calling toLowerCase to avoid runtime errors
+                        const matricule = (student.matricule || '').toString().toLowerCase();
+                        const nom = (student.nom || '').toString().toLowerCase();
+                        const prenom = (student.prenom || '').toString().toLowerCase();
+                        const email = (student.email || '').toString().toLowerCase();
+                        const mentionNom = (student.mention_nom || '').toString().toLowerCase();
+
                         let matchSearch = !q || (
-                            student.matricule.toLowerCase().includes(q) ||
-                            student.nom.toLowerCase().includes(q) ||
-                            student.prenom.toLowerCase().includes(q) ||
-                            student.email.toLowerCase().includes(q) ||
-                            student.mention_nom.toLowerCase().includes(q)
+                            matricule.includes(q) ||
+                            nom.includes(q) ||
+                            prenom.includes(q) ||
+                            email.includes(q) ||
+                            mentionNom.includes(q)
                         );
+
                         return matchMention && matchSearch && matchYear;
                     });
                     renderTable(filtered);

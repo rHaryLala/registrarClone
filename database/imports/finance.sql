@@ -1,0 +1,174 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.2
+-- https://www.phpmyadmin.net/
+--
+-- Hôte : 127.0.0.1:3306
+-- Généré le : mer. 01 oct. 2025 à 12:57
+-- Version du serveur : 11.8.3-MariaDB-log
+-- Version de PHP : 7.2.34
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Base de données : `u430393732_7Hb3d`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `finance`
+--
+
+CREATE TABLE `finance` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `student_id` varchar(50) DEFAULT NULL COMMENT 'Matricule de l''étudiant',
+  `semester_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `std_etude` varchar(40) DEFAULT NULL COMMENT 'Etude ou filière envisagé',
+  `residence` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Résidence: 0 - externe, 1 - interne',
+  `std_yearlevel` tinyint(4) NOT NULL DEFAULT 1,
+  `semester` tinyint(4) NOT NULL DEFAULT 1,
+  `new_student` tinyint(4) NOT NULL DEFAULT 0,
+  `encadrement` tinyint(4) NOT NULL DEFAULT 0,
+  `graduated` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Gradué: 0 - non, 1 - oui',
+  `total_credit` tinyint(4) NOT NULL DEFAULT 1,
+  `lab_info` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'if lab info exists',
+  `lab_langue` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'if lab langue exists',
+  `plan` varchar(1) NOT NULL DEFAULT 'E' COMMENT 'Le plan choisi',
+  `total_payment` varchar(40) NOT NULL DEFAULT '0',
+  `amount_pay_1` varchar(50) DEFAULT NULL,
+  `amount_pay_2` varchar(50) DEFAULT NULL,
+  `amount_pay_3` varchar(50) DEFAULT NULL,
+  `amount_pay_4` varchar(50) DEFAULT NULL,
+  `amount_pay_5` varchar(50) DEFAULT NULL,
+  `date_payment_1` varchar(255) DEFAULT NULL,
+  `date_payment_2` varchar(255) DEFAULT NULL,
+  `date_payment_3` varchar(255) DEFAULT NULL,
+  `date_payment_4` varchar(255) DEFAULT NULL,
+  `date_payment_5` varchar(255) DEFAULT NULL,
+  `retard` tinyint(4) NOT NULL DEFAULT 0,
+  `date_entry` datetime NOT NULL DEFAULT current_timestamp(),
+  `last_change_user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `last_change_datetime` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Déchargement des données de la table `finance`
+--
+
+INSERT INTO `finance` (`id`, `student_id`, `semester_id`, `std_etude`, `residence`, `std_yearlevel`, `semester`, `new_student`, `encadrement`, `graduated`, `total_credit`, `lab_info`, `lab_langue`, `plan`, `total_payment`, `amount_pay_1`, `amount_pay_2`, `amount_pay_3`, `amount_pay_4`, `amount_pay_5`, `date_payment_1`, `date_payment_2`, `date_payment_3`, `date_payment_4`, `date_payment_5`, `retard`, `date_entry`, `last_change_user_id`, `last_change_datetime`) VALUES
+(1, '30265', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'B', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 11:33:09', 12, '2025-09-30 11:34:28'),
+(2, '60208', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 12:49:41', NULL, '2025-09-30 12:49:41'),
+(3, '60209', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 14:31:38', 1, '2025-09-30 14:31:38'),
+(4, '30266', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 14:32:29', NULL, '2025-09-30 14:32:29'),
+(5, '10963', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 14:33:25', 3, '2025-09-30 14:33:25'),
+(6, '10964', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 14:46:46', 3, '2025-09-30 14:46:46'),
+(7, '90018', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 14:58:48', 3, '2025-09-30 14:58:48'),
+(8, '70106', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:02:13', NULL, '2025-09-30 15:02:13'),
+(9, '30267', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:02:26', NULL, '2025-09-30 15:02:26'),
+(10, '10965', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:04:40', NULL, '2025-09-30 15:04:40'),
+(11, '40745', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:06:33', 3, '2025-09-30 15:06:33'),
+(12, '30268', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:13:17', NULL, '2025-09-30 15:13:17'),
+(13, '40746', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:14:09', 3, '2025-09-30 15:14:09'),
+(14, '60210', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:16:32', NULL, '2025-09-30 15:16:32'),
+(15, '60211', 1, NULL, 0, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:18:09', NULL, '2025-09-30 15:18:09'),
+(16, '10966', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:18:24', NULL, '2025-09-30 15:18:24'),
+(17, '40747', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:21:35', 3, '2025-09-30 15:21:35'),
+(18, '60212', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:26:22', NULL, '2025-09-30 15:26:22'),
+(19, '30269', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:27:12', NULL, '2025-09-30 15:27:12'),
+(20, '10967', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:30:19', NULL, '2025-09-30 15:30:19'),
+(21, '10968', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:30:25', NULL, '2025-09-30 15:30:25'),
+(22, '30270', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 15:46:43', NULL, '2025-09-30 15:46:43'),
+(23, '20487', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 16:05:14', NULL, '2025-09-30 16:05:14'),
+(24, '10969', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 16:08:43', 18, '2025-09-30 16:08:43'),
+(25, '10970', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 16:27:25', 1, '2025-09-30 16:27:25'),
+(26, '10971', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 16:30:44', 1, '2025-09-30 16:30:44'),
+(27, '10972', 1, NULL, 0, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 16:37:37', 1, '2025-09-30 16:37:37'),
+(28, '10973', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 16:55:37', 1, '2025-09-30 16:55:37'),
+(29, '10974', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-09-30 17:01:30', 1, '2025-09-30 17:01:30'),
+(30, '10975', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 08:34:34', 1, '2025-10-01 08:34:34'),
+(31, '30271', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 08:35:24', NULL, '2025-10-01 08:35:24'),
+(32, '20488', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 08:37:27', 5, '2025-10-01 08:37:27'),
+(33, '20489', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 08:40:39', 1, '2025-10-01 08:40:39'),
+(34, '10976', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 08:44:16', 1, '2025-10-01 08:44:16'),
+(35, '10977', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 08:51:31', 1, '2025-10-01 08:51:31'),
+(36, '70107', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 08:57:40', 1, '2025-10-01 08:57:40'),
+(37, '10978', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:03:37', 1, '2025-10-01 09:03:37'),
+(38, '70108', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:08:05', 18, '2025-10-01 09:08:05'),
+(39, '30272', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:10:09', 1, '2025-10-01 09:10:09'),
+(40, '40748', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:12:02', NULL, '2025-10-01 09:12:02'),
+(41, '10979', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:14:37', 18, '2025-10-01 09:14:37'),
+(42, '60213', 1, NULL, 0, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:14:45', 1, '2025-10-01 09:14:45'),
+(43, '10980', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:19:10', 1, '2025-10-01 09:19:10'),
+(44, '10981', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:21:02', 18, '2025-10-01 09:21:02'),
+(45, '40749', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:24:09', 1, '2025-10-01 09:24:09'),
+(46, '20490', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:25:12', NULL, '2025-10-01 09:25:12'),
+(47, '40750', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:28:18', 1, '2025-10-01 09:28:18'),
+(48, '70109', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:39:42', 18, '2025-10-01 09:39:42'),
+(49, '60214', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 09:39:52', NULL, '2025-10-01 09:39:52'),
+(50, '40751', 1, NULL, 1, 2, 1, 0, 0, 0, 30, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 10:02:21', 18, '2025-10-01 10:02:21'),
+(51, '40752', 1, NULL, 1, 2, 1, 0, 0, 0, 30, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 10:10:15', 18, '2025-10-01 10:10:15'),
+(52, '10982', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 10:20:02', 18, '2025-10-01 10:20:02'),
+(53, '10983', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 11:04:06', 18, '2025-10-01 11:04:06'),
+(54, '40753', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 11:08:07', 13, '2025-10-01 11:08:07'),
+(55, '10984', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 11:09:40', 18, '2025-10-01 11:09:40'),
+(56, '30273', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 11:15:14', NULL, '2025-10-01 11:15:14'),
+(57, '10985', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 11:45:10', 18, '2025-10-01 11:45:10'),
+(58, '40754', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 11:51:51', 18, '2025-10-01 11:51:51'),
+(59, '10986', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 12:07:35', 18, '2025-10-01 12:07:35'),
+(60, '90019', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 13:42:54', 18, '2025-10-01 13:42:54'),
+(61, '90020', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 13:45:59', 18, '2025-10-01 13:45:59'),
+(62, '60215', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 14:19:24', 18, '2025-10-01 14:19:24'),
+(63, '10987', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 14:25:28', 18, '2025-10-01 14:25:28'),
+(64, '90021', 1, NULL, 0, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 14:28:18', NULL, '2025-10-01 14:28:18'),
+(65, '10988', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 14:33:37', 18, '2025-10-01 14:33:37'),
+(66, '30274', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 14:41:57', NULL, '2025-10-01 14:41:57'),
+(67, '70110', 1, NULL, 1, 2, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 14:42:53', 1, '2025-10-01 14:42:53'),
+(68, '10989', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 14:44:11', 18, '2025-10-01 14:44:11'),
+(69, '10990', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 15:04:43', 18, '2025-10-01 15:04:43'),
+(70, '10991', 1, NULL, 1, 1, 1, 0, 0, 0, 0, 0, 0, 'E', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-10-01 15:47:15', 18, '2025-10-01 15:47:15');
+
+--
+-- Index pour les tables déchargées
+--
+
+--
+-- Index pour la table `finance`
+--
+ALTER TABLE `finance`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `finance_student_id_index` (`student_id`),
+  ADD KEY `finance_semester_id_foreign` (`semester_id`);
+
+--
+-- AUTO_INCREMENT pour les tables déchargées
+--
+
+--
+-- AUTO_INCREMENT pour la table `finance`
+--
+ALTER TABLE `finance`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
+
+--
+-- Contraintes pour les tables déchargées
+--
+
+--
+-- Contraintes pour la table `finance`
+--
+ALTER TABLE `finance`
+  ADD CONSTRAINT `finance_semester_id_foreign` FOREIGN KEY (`semester_id`) REFERENCES `semesters` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `finance_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `students` (`matricule`) ON DELETE SET NULL;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

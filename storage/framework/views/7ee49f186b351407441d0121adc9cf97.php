@@ -65,9 +65,9 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <?php echo $__env->make('superadmin.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <?php echo $__env->make('chief_accountant.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
     <div class="main-content min-h-screen">
-        <?php echo $__env->make('superadmin.components.header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+        <?php echo $__env->make('chief_accountant.components.header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
         <main class="p-4 lg:p-6">
             <!-- Enhanced header with better spacing and modern styling -->
             <div class="mb-8">
@@ -220,7 +220,7 @@
                         // Desktop table row
                         const tr = document.createElement('tr');
                         tr.className = "hover:bg-blue-50 transition-colors duration-200 cursor-pointer";
-                        tr.onclick = () => window.location = `/superadmin/students/${student.id}`;
+                        tr.onclick = () => window.location = `/chief-accountant/students/${student.id}`;
                         tr.innerHTML = `
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-mono text-blue-800 bg-blue-50 px-2 py-1 rounded">${student.matricule}</span>
@@ -244,10 +244,10 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${student.mention_nom}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex space-x-2">
-                                    <a href="/superadmin/students/${student.id}" class="text-blue-600 hover:text-blue-800 transition-colors" onclick="event.stopPropagation();" title="Voir le profil">
+                                    <a href="/chief-accountant/students/${student.id}" class="text-blue-600 hover:text-blue-800 transition-colors" onclick="event.stopPropagation();" title="Voir le profil">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="/superadmin/finances?student_id=${student.id}" class="text-green-600 hover:text-green-800 transition-colors" onclick="event.stopPropagation();" title="Finances">
+                                    <a href="/chief-accountant/finances?student_id=${student.id}" class="text-green-600 hover:text-green-800 transition-colors" onclick="event.stopPropagation();" title="Finances">
                                         <i class="fas fa-money-bill-wave"></i>
                                     </a>
                                     <button onclick="deleteStudent(${student.id}); event.stopPropagation();" class="text-red-600 hover:text-red-800 transition-colors" title="Supprimer">
@@ -261,7 +261,7 @@
                         // Mobile card
                         const card = document.createElement('div');
                         card.className = "student-card bg-white rounded-xl p-6 shadow-md cursor-pointer";
-                        card.onclick = () => window.location = `/superadmin/students/${student.id}`;
+                        card.onclick = () => window.location = `/chief-accountant/students/${student.id}`;
                         card.innerHTML = `
                             <div class="flex items-start justify-between mb-4">
                                 <div class="flex items-center">
@@ -286,10 +286,10 @@
                                 </div>
                             </div>
                             <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
-                                <a href="/superadmin/students/${student.id}" class="text-blue-600 hover:text-blue-800 transition-colors flex items-center text-sm" onclick="event.stopPropagation();">
+                                <a href="/chief-accountant/students/${student.id}" class="text-blue-600 hover:text-blue-800 transition-colors flex items-center text-sm" onclick="event.stopPropagation();">
                                     <i class="fas fa-eye mr-1"></i> Voir
                                 </a>
-                                <a href="/superadmin/finances?student_id=${student.id}" class="text-green-600 hover:text-green-800 transition-colors flex items-center text-sm" onclick="event.stopPropagation();">
+                                <a href="/chief-accountant/finances?student_id=${student.id}" class="text-green-600 hover:text-green-800 transition-colors flex items-center text-sm" onclick="event.stopPropagation();">
                                     <i class="fas fa-money-bill-wave mr-1"></i> Finances
                                 </a>
                                 <button onclick="deleteStudent(${student.id}); event.stopPropagation();" class="text-red-600 hover:text-red-800 transition-colors flex items-center text-sm">
@@ -305,7 +305,7 @@
                     if (confirm('Voulez-vous vraiment supprimer cet étudiant ? Cette action est irréversible.')) {
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = `/superadmin/students/${studentId}`;
+                        form.action = `/chief_accountant/students/${studentId}`;
                         form.innerHTML = `
                             <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                             <input type="hidden" name="_method" value="DELETE">
@@ -330,22 +330,13 @@
                         const studentAY = (student.academic_year || '').toString().trim();
                         const selectedAY = (academicYear || '').toString().trim();
                         let matchYear = !selectedAY || studentAY === selectedAY;
-
-                        // Guard string fields before calling toLowerCase to avoid runtime errors
-                        const matricule = (student.matricule || '').toString().toLowerCase();
-                        const nom = (student.nom || '').toString().toLowerCase();
-                        const prenom = (student.prenom || '').toString().toLowerCase();
-                        const email = (student.email || '').toString().toLowerCase();
-                        const mentionNom = (student.mention_nom || '').toString().toLowerCase();
-
                         let matchSearch = !q || (
-                            matricule.includes(q) ||
-                            nom.includes(q) ||
-                            prenom.includes(q) ||
-                            email.includes(q) ||
-                            mentionNom.includes(q)
+                            student.matricule.toLowerCase().includes(q) ||
+                            student.nom.toLowerCase().includes(q) ||
+                            student.prenom.toLowerCase().includes(q) ||
+                            student.email.toLowerCase().includes(q) ||
+                            student.mention_nom.toLowerCase().includes(q)
                         );
-
                         return matchMention && matchSearch && matchYear;
                     });
                     renderTable(filtered);
@@ -362,4 +353,4 @@
     </div>
 </body>
 </html>
-<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/superadmin/students/list.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/chief_accountant/students/list.blade.php ENDPATH**/ ?>

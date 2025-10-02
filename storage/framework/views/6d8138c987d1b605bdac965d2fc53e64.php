@@ -94,8 +94,8 @@
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-2xl font-bold text-slate-800">Derniers étudiants inscrits</h3>
                         <!-- Optionally add a link to the full students list if route exists -->
-                        <?php if(Route::has('students.index')): ?>
-                            <a href="<?php echo e(route('students.index')); ?>" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200 flex items-center">Voir tous <i class="fas fa-arrow-right ml-2"></i></a>
+                        <?php if(Route::has('chief.accountant.students.list')): ?>
+                            <a href="<?php echo e(route('chief.accountant.students.list')); ?>" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200 flex items-center">Voir tous <i class="fas fa-arrow-right ml-2"></i></a>
                         <?php endif; ?>
                     </div>
 

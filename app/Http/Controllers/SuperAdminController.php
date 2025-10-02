@@ -24,7 +24,22 @@ class SuperAdminController extends Controller
     public function dashboard()
     {
         $usersCount = User::count();
-        $studentsCount = Student::count();
+        // total number of students
+        $totalStudents = Student::count();
+        // number of first-year students: consider both 'annee_etude' field and common year_level_id = 1
+        $firstYearCount = 0;
+        if (Schema::hasColumn('students', 'annee_etude')) {
+            // Count students whose annee_etude is 1 or 2, or whose year_level_id is 1 or 2
+            $firstYearCount = Student::where(function ($q) {
+                $q->where('annee_etude', 1)
+                  ->orWhere('annee_etude', 2)
+                  ->orWhere('year_level_id', 1)
+                  ->orWhere('year_level_id', 2);
+            })->count();
+        } else {
+            // Fall back to year_level_id only when the legacy column is not present
+            $firstYearCount = Student::whereIn('year_level_id', [1, 2])->count();
+        }
         $teachersCount = Teacher::count();
         $coursesCount = Course::count();
 
@@ -44,15 +59,16 @@ class SuperAdminController extends Controller
             ->pluck('count', 'day');
 
         return view('superadmin.dashboard', compact(
-            'usersCount', 'studentsCount', 'teachersCount', 'coursesCount',
+            'usersCount', 'totalStudents', 'firstYearCount', 'teachersCount', 'coursesCount',
             'latestRegistrations', 'dailyRegistrations'
         ));
     }
 
     public function coursesList()
     {
-        // Only load courses that are linked to at least one year level (present in course_yearlevel pivot)
-        $courses = Course::whereHas('yearLevels')->with('teacher', 'yearLevels')->get();
+        // Load all courses (including those without year level pivot entries) so the view shows
+        // courses that exist in the database even if the pivot relation hasn't been migrated.
+        $courses = Course::with('teacher', 'yearLevels', 'mentions')->get();
         $yearLevels = YearLevel::all();
         $mentions = Mention::all();
         return view('superadmin.courses.list', compact('courses', 'yearLevels', 'mentions'));
@@ -269,6 +285,115 @@ class SuperAdminController extends Controller
         $course = Course::with(['teacher', 'students.mention', 'students.yearLevel'])->findOrFail($id);
         $filename = 'Liste des étudiants - ' . ($course->sigle ?? $course->id) . '.pdf';
         return Pdf::loadView('dean.courses.students-pdf', compact('course'))->download($filename);
+    }
+
+    /**
+     * Export students list filtered by academic year, year level, mention or all as CSV
+     */
+    public function exportStudents(Request $request)
+    {
+        $request->validate([
+            'academic_year_id' => 'nullable|exists:academic_years,id',
+            'year_level_id' => 'nullable|exists:year_levels,id',
+            // support multiple mentions selection from the export form
+            'mention_ids' => 'nullable|array',
+            'mention_ids.*' => 'exists:mentions,id',
+            'mention_id' => 'nullable|exists:mentions,id', // keep backward compat for single-field callers
+            'export_all' => 'nullable|boolean',
+            // optional student fields to include in export
+            'fields' => 'nullable|array',
+            'fields.*' => 'in:email,plain_password,telephone,religion,abonne_caf,statut_interne',
+        ]);
+
+        $query = Student::query();
+
+        // Apply filters only when 'export_all' is not explicitly checked
+        // Support both a single mention_id (legacy) and mention_ids[] (multi-select)
+        $mentionIds = $request->input('mention_ids');
+        if (empty($mentionIds) && $request->filled('mention_id')) {
+            $mentionIds = [$request->mention_id];
+        }
+        // sanitize mention ids (remove empty values)
+        if (!empty($mentionIds)) {
+            $mentionIds = array_values(array_filter((array) $mentionIds, function ($v) { return $v !== null && $v !== ''; }));
+            if (count($mentionIds) === 0) {
+                $mentionIds = null;
+            }
+        }
+
+        if (!$request->boolean('export_all')) {
+            if ($request->filled('academic_year_id')) {
+                $query->where('academic_year_id', $request->academic_year_id);
+            }
+            if ($request->filled('year_level_id')) {
+                $query->where('year_level_id', $request->year_level_id);
+            }
+            if (!empty($mentionIds)) {
+                $query->whereIn('mention_id', $mentionIds);
+            }
+        }
+
+        // Load students with relations
+        $all = $query->with(['mention', 'yearLevel'])->get();
+
+        // Sort by mention name then matricule to have stable grouping and ordering
+        $sorted = $all->sortBy(function($s) {
+            $mention = optional($s->mention)->nom ?? 'Sans mention';
+            return $mention . '|' . ($s->matricule ?? '');
+        });
+
+        // Decide whether to group by mention:
+        // - If export_all is checked, preserve the previous behaviour (group all students by mention)
+        // - If the user explicitly selected one or more mentions (mention_ids), always group by mention
+        // - Otherwise, if the result contains students from more than one mention, also group by mention
+        $uniqueMentions = $sorted->map(function ($s) {
+            return optional($s->mention)->nom ?? 'Sans mention';
+        })->unique()->values();
+
+        if ($request->boolean('export_all') || !empty($mentionIds) || $uniqueMentions->count() > 1) {
+            $grouped = $sorted->groupBy(function ($s) {
+                return optional($s->mention)->nom ?? 'Sans mention';
+            });
+            $students = null;
+        } else {
+            // Single mention (or no mention): return a flat students collection ordered by matricule
+            $students = $sorted->values()->sortBy('matricule')->values();
+            $grouped = null;
+        }
+
+    // Prepare selected fields (ensure allowed set)
+    $allowed = ['email', 'plain_password', 'telephone', 'religion', 'abonne_caf', 'statut_interne'];
+    $fields = array_values(array_intersect($allowed, (array)$request->input('fields', [])));
+
+    // Render a simple students list as PDF
+    $filename = 'students-' . now()->format('Ymd-His') . '.pdf';
+    $pdf = Pdf::loadView('superadmin.students.students-pdf', compact('students', 'grouped', 'fields'));
+
+        // Improve rendering options to support images and better quality
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->setWarnings(false);
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Export all users (name, email, plain_password) as PDF.
+     */
+    public function exportUsersPdf()
+    {
+        $users = User::select('name', 'email', 'plain_password')->get();
+        $filename = 'users-list.pdf';
+        return Pdf::loadView('superadmin.users.users-pdf', compact('users'))->download($filename);
+    }
+
+    /**
+     * Export access codes as PDF.
+     */
+    public function exportAccessCodesPdf()
+    {
+        $codes = \DB::table('access_codes')->select('code', 'is_active', 'created_at')->orderBy('id', 'asc')->get();
+        $filename = 'access-codes.pdf';
+        return Pdf::loadView('superadmin.accesscodes.accesscodes-pdf', compact('codes'))->download($filename);
     }
 
     // USERS
@@ -1373,10 +1498,13 @@ class SuperAdminController extends Controller
 
         if ($ptype === 'Fiche_inscription') {
             $student = null;
-            // Defensive: ensure user still authenticated as SuperAdmin. The route is protected,
-            // but fetch() from the preview wrapper may follow redirects to login if session expired.
-            if (!auth()->check() || !method_exists(auth()->user(), 'isSuperAdmin') || !auth()->user()->isSuperAdmin()) {
-                return '<div style="padding:20px">Vous devez être connecté en tant que SuperAdmin pour voir cette prévisualisation. Veuillez vous reconnecter.</div>';
+            // Defensive: ensure user still authenticated and has permission to preview.
+            // Allow SuperAdmin and ChiefAccountant roles to access preview content.
+            if (!auth()->check() || (
+                !(method_exists(auth()->user(), 'isSuperAdmin') && auth()->user()->isSuperAdmin())
+                && !(method_exists(auth()->user(), 'isChiefAccountant') && auth()->user()->isChiefAccountant())
+            )) {
+                return '<div style="padding:20px">Vous devez être connecté en tant que SuperAdmin ou Chief Accountant pour voir cette prévisualisation. Veuillez vous reconnecter avec un compte approprié.</div>';
             }
 
             if ($studentId) {

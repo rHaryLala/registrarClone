@@ -213,7 +213,13 @@
                     <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-4">
                         <i class="fas fa-users text-white text-xl"></i>
                     </div>
-                    <h2 class="text-2xl font-bold text-gray-800 font-['Work_Sans']">Étudiants inscrits</h2>
+                    <h2 class="text-2xl font-bold text-gray-800 font-['Work_Sans']">
+                        Étudiants inscrits
+                        <span class="inline-block ml-3 text-base md:text-lg bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-semibold">
+                            <?php echo e(optional($course->students)->count() ?? 0); ?>
+
+                        </span>
+                    </h2>
                     <div class="ml-4">
                         <a href="<?php echo e(route('superadmin.courses.export', $course->id)); ?>" 
                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">

@@ -65,9 +65,9 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <?php echo $__env->make('superadmin.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    @include('chief_accountant.components.sidebar')
     <div class="main-content min-h-screen">
-        <?php echo $__env->make('superadmin.components.header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+        @include('chief_accountant.components.header')
         <main class="p-4 lg:p-6">
             <!-- Enhanced header with better spacing and modern styling -->
             <div class="mb-8">
@@ -76,7 +76,7 @@
                         <h1 class="text-3xl font-bold text-gray-900 mb-2">Liste des étudiants</h1>
                         <p class="text-gray-600">Gérez et consultez les informations des étudiants</p>
                     </div>
-                    <a href="<?php echo e(route('register')); ?>" class="bg-blue-800 text-white px-6 py-3 rounded-xl hover:bg-blue-900 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <a href="{{ route('register') }}" class="bg-blue-800 text-white px-6 py-3 rounded-xl hover:bg-blue-900 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                         <i class="fas fa-plus"></i>
                         <span class="font-medium">Nouvel étudiant</span>
                     </a>
@@ -105,26 +105,26 @@
                                         id="mention_id" 
                                         class="modern-select modern-input w-full px-4 py-3 rounded-xl border-0 focus:ring-0 text-gray-900 appearance-none">
                                     <option value="">Toutes les mentions</option>
-                                    <?php $__currentLoopData = $mentions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $mention): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <option value="<?php echo e($mention->id); ?>"><?php echo e($mention->nom); ?></option>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    @foreach($mentions as $mention)
+                                        <option value="{{ $mention->id }}">{{ $mention->nom }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div>
                                 <label for="academic_year" class="block text-sm font-medium text-white mb-2">
                                     <i class="fas fa-calendar mr-2"></i>Année académique
                                 </label>
-                                <?php
+                                @php
                                     // Load academic years from DB so the select matches the seeded table
                                     $academicYears = \App\Models\AcademicYear::orderByDesc('date_debut')->get();
-                                ?>
+                                @endphp
                                 <select name="academic_year" 
                                         id="academic_year" 
                                         class="modern-select modern-input w-full px-4 py-3 rounded-xl border-0 focus:ring-0 text-gray-900 appearance-none">
                                     <option value="">Toutes les années</option>
-                                    <?php $__currentLoopData = $academicYears; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ay): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <option value="<?php echo e($ay->libelle); ?>"><?php echo e($ay->libelle); ?></option>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    @foreach($academicYears as $ay)
+                                        <option value="{{ $ay->libelle }}">{{ $ay->libelle }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -142,7 +142,7 @@
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Nom complet</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Email</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
-                                    <?php
+                                    @php
                                         function sort_link($label, $column) {
                                             $currentSort = request('sort', 'matricule');
                                             $currentDirection = request('direction', 'asc');
@@ -155,16 +155,15 @@
                                             $url = url()->current() . '?' . http_build_query($query);
                                             return '<a href="' . $url . '" class="hover:underline flex items-center text-white">' . $label . ' <span class="ml-2 text-xs">' . $icon . '</span></a>';
                                         }
-                                    ?>
-                                    <?php echo sort_link("Niveau d'étude", 'annee_etude'); ?>
-
+                                    @endphp
+                                    {!! sort_link("Niveau d'étude", 'annee_etude') !!}
                                 </th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Mention</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100" id="studentsTableBody">
-                            
+                            {{-- Le contenu sera généré par JS --}}
                         </tbody>
                     </table>
                 </div>
@@ -172,7 +171,7 @@
 
             <!-- Mobile cards layout for better mobile experience -->
             <div class="mobile-cards space-y-4" id="mobileCards">
-                
+                {{-- Le contenu sera généré par JS --}}
             </div>
 
             <div id="pagination" class="flex justify-center items-center mt-6"></div>
@@ -186,8 +185,8 @@
                 }
 
                 // Charger tous les étudiants dans une variable JS
-                const students = <?php echo json_encode($studentsArray, 15, 512) ?>;
-                const mentions = <?php echo json_encode($mentionsArray, 15, 512) ?>;
+                const students = @json($studentsArray);
+                const mentions = @json($mentionsArray);
 
                 function renderTable(filteredStudents) {
                     const tbody = document.getElementById('studentsTableBody');
@@ -220,7 +219,7 @@
                         // Desktop table row
                         const tr = document.createElement('tr');
                         tr.className = "hover:bg-blue-50 transition-colors duration-200 cursor-pointer";
-                        tr.onclick = () => window.location = `/superadmin/students/${student.id}`;
+                        tr.onclick = () => window.location = `/chief-accountant/students/${student.id}`;
                         tr.innerHTML = `
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-mono text-blue-800 bg-blue-50 px-2 py-1 rounded">${student.matricule}</span>
@@ -244,10 +243,10 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${student.mention_nom}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex space-x-2">
-                                    <a href="/superadmin/students/${student.id}" class="text-blue-600 hover:text-blue-800 transition-colors" onclick="event.stopPropagation();" title="Voir le profil">
+                                    <a href="/chief-accountant/students/${student.id}" class="text-blue-600 hover:text-blue-800 transition-colors" onclick="event.stopPropagation();" title="Voir le profil">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="/superadmin/finances?student_id=${student.id}" class="text-green-600 hover:text-green-800 transition-colors" onclick="event.stopPropagation();" title="Finances">
+                                    <a href="/chief-accountant/finances?student_id=${student.id}" class="text-green-600 hover:text-green-800 transition-colors" onclick="event.stopPropagation();" title="Finances">
                                         <i class="fas fa-money-bill-wave"></i>
                                     </a>
                                     <button onclick="deleteStudent(${student.id}); event.stopPropagation();" class="text-red-600 hover:text-red-800 transition-colors" title="Supprimer">
@@ -261,7 +260,7 @@
                         // Mobile card
                         const card = document.createElement('div');
                         card.className = "student-card bg-white rounded-xl p-6 shadow-md cursor-pointer";
-                        card.onclick = () => window.location = `/superadmin/students/${student.id}`;
+                        card.onclick = () => window.location = `/chief-accountant/students/${student.id}`;
                         card.innerHTML = `
                             <div class="flex items-start justify-between mb-4">
                                 <div class="flex items-center">
@@ -286,10 +285,10 @@
                                 </div>
                             </div>
                             <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
-                                <a href="/superadmin/students/${student.id}" class="text-blue-600 hover:text-blue-800 transition-colors flex items-center text-sm" onclick="event.stopPropagation();">
+                                <a href="/chief-accountant/students/${student.id}" class="text-blue-600 hover:text-blue-800 transition-colors flex items-center text-sm" onclick="event.stopPropagation();">
                                     <i class="fas fa-eye mr-1"></i> Voir
                                 </a>
-                                <a href="/superadmin/finances?student_id=${student.id}" class="text-green-600 hover:text-green-800 transition-colors flex items-center text-sm" onclick="event.stopPropagation();">
+                                <a href="/chief-accountant/finances?student_id=${student.id}" class="text-green-600 hover:text-green-800 transition-colors flex items-center text-sm" onclick="event.stopPropagation();">
                                     <i class="fas fa-money-bill-wave mr-1"></i> Finances
                                 </a>
                                 <button onclick="deleteStudent(${student.id}); event.stopPropagation();" class="text-red-600 hover:text-red-800 transition-colors flex items-center text-sm">
@@ -305,9 +304,9 @@
                     if (confirm('Voulez-vous vraiment supprimer cet étudiant ? Cette action est irréversible.')) {
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = `/superadmin/students/${studentId}`;
+                        form.action = `/chief_accountant/students/${studentId}`;
                         form.innerHTML = `
-                            <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="_method" value="DELETE">
                         `;
                         document.body.appendChild(form);
@@ -330,22 +329,13 @@
                         const studentAY = (student.academic_year || '').toString().trim();
                         const selectedAY = (academicYear || '').toString().trim();
                         let matchYear = !selectedAY || studentAY === selectedAY;
-
-                        // Guard string fields before calling toLowerCase to avoid runtime errors
-                        const matricule = (student.matricule || '').toString().toLowerCase();
-                        const nom = (student.nom || '').toString().toLowerCase();
-                        const prenom = (student.prenom || '').toString().toLowerCase();
-                        const email = (student.email || '').toString().toLowerCase();
-                        const mentionNom = (student.mention_nom || '').toString().toLowerCase();
-
                         let matchSearch = !q || (
-                            matricule.includes(q) ||
-                            nom.includes(q) ||
-                            prenom.includes(q) ||
-                            email.includes(q) ||
-                            mentionNom.includes(q)
+                            student.matricule.toLowerCase().includes(q) ||
+                            student.nom.toLowerCase().includes(q) ||
+                            student.prenom.toLowerCase().includes(q) ||
+                            student.email.toLowerCase().includes(q) ||
+                            student.mention_nom.toLowerCase().includes(q)
                         );
-
                         return matchMention && matchSearch && matchYear;
                     });
                     renderTable(filtered);
@@ -362,4 +352,3 @@
     </div>
 </body>
 </html>
-<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/superadmin/students/list.blade.php ENDPATH**/ ?>

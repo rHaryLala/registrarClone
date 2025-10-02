@@ -70,9 +70,14 @@
                         <h1 class="text-3xl font-bold mb-2">Liste des utilisateurs</h1>
                         <p class="text-blue-100">Gérez les utilisateurs de votre système</p>
                     </div>
-                    <a href="<?php echo e(route('superadmin.users.create')); ?>" class="bg-white text-blue-800 px-6 py-3 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center justify-center md:justify-start font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                        <i class="fas fa-plus mr-2"></i> Nouvel utilisateur
-                    </a>
+                    <div class="flex items-center gap-3">
+                        <a href="<?php echo e(route('superadmin.users.create')); ?>" class="bg-white text-blue-800 px-6 py-3 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center justify-center md:justify-start font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            <i class="fas fa-plus mr-2"></i> Nouvel utilisateur
+                        </a>
+                        <a href="<?php echo e(route('superadmin.users.export_pdf')); ?>" target="_blank" class="bg-white/80 text-red-700 px-5 py-3 rounded-xl hover:bg-white transition-all duration-300 flex items-center justify-center font-semibold shadow-sm hover:shadow-md">
+                            <i class="fas fa-file-pdf mr-2"></i> Exporter PDF
+                        </a>
+                    </div>
                 </div>
                 
                 <!-- Added search and filter functionality -->

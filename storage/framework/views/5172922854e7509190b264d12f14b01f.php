@@ -10,7 +10,7 @@
                 <div class="w-10 h-10 bg-blue-800 rounded-lg flex items-center justify-center">
                     <i class="fas fa-university text-white text-lg"></i>
                 </div>
-                <h1 class="text-xl font-semibold text-gray-900 hidden sm:block">Tableau de bord SuperAdmin</h1>
+                <h1 class="text-xl font-semibold text-gray-900 hidden sm:block">Tableau de bord | Administrateur</h1>
                 <h1 class="text-lg font-semibold text-gray-900 sm:hidden">Admin</h1>
             </div>
         </div>
@@ -57,9 +57,15 @@
                             <i class="fas fa-question-circle mr-3 w-4"></i>Aide
                         </a>
                         <hr class="my-2 border-gray-200">
-                        <a href="#logout" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                            <i class="fas fa-sign-out-alt mr-3 w-4"></i>Déconnexion
+                        <a href="<?php echo e(route('logout')); ?>"
+                            class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                <i class="fas fa-sign-out-alt mr-3 w-4"></i>Déconnexion
                         </a>
+
+                        <form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" class="hidden">
+                            <?php echo csrf_field(); ?>
+                        </form>
                     </div>
                 </div>
             </div>
