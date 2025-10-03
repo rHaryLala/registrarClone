@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" href="{{ url('public/favicon.png') }}" type="image/png">
     <style>
         body { font-family: 'Open Sans', sans-serif; }
         h1, h2, h3, h4, h5, h6 { font-family: 'Work Sans', sans-serif; }
@@ -188,6 +188,11 @@
                 const students = @json($studentsArray);
                 const mentions = @json($mentionsArray);
 
+                // Pagination variables
+                let currentPage = 1;
+                const pageSize = 15;
+                let filteredStudents = [...students];
+
                 function renderTable(filteredStudents) {
                     const tbody = document.getElementById('studentsTableBody');
                     const mobileContainer = document.getElementById('mobileCards');
@@ -319,35 +324,33 @@
                 // const pageSize = 10;
 
                 function filterStudents() {
-                    const q = document.getElementById('searchInput').value.toLowerCase();
-                    const mentionId = document.getElementById('mention_id').value;
-                    const academicYear = document.getElementById('academic_year').value;
+                    const qInput = document.getElementById('searchInput');
+                    const q = (qInput && qInput.value) ? qInput.value.toLowerCase() : '';
+                    const mentionEl = document.getElementById('mention_id');
+                    const mentionId = mentionEl ? mentionEl.value : '';
+                    const academicYearEl = document.getElementById('academic_year');
+                    const academicYear = academicYearEl ? academicYearEl.value : '';
                     
-                    let filtered = students.filter(student => {
+                    filteredStudents = students.filter(student => {
                         let matchMention = !mentionId || student.mention_id == mentionId;
                         // Normalize values for comparison
                         const studentAY = (student.academic_year || '').toString().trim();
                         const selectedAY = (academicYear || '').toString().trim();
                         let matchYear = !selectedAY || studentAY === selectedAY;
-
-                        // Guard string fields before calling toLowerCase to avoid runtime errors
-                        const matricule = (student.matricule || '').toString().toLowerCase();
-                        const nom = (student.nom || '').toString().toLowerCase();
-                        const prenom = (student.prenom || '').toString().toLowerCase();
-                        const email = (student.email || '').toString().toLowerCase();
-                        const mentionNom = (student.mention_nom || '').toString().toLowerCase();
-
+                        // Prevent calling toLowerCase on null/undefined by coercing to string first
                         let matchSearch = !q || (
-                            matricule.includes(q) ||
-                            nom.includes(q) ||
-                            prenom.includes(q) ||
-                            email.includes(q) ||
-                            mentionNom.includes(q)
+                            (student.matricule || '').toLowerCase().includes(q) ||
+                            (student.nom || '').toLowerCase().includes(q) ||
+                            (student.prenom || '').toLowerCase().includes(q) ||
+                            (student.email || '').toLowerCase().includes(q) ||
+                            (student.mention_nom || '').toLowerCase().includes(q)
                         );
-
                         return matchMention && matchSearch && matchYear;
                     });
-                    renderTable(filtered);
+
+                    // Reset to first page when filters change
+                    currentPage = 1;
+                    updateDisplay();
                 }
 
                 document.getElementById('searchInput').addEventListener('input', filterStudents);
@@ -355,7 +358,77 @@
                 document.getElementById('academic_year').addEventListener('change', filterStudents);
 
                 // Initial render
-                renderTable(students);
+                filteredStudents = [...students];
+
+                function renderPagination() {
+                    const paginationContainer = document.getElementById('pagination');
+                    if (!paginationContainer) return;
+
+                    const totalPages = Math.max(1, Math.ceil(filteredStudents.length / pageSize));
+
+                    if (totalPages <= 1) {
+                        paginationContainer.innerHTML = '';
+                        return;
+                    }
+
+                    let paginationHTML = '<div class="flex items-center justify-center gap-2 flex-wrap">';
+
+                    // Previous button
+                    paginationHTML += `\n                        <button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-4 py-2 rounded-lg border ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-blue-800 hover:bg-blue-50 border-blue-200'} transition-colors duration-200 font-medium">\n                            <i class=\"fas fa-chevron-left\"></i>\n                        </button>`;
+
+                    // Page numbers with smart truncation
+                    const maxVisiblePages = 7;
+                    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                    if (endPage - startPage < maxVisiblePages - 1) {
+                        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                    }
+
+                    if (startPage > 1) {
+                        paginationHTML += `\n                            <button onclick="goToPage(1)" class=\"px-4 py-2 rounded-lg border bg-white text-blue-800 hover:bg-blue-50 border-blue-200 transition-colors duration-200 font-medium\">1</button>`;
+                        if (startPage > 2) paginationHTML += '<span class="px-2 text-gray-500">...</span>';
+                    }
+
+                    for (let i = startPage; i <= endPage; i++) {
+                        paginationHTML += `\n                            <button onclick="goToPage(${i})" class=\"px-4 py-2 rounded-lg border ${i === currentPage ? 'bg-blue-800 text-white border-blue-800' : 'bg-white text-blue-800 hover:bg-blue-50 border-blue-200'} transition-colors duration-200 font-medium\">${i}</button>`;
+                    }
+
+                    if (endPage < totalPages) {
+                        if (endPage < totalPages - 1) paginationHTML += '<span class="px-2 text-gray-500">...</span>';
+                        paginationHTML += `\n                            <button onclick="goToPage(${totalPages})" class=\"px-4 py-2 rounded-lg border bg-white text-blue-800 hover:bg-blue-50 border-blue-200 transition-colors duration-200 font-medium\">${totalPages}</button>`;
+                    }
+
+                    // Next button
+                    paginationHTML += `\n                        <button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class=\"px-4 py-2 rounded-lg border ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-blue-800 hover:bg-blue-50 border-blue-200'} transition-colors duration-200 font-medium\">\n                            <i class=\"fas fa-chevron-right\"></i>\n                        </button>`;
+
+                    paginationHTML += '</div>';
+
+                    // Add results info
+                    const startResult = (currentPage - 1) * pageSize + 1;
+                    const endResult = Math.min(currentPage * pageSize, filteredStudents.length);
+                    paginationHTML += `\n                        <div class="text-center mt-4 text-sm text-gray-600">Affichage de <span class="font-semibold text-blue-800">${startResult}</span> à <span class="font-semibold text-blue-800">${endResult}</span> sur <span class="font-semibold text-blue-800">${filteredStudents.length}</span> étudiants</div>`;
+
+                    paginationContainer.innerHTML = paginationHTML;
+                }
+
+                function goToPage(page) {
+                    const totalPages = Math.max(1, Math.ceil(filteredStudents.length / pageSize));
+                    if (page < 1 || page > totalPages) return;
+                    currentPage = page;
+                    updateDisplay();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+
+                function updateDisplay() {
+                    const startIndex = (currentPage - 1) * pageSize;
+                    const endIndex = startIndex + pageSize;
+                    const studentsToDisplay = filteredStudents.slice(startIndex, endIndex);
+                    renderTable(studentsToDisplay);
+                    renderPagination();
+                }
+
+                // Initial call
+                updateDisplay();
             </script>
         </main>
     </div>

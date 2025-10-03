@@ -302,7 +302,7 @@ class SuperAdminController extends Controller
             'export_all' => 'nullable|boolean',
             // optional student fields to include in export
             'fields' => 'nullable|array',
-            'fields.*' => 'in:email,plain_password,telephone,religion,abonne_caf,statut_interne',
+            'fields.*' => 'in:email,plain_password,telephone,religion,abonne_caf,statut_interne,taille',
         ]);
 
         $query = Student::query();
@@ -321,6 +321,13 @@ class SuperAdminController extends Controller
             }
         }
 
+        // Apply filters only when 'export_all' is not explicitly checked
+        // This includes academic/year/mention filters and also special filters implied
+        // by selecting certain fields (e.g. if the user selected 'abonne_caf' we only
+        // export students who are subscribed; if 'statut_interne' is selected we
+        // only export students who are internes).
+        $selectedFields = array_values(array_filter((array)$request->input('fields', []), function($v){ return $v !== null && $v !== ''; }));
+
         if (!$request->boolean('export_all')) {
             if ($request->filled('academic_year_id')) {
                 $query->where('academic_year_id', $request->academic_year_id);
@@ -330,6 +337,24 @@ class SuperAdminController extends Controller
             }
             if (!empty($mentionIds)) {
                 $query->whereIn('mention_id', $mentionIds);
+            }
+
+            // If user asked to include the 'abonne_caf' field, only export students
+            // who are actually subscribed (abonne_caf = true / 1).
+            if (in_array('abonne_caf', $selectedFields)) {
+                $query->where(function($q) {
+                    $q->where('abonne_caf', 1)->orWhere('abonne_caf', true);
+                });
+            }
+
+            // If user asked to include 'statut_interne', only export students who
+            // are marked as interne. Support both boolean and string representations.
+            if (in_array('statut_interne', $selectedFields)) {
+                $query->where(function($q) {
+                    $q->where('statut_interne', 'interne')
+                      ->orWhere('statut_interne', 1)
+                      ->orWhere('statut_interne', true);
+                });
             }
         }
 
@@ -362,7 +387,7 @@ class SuperAdminController extends Controller
         }
 
     // Prepare selected fields (ensure allowed set)
-    $allowed = ['email', 'plain_password', 'telephone', 'religion', 'abonne_caf', 'statut_interne'];
+    $allowed = ['email', 'plain_password', 'telephone', 'religion', 'abonne_caf', 'statut_interne', 'taille'];
     $fields = array_values(array_intersect($allowed, (array)$request->input('fields', [])));
 
     // Render a simple students list as PDF

@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="{{ url('public/favicon.png') }}" type="image/png">
+    <link rel="icon" href="<?php echo e(url('public/favicon.png')); ?>" type="image/png">
     <style>
         * {
             font-family: 'Montserrat', sans-serif;
@@ -150,21 +150,21 @@
     <div class="dashboard-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            @include('dean.components.sidebar')
+            <?php echo $__env->make('dean.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
             <!-- Header -->
             <div class="header sticky top-0 z-50">
-                @include('dean.components.header')
+                <?php echo $__env->make('dean.components.header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
             </div>
 
             <!-- Content -->
             <main class="p-8">
                 <!-- Enhanced title section with better typography and spacing -->
                 <div class="mb-12">
-                    <h1 class="page-title text-4xl font-bold mb-3">{{ $mention->nom }}</h1>
+                    <h1 class="page-title text-4xl font-bold mb-3"><?php echo e($mention->nom); ?></h1>
                     <p class="text-slate-600 text-lg font-medium">Gérez et suivez les informations de votre mention</p>
                     <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-4"></div>
                 </div>
@@ -178,14 +178,10 @@
                             </div>
                             <div>
                                 <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Total Étudiants</p>
-                                <h3 class="number-counter text-3xl font-bold text-slate-800 mt-1">{{ $totalStudents }}</h3>
+                                <h3 class="number-counter text-3xl font-bold text-slate-800 mt-1"><?php echo e($totalStudents); ?></h3>
                             </div>
                         </div>
-                        {{-- <div class="mt-6 pt-4 border-t border-gray-100">
-                            <p class="text-emerald-600 text-sm flex items-center font-semibold">
-                                <i class="fas fa-arrow-up mr-2"></i> 8% depuis le mois dernier
-                            </p>
-                        </div> --}}
+                        
                     </div>
                     
                     <!-- Added placeholder for additional stats cards with consistent styling -->
@@ -196,12 +192,10 @@
                             </div>
                             <div>
                                 <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Total Cours</p>
-                                <h3 class="number-counter text-3xl font-bold text-slate-800 mt-1">{{ $totalCourses ?? 0 }}</h3>
+                                <h3 class="number-counter text-3xl font-bold text-slate-800 mt-1"><?php echo e($totalCourses ?? 0); ?></h3>
                             </div>
                         </div>
-                        {{-- <div class="mt-6 pt-4 border-t border-gray-100">
-                            <p class="text-slate-500 text-sm">Nombre de cours disponibles dans la mention</p>
-                        </div> --}}
+                        
                     </div>
 
                     <div class="stats-card rounded-2xl p-8 border border-gray-100 hover:border-purple-200">
@@ -211,12 +205,10 @@
                             </div>
                             <div>
                                 <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Total Enseignants</p>
-                                <h3 class="number-counter text-3xl font-bold text-slate-800 mt-1">{{ $totalTeachers ?? 0 }}</h3>
+                                <h3 class="number-counter text-3xl font-bold text-slate-800 mt-1"><?php echo e($totalTeachers ?? 0); ?></h3>
                             </div>
                         </div>
-                        {{-- <div class="mt-6 pt-4 border-t border-gray-100">
-                            <p class="text-slate-500 text-sm">Nombre total d'enseignants dans la mention</p>
-                        </div> --}}
+                        
                     </div>
                 </div>
 
@@ -224,29 +216,29 @@
                 <div class="content-card rounded-2xl p-8 border border-gray-100">
                     <div class="flex items-center justify-between mb-8">
                         <h3 class="text-2xl font-bold text-slate-800">Derniers étudiants inscrits</h3>
-                        <a href="{{ route('dean.students.index') }}" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200 flex items-center">
+                        <a href="<?php echo e(route('dean.students.index')); ?>" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200 flex items-center">
                             Voir tous <i class="fas fa-arrow-right ml-2"></i>
                         </a>
                     </div>
                     <div class="space-y-4">
-                        @foreach($students->take(5) as $index => $student)
+                        <?php $__currentLoopData = $students->take(5); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $student): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div class="registration-item flex items-center justify-between p-6 rounded-2xl border border-gray-100" 
-                                style="--item-index: {{ $index }}">
+                                style="--item-index: <?php echo e($index); ?>">
                                 <div class="flex items-center space-x-6">
                                     <div class="avatar-container w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm">
-                                        <span class="text-blue-600 font-bold text-lg">{{ substr($student->prenom, 0, 1) }}{{ substr($student->nom, 0, 1) }}</span>
+                                        <span class="text-blue-600 font-bold text-lg"><?php echo e(substr($student->prenom, 0, 1)); ?><?php echo e(substr($student->nom, 0, 1)); ?></span>
                                     </div>
                                     <div>
-                                        <p class="font-bold text-slate-800 text-lg">{{ $student->nom }} {{ $student->prenom }}</p>
-                                        <p class="text-slate-500 font-medium">{{ $student->matricule }}</p>
+                                        <p class="font-bold text-slate-800 text-lg"><?php echo e($student->nom); ?> <?php echo e($student->prenom); ?></p>
+                                        <p class="text-slate-500 font-medium"><?php echo e($student->matricule); ?></p>
                                     </div>
                                 </div>
-                                <a href="{{ route('dean.students.show', $student->id) }}" 
+                                <a href="<?php echo e(route('dean.students.show', $student->id)); ?>" 
                                    class="bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 font-semibold px-6 py-3 rounded-xl transition-all duration-200 border border-blue-200 hover:border-blue-300">
                                     Voir détails
                                 </a>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
             </main>
@@ -285,3 +277,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/dean/dashboard.blade.php ENDPATH**/ ?>

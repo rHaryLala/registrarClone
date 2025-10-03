@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" href="{{ url('public/favicon.png') }}" type="image/png">
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -596,6 +596,10 @@
                             <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#374151;">
                                 <input type="checkbox" name="fields[]" value="statut_interne" style="width:16px; height:16px;">
                                 Statut interne
+                            </label>
+                            <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#374151;">
+                                <input type="checkbox" name="fields[]" value="taille" style="width:16px; height:16px;">
+                                Taille
                             </label>
                         </div>
                     </div>

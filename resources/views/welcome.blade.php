@@ -6,7 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <title>UAZ | Année Académique 2025-2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" href="{{ url('public/favicon.png') }}" type="image/png">
     <style>
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
         .font-opensans { font-family: 'Open Sans', sans-serif; }

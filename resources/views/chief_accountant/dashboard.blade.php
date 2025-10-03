@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" href="{{ url('public/favicon.png') }}" type="image/png">
     <style>
         body { font-family: 'Montserrat', sans-serif; }
         .sidebar { width: 260px; transition: all 0.3s; }

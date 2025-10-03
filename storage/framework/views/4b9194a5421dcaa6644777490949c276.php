@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="{{ url('public/favicon.png') }}" type="image/png">
+    <link rel="icon" href="<?php echo e(url('public/favicon.png')); ?>" type="image/png">
     <style>
         * {
             font-family: 'Inter', sans-serif;
@@ -288,12 +288,12 @@
 <body class="bg-gray-50">
     <div class="dashboard-container">
         <div class="sidebar">
-            @include('dean.components.sidebar')
+            <?php echo $__env->make('dean.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
         </div>
 
         <div class="main-content">
             <div class="header sticky top-0 z-50">
-                @include('dean.components.header')
+                <?php echo $__env->make('dean.components.header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
             </div>
 
             <main class="p-4 lg:p-8">
@@ -305,7 +305,7 @@
                             </h1>
                             <p class="text-gray-600 text-lg">Gérez et consultez les informations des étudiants</p>
                         </div>
-                        <a href="{{ route('register') }}" class="btn-primary text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 font-semibold text-base">
+                        <a href="<?php echo e(route('register')); ?>" class="btn-primary text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 font-semibold text-base">
                             <i class="fas fa-plus text-lg"></i>
                             <span>Nouvel étudiant</span>
                         </a>
@@ -331,7 +331,7 @@
                                         <i class="fas fa-graduation-cap"></i>
                                         <span>Niveau d'étude</span>
                                     </label>
-                                    @php
+                                    <?php
                                         $yearLevels = collect($studentsArray)
                                             ->map(function($s){
                                                 return [
@@ -342,23 +342,23 @@
                                             ->unique('id')
                                             ->filter(function($y){ return !empty($y['id']); })
                                             ->values();
-                                    @endphp
+                                    ?>
                                     <select name="year_level_id" 
                                             id="year_level_id" 
                                             class="modern-select modern-input w-full px-5 py-4 rounded-xl border-0 focus:ring-0 text-gray-900 appearance-none font-medium">
                                         <option value="">Tous les niveaux</option>
-                                        @foreach($yearLevels as $yl)
-                                            <option value="{{ $yl['id'] }}">{{ $yl['label'] }}</option>
-                                        @endforeach
+                                        <?php $__currentLoopData = $yearLevels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $yl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($yl['id']); ?>"><?php echo e($yl['label']); ?></option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
                             
-                            @php $uniqueCount = collect($studentsArray)->unique('id')->count(); @endphp
+                            <?php $uniqueCount = collect($studentsArray)->unique('id')->count(); ?>
                             <div class="flex items-center justify-end mt-6">
                                 <div class="total-badge px-8 py-4 rounded-2xl text-right">
                                     <div class="text-sm text-white font-semibold uppercase tracking-wider opacity-90 mb-1">Total des étudiants</div>
-                                    <div id="totalCountAllContainer" class="text-5xl font-extrabold text-white">{{ $uniqueCount }}</div>
+                                    <div id="totalCountAllContainer" class="text-5xl font-extrabold text-white"><?php echo e($uniqueCount); ?></div>
                                     <div id="filteredCountBadge" class="text-sm text-gray-600"><br> Affichés : 0 / 0</div>
                                 </div>
                             </div>
@@ -390,7 +390,7 @@
                                         </div>
                                     </th>
                                     <th class="px-8 py-5 text-left text-xs font-bold text-white uppercase tracking-wider">
-                                        @php
+                                        <?php
                                             function sort_link($label, $column) {
                                                 $currentSort = request('sort', 'matricule');
                                                 $currentDirection = request('direction', 'asc');
@@ -403,8 +403,9 @@
                                                 $url = url()->current() . '?' . http_build_query($query);
                                                 return '<a href="' . $url . '" class="hover:underline flex items-center gap-2 text-white"><i class="fas fa-graduation-cap text-blue-200"></i><span>' . $label . '</span><span class="ml-2 text-xs">' . $icon . '</span></a>';
                                             }
-                                        @endphp
-                                        {!! sort_link("Niveau d'étude", 'annee_etude') !!}
+                                        ?>
+                                        <?php echo sort_link("Niveau d'étude", 'annee_etude'); ?>
+
                                     </th>
                                     <th class="px-8 py-5 text-left text-xs font-bold text-white uppercase tracking-wider">
                                         <div class="flex items-center gap-2">
@@ -415,7 +416,7 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-100" id="studentsTableBody">
-                                {{-- Content will be generated by JS --}}
+                                
                             </tbody>
                         </table>
                     </div>
@@ -432,11 +433,11 @@
                         return (prenomInitial + nomInitial) || '?';
                     }
 
-                    let rawStudents = @json($studentsArray);
+                    let rawStudents = <?php echo json_encode($studentsArray, 15, 512) ?>;
                     const students = rawStudents.filter((student, index, self) => 
                         index === self.findIndex(s => s.id === student.id)
                     );
-                    const mentions = @json($mentions);
+                    const mentions = <?php echo json_encode($mentions, 15, 512) ?>;
 
                     let currentPage = 1;
                     const pageSize = 15;
@@ -648,4 +649,4 @@
         });
     </script>
 </body>
-</html>
+</html><?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/dean/students/index.blade.php ENDPATH**/ ?>

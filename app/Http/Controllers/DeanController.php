@@ -81,6 +81,7 @@ class DeanController extends Controller
                     'prenom' => $student->prenom,
                     'email' => $student->email,
                     'niveau_etude' => $student->niveau_etude,
+                    'year_level_id' => $student->year_level_id,
                     'mention_nom' => $student->mention->nom,
                     'mention_id' => $student->mention_id,
                     'year_level_label' => $student->yearLevel ? $student->yearLevel->label : '-',

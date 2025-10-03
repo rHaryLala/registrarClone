@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Liste des étudiants</title>
     <style>
-        body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#222 }
+        body { font-family: Arial, Helvetica, sans-serif; font-size:9px; color:#222 }
         .header { text-align:center; margin-bottom:12px }
         table { width:100%; border-collapse:collapse; margin-top:10px }
-        th, td { border:1px solid #ddd; padding:6px 8px; text-align:left }
+        th, td { border:1px solid #ddd; padding:2px 8px; text-align:left }
         th { background:#f3f4f6; font-weight:700 }
     </style>
 </head>
@@ -43,10 +43,13 @@
                             <th style="width:12%">Religion</th>
                         @endif
                         @if(in_array('abonne_caf', $extraCols))
-                            <th style="width:8%">Abonné CAF</th>
+                            <th style="width:8%">Cantine</th>
                         @endif
                         @if(in_array('statut_interne', $extraCols))
-                            <th style="width:8%">Statut interne</th>
+                            <th style="width:8%">Résidence</th>
+                        @endif
+                        @if(in_array('taille', $extraCols))
+                            <th style="width:8%">Taille</th>
                         @endif
                     </tr>
                 </thead>
@@ -86,18 +89,43 @@
                             @if(in_array('statut_interne', $ec))
                                 <td>{{ $s->statut_interne ?? '' }}</td>
                             @endif
+                            @if(in_array('taille', $ec))
+                                <td>{{ $s->taille ?? '' }}</td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         @endforeach
     @else
+        @php $extraCols = $fields ?? []; @endphp
         <table>
             <thead>
                 <tr>
                     <th style="width:16%">Matricule</th>
                     <th style="width:38%">Nom et Prénom</th>
                     <th style="width:15%">Niveau</th>
+                    @if(in_array('email', $extraCols))
+                        <th style="width:20%">Email</th>
+                    @endif
+                    @if(in_array('plain_password', $extraCols))
+                        <th style="width:12%">Mot de passe</th>
+                    @endif
+                    @if(in_array('telephone', $extraCols))
+                        <th style="width:12%">Téléphone</th>
+                    @endif
+                    @if(in_array('religion', $extraCols))
+                        <th style="width:12%">Religion</th>
+                    @endif
+                    @if(in_array('abonne_caf', $extraCols))
+                        <th style="width:8%">Abonné CAF</th>
+                    @endif
+                    @if(in_array('statut_interne', $extraCols))
+                        <th style="width:8%">Résidence</th>
+                    @endif
+                    @if(in_array('taille', $extraCols))
+                        <th style="width:6%">Taille</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -114,6 +142,28 @@
                             @endphp
                             {{ $lvl }}
                         </td>
+                        @php $ec = $extraCols ?? []; @endphp
+                        @if(in_array('email', $ec))
+                            <td>{{ $s->email ?? '' }}</td>
+                        @endif
+                        @if(in_array('plain_password', $ec))
+                            <td>{{ $s->plain_password ?? '' }}</td>
+                        @endif
+                        @if(in_array('telephone', $ec))
+                            <td>{{ $s->telephone ?? '' }}</td>
+                        @endif
+                        @if(in_array('religion', $ec))
+                            <td>{{ $s->religion ?? '' }}</td>
+                        @endif
+                        @if(in_array('abonne_caf', $ec))
+                            <td>{{ ($s->abonne_caf) ? 'Oui' : 'Non' }}</td>
+                        @endif
+                        @if(in_array('statut_interne', $ec))
+                            <td>{{ $s->statut_interne ?? '' }}</td>
+                        @endif
+                        @if(in_array('taille', $ec))
+                            <td>{{ $s->taille ?? '' }}</td>
+                        @endif
                     </tr>
                 @endforeach
             </tbody>
@@ -147,7 +197,7 @@
     </div>
 
     <footer style="position: fixed; bottom: 0; left: 0; right: 0; font-size:11px; color:#555; border-top:1px solid #ccc; padding:6px 8px; text-align:right; background: white;">
-        Exporté par : {{ $exporter }} — Généré le {{ now()->format('d/m/Y H:i') }}
+        Exporté par : {{ $exporter }} — le {{ now()->format('d/m/Y H:i') }}
     </footer>
 </body>
 </html>

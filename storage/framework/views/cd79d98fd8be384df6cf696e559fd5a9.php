@@ -7,7 +7,7 @@
     <title>Inscription - Université Adventiste Zurcher</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" href="{{ url('public/favicon.png') }}" type="image/png">
     
     <style>
         /* Adding harmonized step styling */
