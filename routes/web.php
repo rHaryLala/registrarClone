@@ -12,6 +12,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AccountantController;
 use App\Http\Controllers\MultimediaController;
 use App\Http\Controllers\ChiefAccountantController;
+use App\Http\Controllers\TeacherController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -56,6 +57,10 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 
     if (auth()->user()->isChiefAccountant()) {
         return redirect()->route('chief.accountant.dashboard');
+    }
+
+    if (auth()->user()->isTeacher()) {
+        return redirect()->route('teacher.dashboard');
     }
 })->name('dashboard');
 
@@ -265,11 +270,24 @@ Route::middleware(['auth', 'chief.accountant'])->prefix('chief-accountant')->nam
 // Multimedia routes
 Route::middleware(['auth', 'multimedia'])->prefix('multimedia')->name('multimedia.')->group(function () {
     Route::get('/dashboard', [MultimediaController::class, 'dashboard'])->name('dashboard');
-    // Student routes for multimedia
     Route::prefix('students')->name('students.')->group(function () {
         Route::get('/{student}', [MultimediaController::class, 'show'])->name('show');
         Route::put('/{student}', [MultimediaController::class, 'update'])->name('update');
     });
+});
+
+
+// Teacher routes
+Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->group(function () {
+    Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
+    Route::get('/courses', [TeacherController::class, 'coursesList'])->name('courses.list');
+    Route::get('/courses/{id}', [TeacherController::class, 'showCourse'])->name('courses.show');
+    Route::get('/courses/{id}/export', [TeacherController::class, 'exportCourseStudents'])->name('courses.export');
+    // Students taught by the authenticated teacher
+    Route::get('/students', [TeacherController::class, 'studentsIndex'])->name('students.index');
+    // Settings
+    Route::get('/settings', [TeacherController::class, 'settings'])->name('settings');
+    Route::put('/settings', [TeacherController::class, 'updateSettings'])->name('settings.update');
 });
 
 // Gestion des utilisateurs
@@ -281,8 +299,10 @@ Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.
 // Gestion des étudiants
 Route::get('/students', [StudentController::class, 'index'])->name('students.index');
 
+
 // Routes pour le doyen
 
 
 });
+
 

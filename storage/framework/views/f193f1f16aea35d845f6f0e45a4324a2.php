@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="<?php echo e(url('public/favicon.png')); ?>" type="image/png">
     <style>
         body { 
             font-family: 'Work Sans', sans-serif; 
@@ -129,9 +130,9 @@
         <div class="floating-shape"></div>
     </div>
     
-    <?php echo $__env->make('superadmin.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <?php echo $__env->make('teacher.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
     <div class="main-content min-h-screen relative z-10">
-        <?php echo $__env->make('superadmin.components.header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+        <?php echo $__env->make('teacher.components.header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
         <main class="p-6 max-w-6xl mx-auto">
             <!-- Modernized header with gradient and animations -->
             <div class="mb-8 fade-in">
@@ -142,13 +143,11 @@
                                 <h1 class="text-3xl font-bold mb-2 font-['Work_Sans']">Détail du cours</h1>
                                 <p class="text-blue-100 font-['Open_Sans']">Informations complètes et étudiants inscrits</p>
                             </div>
-                            <div class="flex gap-3">
-                                <a href="<?php echo e(route('superadmin.courses.list')); ?>" 
-                                   class="inline-flex items-center px-6 py-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all duration-300 hover:scale-105 backdrop-blur-sm border border-white/20">
-                                    <i class="fas fa-arrow-left mr-2"></i>
-                                    <span class="font-medium">Retour à la liste</span>
-                                </a>
-                            </div>
+                            <a href="<?php echo e(route('teacher.courses.list')); ?>" 
+                               class="inline-flex items-center px-6 py-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all duration-300 hover:scale-105 backdrop-blur-sm border border-white/20">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                <span class="font-medium">Retour à la liste</span>
+                            </a>
                         </div>
                     </div>
                     <div class="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-transparent"></div>
@@ -221,7 +220,7 @@
                         </span>
                     </h2>
                     <div class="ml-4">
-                        <a href="<?php echo e(route('superadmin.courses.export', $course->id)); ?>" 
+                        <a href="<?php echo e(route('teacher.courses.export', $course->id)); ?>" 
                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                             <i class="fas fa-file-pdf mr-2"></i>Exporter
                         </a>
@@ -311,4 +310,4 @@
     </div>
 </body>
 </html>
-<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/superadmin/courses/show.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/teacher/courses/show.blade.php ENDPATH**/ ?>

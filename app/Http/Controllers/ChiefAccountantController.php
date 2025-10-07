@@ -222,8 +222,8 @@ class ChiefAccountantController extends Controller
     // Students list for chief accountant (replicates SuperAdmin list shape)
     public function studentsList(Request $request)
     {
-        $sort = $request->get('sort', 'matricule');
-        $direction = $request->get('direction', 'asc');
+        $sort = $request->get('sort', 'id');
+        $direction = $request->get('direction', 'desc');
         $query = Student::query();
 
         if ($request->filled('q')) {

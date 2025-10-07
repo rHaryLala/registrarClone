@@ -10,8 +10,8 @@
                 <div class="w-10 h-10 bg-blue-800 rounded-lg flex items-center justify-center">
                     <i class="fas fa-university text-white text-lg"></i>
                 </div>
-                <h1 class="text-xl font-semibold text-gray-900 hidden sm:block">Tableau de bord | chef comptable</h1>
-                <h1 class="text-lg font-semibold text-gray-900 sm:hidden">Chef comptable</h1>
+                <h1 class="text-xl font-semibold text-gray-900 hidden sm:block">Tableau de bord | Enseignant</h1>
+                <h1 class="text-lg font-semibold text-gray-900 sm:hidden">Enseignant</h1>
             </div>
         </div>
         
@@ -22,12 +22,11 @@
             <div class="relative">
                 <button id="userMenuBtn" class="flex items-center space-x-2 p-2 hover:bg-blue-50 rounded-lg transition-all duration-200">
                     <div class="w-8 h-8 rounded-full bg-blue-800 flex items-center justify-center text-white font-semibold text-sm">
-                        <?php echo e(substr(auth()->user()->name ?? 'A', 0, 1)); ?>
-
+                        {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
                     </div>
                     <div class="hidden md:block text-left">
-                        <p class="text-sm font-medium text-gray-900"><?php echo e(auth()->user()->name ?? 'Dean'); ?></p>
-                        <p class="text-xs text-gray-500"><?php echo e(auth()->user()->role); ?></p>
+                        <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name ?? 'Dean' }}</p>
+                        <p class="text-xs text-gray-500">{{ auth()->user()->role }}</p>
                     </div>
                     <i class="fas fa-chevron-down text-xs text-gray-400 hidden md:block"></i>
                 </button>
@@ -37,12 +36,11 @@
                     <div class="p-4 border-b border-gray-200">
                         <div class="flex items-center space-x-3">
                             <div class="w-10 h-10 rounded-full bg-blue-800 flex items-center justify-center text-white font-semibold">
-                                <?php echo e(substr(auth()->user()->name ?? 'A', 0, 1)); ?>
-
+                                {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-900"><?php echo e(auth()->user()->name ?? 'Dean'); ?></p>
-                                <p class="text-xs text-gray-500"><?php echo e(auth()->user()->email ?? 'dean@zurcher.edu.mg'); ?></p>
+                                <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name ?? 'Dean' }}</p>
+                                <p class="text-xs text-gray-500">{{ auth()->user()->email ?? 'dean@zurcher.edu.mg' }}</p>
                             </div>
                         </div>
                     </div>
@@ -57,14 +55,14 @@
                             <i class="fas fa-question-circle mr-3 w-4"></i>Aide
                         </a>
                         <hr class="my-2 border-gray-200">
-                        <a href="<?php echo e(route('logout')); ?>"
+                        <a href="{{ route('logout') }}"
                             class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                 <i class="fas fa-sign-out-alt mr-3 w-4"></i>Déconnexion
                         </a>
 
-                        <form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" class="hidden">
-                            <?php echo csrf_field(); ?>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                            @csrf
                         </form>
                     </div>
                 </div>
@@ -157,4 +155,3 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/chief_accountant/components/header.blade.php ENDPATH**/ ?>

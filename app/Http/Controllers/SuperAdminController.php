@@ -449,8 +449,7 @@ class SuperAdminController extends Controller
             'role' => $validated['role'],
             'mention_id' => $validated['mention_id'] ?? null
         ]);
-
-        return redirect()->route('users.index')->with('success', 'User created successfully');
+        return redirect()->route('superadmin.users.list')->with('success', 'User created successfully');
     }
     public function editUser($id)
     {
