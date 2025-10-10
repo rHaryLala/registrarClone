@@ -28,9 +28,22 @@ class StudentController extends Controller
         return view('register', compact('mentions', 'academicYears', 'semesters', 'yearLevels', 'parcours'));
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $students = Student::orderBy('created_at', 'desc')->get();
+
+        // If this request comes from the chief-accountant area (url prefix) or the
+        // authenticated user is a chief accountant, delegate to the
+        // ChiefAccountantController which prepares the specialized view and data.
+        try {
+            if ($request->is('chief-accountant*') || (auth()->check() && method_exists(auth()->user(), 'isChiefAccountant') && auth()->user()->isChiefAccountant())) {
+                return app(\App\Http\Controllers\ChiefAccountantController::class)->studentsList($request);
+            }
+        } catch (\Throwable $e) {
+            // fallback to default view if delegation fails
+            logger()->warning('StudentController@index: delegation to ChiefAccountantController failed: ' . $e->getMessage());
+        }
+
         return view('students.index', compact('students'));
     }
 

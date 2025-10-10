@@ -48,23 +48,23 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 min-h-screen font-body">
-    @include('chief_accountant.components.sidebar')
+    <?php echo $__env->make('superadmin.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
     
     <div class="main-content min-h-screen">
-        @include('chief_accountant.components.header')
-        @if(isset($student) && $student->lastChangedBy)
+        <?php echo $__env->make('superadmin.components.header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+        <?php if(isset($student) && $student->lastChangedBy): ?>
             <div id="last-change-toast" class="fixed top-4 right-4 z-50 bg-white border border-gray-200 shadow-lg rounded-lg px-4 py-3 flex items-start gap-3" role="status" aria-live="polite">
                 <div class="text-blue-600 mt-1"><i class="fas fa-user-edit"></i></div>
                 <div>
                     <div class="font-semibold text-sm">Dernière modification</div>
                     <div class="text-sm text-gray-700">
-                        {{ $student->lastChangedBy->name }}@if($student->lastChangedBy->email) &nbsp;({{ $student->lastChangedBy->email }})@endif
-                        <div class="text-xs text-gray-500">{{ $student->last_change_datetime ? \Carbon\Carbon::parse($student->last_change_datetime)->locale('fr')->isoFormat('D MMMM YYYY HH:mm') : '' }}</div>
+                        <?php echo e($student->lastChangedBy->name); ?><?php if($student->lastChangedBy->email): ?> &nbsp;(<?php echo e($student->lastChangedBy->email); ?>)<?php endif; ?>
+                        <div class="text-xs text-gray-500"><?php echo e($student->last_change_datetime ? \Carbon\Carbon::parse($student->last_change_datetime)->locale('fr')->isoFormat('D MMMM YYYY HH:mm') : ''); ?></div>
                     </div>
                 </div>
                 <button id="last-change-toast-close" class="ml-3 text-gray-400 hover:text-gray-600" aria-label="Fermer">&times;</button>
             </div>
-        @endif
+        <?php endif; ?>
 
 <main class="p-6 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
     <!-- Enhanced hero section with floating elements and improved animations -->
@@ -79,48 +79,54 @@
                 <div class="flex items-center space-x-6">
                     <div class="relative group">
                         <div class="w-28 h-28 rounded-3xl overflow-hidden bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-3xl cursor-pointer transition-all duration-500 hover:scale-110 hover:rotate-3 shadow-2xl border-2 border-white/30 hover:border-white/50">
-                            <form id="photo-upload-form" action="{{ route('chief.accountant.students.update', $student->id) }}" method="POST" enctype="multipart/form-data" class="absolute inset-0 w-full h-full z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                                @csrf
-                                @method('PUT')
+                            <form id="photo-upload-form" action="<?php echo e(route('superadmin.students.update', $student->id)); ?>" method="POST" enctype="multipart/form-data" class="absolute inset-0 w-full h-full z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <?php echo csrf_field(); ?>
+                                <?php echo method_field('PUT'); ?>
                                 <input type="file" id="profile-photo-input" name="image" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="uploadProfilePhoto(event)">
                             </form>
-                            @if($student->image)
-                                <img id="profile-photo" src="{{ asset($student->image) }}" alt="Photo de profil" class="object-cover w-full h-full rounded-3xl">
-                            @else
-                                <span id="profile-initials" class="font-heading text-4xl">{{ substr($student->prenom, 0, 1) }}{{ substr($student->nom, 0, 1) }}</span>
-                            @endif
+                            <?php if($student->image): ?>
+                                <img id="profile-photo" src="<?php echo e(asset($student->image)); ?>" alt="Photo de profil" class="object-cover w-full h-full rounded-3xl">
+                            <?php else: ?>
+                                <span id="profile-initials" class="font-heading text-4xl"><?php echo e(substr($student->prenom, 0, 1)); ?><?php echo e(substr($student->nom, 0, 1)); ?></span>
+                            <?php endif; ?>
                             <div class="absolute -bottom-4 -right-4 bg-white text-primary-800 rounded-full p-4 text-lg opacity-0 group-hover:opacity-100 transition-all duration-500 shadow-2xl transform group-hover:scale-110">
                                 <i class="fas fa-camera"></i>
                             </div>
                         </div>
                     </div>
                     <div class="animate-slide-in-left">
-                        <h1 class="text-5xl font-heading font-bold mb-4 text-balance bg-gradient-to-r from-white to-blue-100 bg-clip-text">{{ $student->prenom }} {{ $student->nom }}</h1>
+                        <h1 class="text-5xl font-heading font-bold mb-4 text-balance bg-gradient-to-r from-white to-blue-100 bg-clip-text"><?php echo e($student->prenom); ?> <?php echo e($student->nom); ?></h1>
                         <div class="flex flex-wrap items-center gap-4">
                             <span class="bg-white/25 backdrop-blur-sm px-5 py-3 rounded-full text-sm font-semibold border border-white/30 hover:bg-white/35 transition-all duration-300 transform hover:scale-105">
-                                <i class="fas fa-id-badge mr-2 text-blue-200"></i>Matricule: {{ $student->matricule }}
+                                <i class="fas fa-id-badge mr-2 text-blue-200"></i>Matricule: <?php echo e($student->matricule); ?>
+
                             </span>
-                            @if($student->bursary_status)
+                            <?php if($student->bursary_status): ?>
                                 <span class="bg-gradient-to-r from-yellow-400 to-amber-400 text-yellow-900 px-5 py-3 rounded-full text-sm font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                                     <i class="fas fa-star mr-2 animate-pulse"></i>Boursier
                                 </span>
-                            @endif
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
                 
                 <div class="flex flex-wrap items-center gap-4 animate-slide-in-right">
-                    <a href="{{ route('chief.accountant.finances.list') }}?student_id={{ $student->id }}" 
+                    <a href="<?php echo e(route('superadmin.students.courses.history', $student->id)); ?>" 
+                       class="bg-white/25 backdrop-blur-sm hover:bg-white/40 text-white px-6 py-4 rounded-2xl transition-all duration-300 flex items-center space-x-3 border border-white/40 font-semibold hover:scale-105 hover:shadow-xl">
+                        <i class="fas fa-book text-lg"></i>
+                        <span>Cours</span>
+                    </a>
+                    <a href="<?php echo e(route('superadmin.finances.list')); ?>?student_id=<?php echo e($student->id); ?>" 
                        class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 py-4 rounded-2xl transition-all duration-300 flex items-center space-x-3 shadow-xl hover:shadow-2xl hover:scale-110 font-semibold">
                         <i class="fas fa-money-bill-wave text-lg"></i>
                         <span>Finances</span>
                     </a>
-                        <a href="{{ route('chief.accountant.students.index') }}"
+                    <a href="<?php echo e(route('superadmin.students.list')); ?>"
                        class="text-white hover:text-blue-100 flex items-center space-x-3 px-6 py-4 rounded-2xl hover:bg-white/15 transition-all duration-300 font-semibold hover:scale-105">
                         <i class="fas fa-arrow-left text-lg"></i>
                         <span>Retour</span>
                     </a>
-                    <a href="{{ url('/preview') }}?ptype=Fiche_inscription&student_id={{ $student->id }}" target="_blank"
+                          <a href="<?php echo e(url('/preview')); ?>?ptype=Fiche_inscription&student_id=<?php echo e($student->id); ?>" target="_blank"
                               class="bg-blue-700 text-white px-6 py-4 rounded-2xl transition-all duration-300 flex items-center space-x-3 border border-blue-800 font-semibold hover:bg-blue-800 hover:scale-105 hover:shadow-xl">
                         <i class="fas fa-file-pdf text-lg"></i>
                         <span>Fiche d'inscription PDF</span>
@@ -150,33 +156,34 @@
                     <!-- Standardized all info items with consistent hover effects and spacing -->
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-venus-mars text-blue-600 mr-3"></i>Sexe</span>
-                        <span class="font-bold text-gray-900 editable" data-field="sexe">{{ $student->sexe ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="sexe"><?php echo e($student->sexe ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-birthday-cake text-blue-600 mr-3"></i>Date de naissance</span>
                         <span class="font-bold text-gray-900 editable" data-field="date_naissance">
-                            {{ $student->date_naissance ? \Carbon\Carbon::parse($student->date_naissance)->format('Y-m-d') : '-' }}
+                            <?php echo e($student->date_naissance ? \Carbon\Carbon::parse($student->date_naissance)->format('Y-m-d') : '-'); ?>
+
                         </span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-map-marker-alt text-blue-600 mr-3"></i>Lieu de naissance</span>
-                        <span class="font-bold text-gray-900 editable" data-field="lieu_naissance">{{ $student->lieu_naissance ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="lieu_naissance"><?php echo e($student->lieu_naissance ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-flag text-blue-600 mr-3"></i>Nationalité</span>
-                        <span class="font-bold text-gray-900 editable" data-field="nationalite">{{ $student->nationalite ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="nationalite"><?php echo e($student->nationalite ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-pray text-blue-600 mr-3"></i>Religion</span>
-                        <span class="font-bold text-gray-900 editable" data-field="religion">{{ $student->religion ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="religion"><?php echo e($student->religion ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-tshirt text-blue-600 mr-3"></i>Taille</span>
-                        <span class="font-bold text-gray-900 editable" data-field="taille">{{ $student->taille ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="taille"><?php echo e($student->taille ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-heart text-blue-600 mr-3"></i>État civil</span>
-                        @php
+                        <?php
                             $etatMap = [
                                 'célibataire' => 'Célibataire',
                                 'marié' => 'Marié(e)',
@@ -184,8 +191,8 @@
                                 'veuf' => 'Veuf(ve)'
                             ];
                             $displayEtat = $student->etat_civil ? ($etatMap[$student->etat_civil] ?? ucfirst($student->etat_civil)) : '-';
-                        @endphp
-                        <span class="font-bold text-gray-900 editable" data-field="etat_civil">{{ $displayEtat }}</span>
+                        ?>
+                        <span class="font-bold text-gray-900 editable" data-field="etat_civil"><?php echo e($displayEtat); ?></span>
                     </div>
                 </div>
             </div>
@@ -204,23 +211,23 @@
                 <div class="p-6 space-y-2">
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-phone text-blue-600 mr-3"></i>Téléphone</span>
-                        <span class="font-bold text-gray-900 editable" data-field="telephone">{{ $student->telephone ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="telephone"><?php echo e($student->telephone ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-envelope text-blue-600 mr-3"></i>Email</span>
-                        <span class="font-bold text-gray-900 break-all editable" data-field="email">{{ $student->email ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 break-all editable" data-field="email"><?php echo e($student->email ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-home text-blue-600 mr-3"></i>Adresse</span>
-                        <span class="font-bold text-gray-900 text-right editable" data-field="adresse">{{ $student->adresse ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 text-right editable" data-field="adresse"><?php echo e($student->adresse ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-globe text-blue-600 mr-3"></i>Région</span>
-                        <span class="font-bold text-gray-900 editable" data-field="region">{{ $student->region ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="region"><?php echo e($student->region ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-map text-blue-600 mr-3"></i>District</span>
-                        <span class="font-bold text-gray-900 editable" data-field="district">{{ $student->district ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="district"><?php echo e($student->district ?: '-'); ?></span>
                     </div>
                 </div>
             </div>
@@ -239,23 +246,23 @@
                 <div class="p-6 space-y-2">
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-certificate text-blue-600 mr-3"></i>Série Bac</span>
-                        <span class="font-bold text-gray-900 editable" data-field="bacc_serie">{{ $student->bacc_serie ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="bacc_serie"><?php echo e($student->bacc_serie ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-calendar text-blue-600 mr-3"></i>Date obtention Bac</span>
-                        <span class="font-bold text-gray-900 editable" data-field="bacc_date_obtention">{{ $student->bacc_date_obtention ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="bacc_date_obtention"><?php echo e($student->bacc_date_obtention ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-level-up-alt text-blue-600 mr-3"></i>Niveau d'étude</span>
-                        <span class="font-bold text-gray-900 editable" data-field="year_level_id">{{ $student->yearLevel ? $student->yearLevel->label : '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="year_level_id"><?php echo e($student->yearLevel ? $student->yearLevel->label : '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-trophy text-blue-600 mr-3"></i>Mention</span>
-                        <span class="font-bold text-gray-900 " data-field="mention_id">{{ $student->mention->nom ?? '-' }}</span>
+                        <span class="font-bold text-gray-900 " data-field="mention_id"><?php echo e($student->mention->nom ?? '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-route text-blue-600 mr-3"></i>Parcours</span>
-                        <span class="font-bold text-gray-900 " data-field="parcours_id">{{ $student->parcours ? $student->parcours->nom : '-' }}</span>
+                        <span class="font-bold text-gray-900 " data-field="parcours_id"><?php echo e($student->parcours ? $student->parcours->nom : '-'); ?></span>
                     </div>
 
                 </div>
@@ -277,29 +284,29 @@
                             </div>
                             <h2 class="text-xl font-heading font-bold">Passeport</h2>
                         </div>
-                        @if($student->passport_status)
+                        <?php if($student->passport_status): ?>
                             <span class="bg-emerald-400 text-emerald-900 px-4 py-2 rounded-full text-xs font-bold shadow-lg animate-pulse">
                                 <i class="fas fa-check mr-1"></i>Actif
                             </span>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="p-6 space-y-2">
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold">Numéro</span>
-                        <span class="font-bold text-gray-900 editable" data-field="passport_numero">{{ $student->passport_numero ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="passport_numero"><?php echo e($student->passport_numero ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold">Pays émission</span>
-                        <span class="font-bold text-gray-900 editable" data-field="passport_pays_emission">{{ $student->passport_pays_emission ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="passport_pays_emission"><?php echo e($student->passport_pays_emission ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold">Date émission</span>
-                        <span class="font-bold text-gray-900 editable" data-field="passport_date_emission">{{ $student->passport_date_emission ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="passport_date_emission"><?php echo e($student->passport_date_emission ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold">Date expiration</span>
-                        <span class="font-bold text-gray-900 editable" data-field="passport_date_expiration">{{ $student->passport_date_expiration ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="passport_date_expiration"><?php echo e($student->passport_date_expiration ?: '-'); ?></span>
                     </div>
                 </div>
             </div>
@@ -318,15 +325,15 @@
                 <div class="p-6 space-y-2">
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold">Numéro</span>
-                        <span class="font-bold text-gray-900 editable" data-field="cin_numero">{{ $student->cin_numero ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="cin_numero"><?php echo e($student->cin_numero ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold">Date délivrance</span>
-                        <span class="font-bold text-gray-900 editable" data-field="cin_date_delivrance">{{ $student->cin_date_delivrance ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="cin_date_delivrance"><?php echo e($student->cin_date_delivrance ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold">Lieu délivrance</span>
-                        <span class="font-bold text-gray-900 editable" data-field="cin_lieu_delivrance">{{ $student->cin_lieu_delivrance ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="cin_lieu_delivrance"><?php echo e($student->cin_lieu_delivrance ?: '-'); ?></span>
                     </div>
                 </div>
             </div>
@@ -345,11 +352,11 @@
                 <div class="p-6 space-y-2">
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold">Nom conjoint</span>
-                        <span class="font-bold text-gray-900 editable" data-field="nom_conjoint">{{ $student->nom_conjoint ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="nom_conjoint"><?php echo e($student->nom_conjoint ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold">Nombre d'enfants</span>
-                        <span class="font-bold text-gray-900 editable" data-field="nb_enfant">{{ ($student->nb_enfant !== null && $student->nb_enfant !== '') ? $student->nb_enfant : '-' }}</span>
+                        <span class="font-bold text-gray-900 editable" data-field="nb_enfant"><?php echo e(($student->nb_enfant !== null && $student->nb_enfant !== '') ? $student->nb_enfant : '-'); ?></span>
                     </div>
                 </div>
             </div>
@@ -383,15 +390,15 @@
                         <div class="space-y-4">
                             <div class="info-item flex justify-between items-center bg-white/70 p-4 rounded-xl">
                                 <span class="text-gray-700 font-semibold flex items-center"><i class="fas fa-user text-blue-600 mr-3"></i>Nom</span>
-                                <span class="font-bold text-gray-900 editable" data-field="nom_pere">{{ $student->nom_pere ?: '-' }}</span>
+                                <span class="font-bold text-gray-900 editable" data-field="nom_pere"><?php echo e($student->nom_pere ?: '-'); ?></span>
                             </div>
                             <div class="info-item flex justify-between items-center bg-white/70 p-4 rounded-xl">
                                 <span class="text-gray-700 font-semibold flex items-center"><i class="fas fa-briefcase text-blue-600 mr-3"></i>Profession</span>
-                                <span class="font-bold text-gray-900 editable" data-field="profession_pere">{{ $student->profession_pere ?: '-' }}</span>
+                                <span class="font-bold text-gray-900 editable" data-field="profession_pere"><?php echo e($student->profession_pere ?: '-'); ?></span>
                             </div>
                             <div class="info-item flex justify-between items-center bg-white/70 p-4 rounded-xl">
                                 <span class="text-gray-700 font-semibold flex items-center"><i class="fas fa-phone text-blue-600 mr-3"></i>Contact</span>
-                                <span class="font-bold text-gray-900 editable" data-field="contact_pere">{{ $student->contact_pere ?: '-' }}</span>
+                                <span class="font-bold text-gray-900 editable" data-field="contact_pere"><?php echo e($student->contact_pere ?: '-'); ?></span>
                             </div>
                         </div>
                     </div>
@@ -407,15 +414,15 @@
                         <div class="space-y-4">
                             <div class="info-item flex justify-between items-center bg-white/70 p-4 rounded-xl">
                                 <span class="text-gray-700 font-semibold flex items-center"><i class="fas fa-user text-blue-600 mr-3"></i>Nom</span>
-                                <span class="font-bold text-gray-900 editable" data-field="nom_mere">{{ $student->nom_mere ?: '-' }}</span>
+                                <span class="font-bold text-gray-900 editable" data-field="nom_mere"><?php echo e($student->nom_mere ?: '-'); ?></span>
                             </div>
                             <div class="info-item flex justify-between items-center bg-white/70 p-4 rounded-xl">
                                 <span class="text-gray-700 font-semibold flex items-center"><i class="fas fa-briefcase text-blue-600 mr-3"></i>Profession</span>
-                                <span class="font-bold text-gray-900 editable" data-field="profession_mere">{{ $student->profession_mere ?: '-' }}</span>
+                                <span class="font-bold text-gray-900 editable" data-field="profession_mere"><?php echo e($student->profession_mere ?: '-'); ?></span>
                             </div>
                             <div class="info-item flex justify-between items-center bg-white/70 p-4 rounded-xl">
                                 <span class="text-gray-700 font-semibold flex items-center"><i class="fas fa-phone text-blue-600 mr-3"></i>Contact</span>
-                                <span class="font-bold text-gray-900 editable" data-field="contact_mere">{{ $student->contact_mere ?: '-' }}</span>
+                                <span class="font-bold text-gray-900 editable" data-field="contact_mere"><?php echo e($student->contact_mere ?: '-'); ?></span>
                             </div>
                         </div>
                     </div>
@@ -429,7 +436,7 @@
                             </div>
                             Adresse parents
                         </span>
-                        <span class="font-bold text-gray-900 text-right max-w-md text-lg editable" data-field="adresse_parents">{{ $student->adresse_parents ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 text-right max-w-md text-lg editable" data-field="adresse_parents"><?php echo e($student->adresse_parents ?: '-'); ?></span>
                     </div>
                 </div>
             </div>
@@ -451,19 +458,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="info-item flex justify-between items-center py-5 px-4">
                         <span class="text-gray-700 font-bold flex items-center"><i class="fas fa-user text-blue-600 mr-3"></i>Nom</span>
-                        <span class="font-bold text-gray-900 text-lg editable" data-field="sponsor_nom">{{ $student->sponsor_nom ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 text-lg editable" data-field="sponsor_nom"><?php echo e($student->sponsor_nom ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-5 px-4">
                         <span class="text-gray-700 font-bold flex items-center"><i class="fas fa-user text-blue-600 mr-3"></i>Prénom</span>
-                        <span class="font-bold text-gray-900 text-lg editable" data-field="sponsor_prenom">{{ $student->sponsor_prenom ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 text-lg editable" data-field="sponsor_prenom"><?php echo e($student->sponsor_prenom ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-5 px-4">
                         <span class="text-gray-700 font-bold flex items-center"><i class="fas fa-phone text-blue-600 mr-3"></i>Téléphone</span>
-                        <span class="font-bold text-gray-900 text-lg editable" data-field="sponsor_telephone">{{ $student->sponsor_telephone ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 text-lg editable" data-field="sponsor_telephone"><?php echo e($student->sponsor_telephone ?: '-'); ?></span>
                     </div>
                     <div class="info-item flex justify-between items-center py-5 px-4">
                         <span class="text-gray-700 font-bold flex items-center"><i class="fas fa-home text-blue-600 mr-3"></i>Adresse</span>
-                        <span class="font-bold text-gray-900 text-right text-lg editable" data-field="sponsor_adresse">{{ $student->sponsor_adresse ?: '-' }}</span>
+                        <span class="font-bold text-gray-900 text-right text-lg editable" data-field="sponsor_adresse"><?php echo e($student->sponsor_adresse ?: '-'); ?></span>
                     </div>
                 </div>
             </div>
@@ -679,10 +686,10 @@
             // Appel AJAX pour sauvegarder la modification
             const formPayload = new URLSearchParams();
             formPayload.append('_method', 'PUT');
-            formPayload.append('_token', '{{ csrf_token() }}');
+            formPayload.append('_token', '<?php echo e(csrf_token()); ?>');
             formPayload.append(field, newValue);
 
-            fetch("{{ route('chief.accountant.students.update', $student->id) }}", {
+            fetch("<?php echo e(route('superadmin.students.update', $student->id)); ?>", {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -745,7 +752,7 @@
     </script>
     <script>
     // yearLevels from backend for inline select (id + label)
-    const YEAR_LEVELS = @json($yearLevels ?? []);
+    const YEAR_LEVELS = <?php echo json_encode($yearLevels ?? [], 15, 512) ?>;
 
     // Helper to fetch parcours for a given mention id (returns [{id, nom}])
     async function fetchParcoursByMention(mentionId) {
@@ -813,7 +820,7 @@
                 placeholder.textContent = '-- Sélectionner --';
                 input.appendChild(placeholder);
 
-                const STUDENT_MENTION_ID = {{ $student->mention_id ?? 'null' }};
+                const STUDENT_MENTION_ID = <?php echo e($student->mention_id ?? 'null'); ?>;
                 fetchParcoursByMention(STUDENT_MENTION_ID).then(list => {
                     list.forEach(p => {
                         const o = document.createElement('option');
@@ -916,10 +923,10 @@
             // Appel AJAX pour sauvegarder la modification
             const formPayload = new URLSearchParams();
             formPayload.append('_method', 'PUT');
-            formPayload.append('_token', '{{ csrf_token() }}');
+            formPayload.append('_token', '<?php echo e(csrf_token()); ?>');
             formPayload.append(field, payloadValue);
 
-            fetch("{{ route('chief.accountant.students.update', $student->id) }}", {
+            fetch("<?php echo e(route('superadmin.students.update', $student->id)); ?>", {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -993,14 +1000,14 @@
     // Recompute StudentSemesterFee via AJAX and show a small notification
     async function recomputeSemesterFee() {
         try {
-            const res = await fetch("{{ url('/chief-accountant/students/' . $student->id . '/recompute-semester-fee') }}", {
+            const res = await fetch("<?php echo e(url('/superadmin/students/' . $student->id . '/recompute-semester-fee')); ?>", {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: new URLSearchParams({'_token': '{{ csrf_token() }}'})
+                body: new URLSearchParams({'_token': '<?php echo e(csrf_token()); ?>'})
             });
             if (!res.ok) {
                 const txt = await res.text().catch(()=>null);
@@ -1036,3 +1043,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/superadmin/students/show.blade.php ENDPATH**/ ?>

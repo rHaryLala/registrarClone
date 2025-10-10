@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="{{ url('public/favicon.png') }}" type="image/png">
+    <link rel="icon" href="<?php echo e(url('public/favicon.png')); ?>" type="image/png">
     <style>
         body { font-family: 'Montserrat', sans-serif; }
         .sidebar { width: 260px; transition: all 0.3s; }
@@ -23,18 +23,18 @@
 </head>
 <body class="bg-gray-100">
     <!-- Sidebar (reuse chief_accountant sidebar if available) -->
-    @includeIf('chief_accountant.components.sidebar')
+    <?php if ($__env->exists('chief_accountant.components.sidebar')) echo $__env->make('chief_accountant.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
     <div class="main-content min-h-screen">
-        @includeIf('chief_accountant.components.header')
+        <?php if ($__env->exists('chief_accountant.components.header')) echo $__env->make('chief_accountant.components.header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
         <main class="p-6">
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Bonjour, {{ $user->name ?? 'Utilisateur' }}.</h1>
+                    <h1 class="text-2xl font-bold text-gray-800">Bonjour, <?php echo e($user->name ?? 'Utilisateur'); ?>.</h1>
                 </div>
                 <div class="text-sm text-gray-700">
-                    Année académique active : <span class="font-semibold">{{ $activeAcademicYear ? $activeAcademicYear->libelle : 'Aucune' }}</span>
+                    Année académique active : <span class="font-semibold"><?php echo e($activeAcademicYear ? $activeAcademicYear->libelle : 'Aucune'); ?></span>
                 </div>
             </div>
 
@@ -47,7 +47,7 @@
                         </div>
                         <div>
                             <p class="text-gray-500 text-sm font-medium">Étudiants (Total)</p>
-                            <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $counts['total'] ?? 0 }}</h3>
+                            <h3 class="number-counter text-2xl font-bold text-gray-800"><?php echo e($counts['total'] ?? 0); ?></h3>
                         </div>
                     </div>
                 </div>
@@ -59,7 +59,7 @@
                         </div>
                         <div>
                             <p class="text-gray-500 text-sm font-medium">Interne</p>
-                            <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $counts['interne'] ?? 0 }}</h3>
+                            <h3 class="number-counter text-2xl font-bold text-gray-800"><?php echo e($counts['interne'] ?? 0); ?></h3>
                         </div>
                     </div>
                 </div>
@@ -71,7 +71,7 @@
                         </div>
                         <div>
                             <p class="text-gray-500 text-sm font-medium">Externe</p>
-                            <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $counts['externe'] ?? 0 }}</h3>
+                            <h3 class="number-counter text-2xl font-bold text-gray-800"><?php echo e($counts['externe'] ?? 0); ?></h3>
                         </div>
                     </div>
                 </div>
@@ -83,7 +83,7 @@
                         </div>
                         <div>
                             <p class="text-gray-500 text-sm font-medium">Boursiers</p>
-                            <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $counts['boursier'] ?? 0 }}</h3>
+                            <h3 class="number-counter text-2xl font-bold text-gray-800"><?php echo e($counts['boursier'] ?? 0); ?></h3>
                         </div>
                     </div>
                 </div>
@@ -94,33 +94,33 @@
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-2xl font-bold text-slate-800">Derniers étudiants inscrits</h3>
                         <!-- Optionally add a link to the full students list if route exists -->
-                        @if (Route::has('chief.accountant.students.index'))
-                            <a href="{{ route('chief.accountant.students.index') }}" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200 flex items-center">Voir tous <i class="fas fa-arrow-right ml-2"></i></a>
-                        @endif
+                        <?php if(Route::has('chief.accountant.students.index')): ?>
+                            <a href="<?php echo e(route('chief.accountant.students.index')); ?>" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200 flex items-center">Voir tous <i class="fas fa-arrow-right ml-2"></i></a>
+                        <?php endif; ?>
                     </div>
 
                     <div class="space-y-4">
-                        @if($recentStudents->isEmpty())
+                        <?php if($recentStudents->isEmpty()): ?>
                             <p class="text-sm text-gray-500">Aucun étudiant récent pour l'année académique active.</p>
-                        @else
-                            @foreach($recentStudents as $index => $s)
-                                <div class="registration-item flex items-center justify-between p-6 rounded-2xl" style="--item-index: {{ $index }}">
+                        <?php else: ?>
+                            <?php $__currentLoopData = $recentStudents; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <div class="registration-item flex items-center justify-between p-6 rounded-2xl" style="--item-index: <?php echo e($index); ?>">
                                     <div class="flex items-center space-x-6">
                                         <div class="avatar-container w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm">
-                                            <span class="text-blue-600 font-bold text-lg">{{ strtoupper(substr($s->prenom ?? '', 0, 1) . substr($s->nom ?? '', 0, 1)) }}</span>
+                                            <span class="text-blue-600 font-bold text-lg"><?php echo e(strtoupper(substr($s->prenom ?? '', 0, 1) . substr($s->nom ?? '', 0, 1))); ?></span>
                                         </div>
                                         <div>
-                                            <p class="font-bold text-slate-800 text-lg">{{ ($s->nom ?? '') . ' ' . ($s->prenom ?? '') }}</p>
-                                            <p class="text-slate-500 font-medium">{{ $s->matricule ?? '-' }} • {{ $s->mention?->nom ?? '-' }} • {{ $s->yearLevel?->code ?? '-' }}</p>
+                                            <p class="font-bold text-slate-800 text-lg"><?php echo e(($s->nom ?? '') . ' ' . ($s->prenom ?? '')); ?></p>
+                                            <p class="text-slate-500 font-medium"><?php echo e($s->matricule ?? '-'); ?> • <?php echo e($s->mention?->nom ?? '-'); ?> • <?php echo e($s->yearLevel?->code ?? '-'); ?></p>
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-sm text-slate-500">{{ ($s->bursary_status) ? 'Boursier' : 'Non boursier' }}</p>
-                                        <p class="text-sm text-slate-400">{{ $s->created_at ? $s->created_at->format('d/m/Y') : '-' }}</p>
+                                        <p class="text-sm text-slate-500"><?php echo e(($s->bursary_status) ? 'Boursier' : 'Non boursier'); ?></p>
+                                        <p class="text-sm text-slate-400"><?php echo e($s->created_at ? $s->created_at->format('d/m/Y') : '-'); ?></p>
                                     </div>
                                 </div>
-                            @endforeach
-                        @endif
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        <?php endif; ?>
                     </div>
                 </div>
         </main>
@@ -137,4 +137,4 @@
         }
     </script>
 </body>
-</html>
+</html><?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/chief_accountant/dashboard.blade.php ENDPATH**/ ?>

@@ -390,15 +390,78 @@ class SuperAdminController extends Controller
     $allowed = ['email', 'plain_password', 'telephone', 'religion', 'abonne_caf', 'statut_interne', 'taille'];
     $fields = array_values(array_intersect($allowed, (array)$request->input('fields', [])));
 
-    // Render a simple students list as PDF
+    // If the user requested the attendance sheet, render attendance PDF (landscape, 15 dates)
+    // Weekly attendance export (Lundi->Jeudi)
+    if ($request->boolean('export_week_attendance')) {
+        $studentsForView = $sorted;
+
+        // If a single mention was selected, mentionModel already prepared above
+        $filename = 'fiche_presence_semaine-' . now()->format('Ymd-His') . '.pdf';
+        $pdf = Pdf::loadView('PDFexport.attendance-week', [
+            'students' => $studentsForView,
+            'mention' => $mentionModel ?? null,
+            'academicYear' => $academicYearModel ?? null,
+            'semester' => $semesterModel ?? null,
+        ]);
+        $pdf->setPaper('a4', 'landscape');
+        $pdf->setWarnings(false);
+        return $pdf->download($filename);
+    }
+
+    if ($request->boolean('export_attendance')) {
+        // Use the sorted collection as the students list for the attendance sheet
+        $studentsForView = $sorted;
+
+        // Prepare dates: prefer explicit 'dates' array from request, otherwise compute 15 weekly dates
+        $dates = (array) $request->input('dates', []);
+        if (empty(array_filter($dates))) {
+            // compute next 15 weekly dates starting from next Monday (inclusive)
+            $start = \Carbon\Carbon::now();
+            // If today is Monday, start from this week's Monday, otherwise go to next Monday
+            if ($start->dayOfWeek !== \Carbon\Carbon::MONDAY) {
+                $start = $start->next(\Carbon\Carbon::MONDAY);
+            }
+            $dates = [];
+            for ($i = 0; $i < 15; $i++) {
+                $dates[] = $start->copy()->addWeeks($i)->format('Y-m-d');
+            }
+        }
+
+        // If a single mention was selected, pass it to the view for the header
+        $mentionModel = null;
+        if (!empty($mentionIds) && is_array($mentionIds) && count($mentionIds) === 1) {
+            $mentionModel = Mention::find($mentionIds[0]);
+        }
+
+        $academicYearModel = null;
+        if ($request->filled('academic_year_id')) {
+            $academicYearModel = AcademicYear::find($request->academic_year_id);
+        }
+        $semesterModel = null;
+        if ($request->filled('semester_id')) {
+            $semesterModel = Semester::find($request->semester_id);
+        }
+
+        $filename = 'fiche_presence-' . now()->format('Ymd-His') . '.pdf';
+        $pdf = Pdf::loadView('PDFexport.attendance-sheet', [
+            'students' => $studentsForView,
+            'dates' => $dates,
+            'mention' => $mentionModel,
+            'academicYear' => $academicYearModel,
+            'semester' => $semesterModel,
+        ]);
+        $pdf->setPaper('a4', 'landscape');
+        $pdf->setWarnings(false);
+        return $pdf->download($filename);
+    }
+
+    // Render a simple students list as PDF (default behavior)
     $filename = 'students-' . now()->format('Ymd-His') . '.pdf';
     $pdf = Pdf::loadView('superadmin.students.students-pdf', compact('students', 'grouped', 'fields'));
-
-        // Improve rendering options to support images and better quality
-        $pdf->setPaper('a4', 'portrait');
-        $pdf->setWarnings(false);
-
-        return $pdf->download($filename);
+    // Improve rendering options to support images and better quality
+    $pdf->setPaper('a4', 'portrait');
+    $pdf->setWarnings(false);
+    return $pdf->download($filename);
     }
 
     /**
@@ -1487,6 +1550,31 @@ class SuperAdminController extends Controller
         $student = Student::findOrFail($id);
         $pdf = Pdf::loadView('PDFexport.recap-pdf', compact('student'));
         return $pdf->download('fiche-inscription-'.$student->matricule.'.pdf');
+    }
+
+    /**
+     * Export an attendance sheet (fiche de présence) for a student as PDF.
+     * The view provides a simple table where staff can print and collect signatures.
+     */
+    public function exportAttendancePdf($id)
+    {
+        $student = Student::with(['mention', 'yearLevel'])->findOrFail($id);
+
+        // Basic context: academic year and semester if available
+        $academicYear = null;
+        $semester = null;
+        if ($student->academic_year_id) {
+            $academicYear = AcademicYear::find($student->academic_year_id);
+        }
+        if ($student->semester_id) {
+            $semester = Semester::find($student->semester_id);
+        }
+
+        $filename = 'fiche-presence-' . ($student->matricule ?? $student->id) . '.pdf';
+
+        $pdf = Pdf::loadView('PDFexport.attendance-sheet', compact('student', 'academicYear', 'semester'));
+        $pdf->setPaper('a4', 'portrait');
+        return $pdf->download($filename);
     }
 
     // Preview wrapper for SuperAdmin (moved from ExportPreviewController)

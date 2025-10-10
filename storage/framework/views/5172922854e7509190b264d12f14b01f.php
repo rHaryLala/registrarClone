@@ -10,8 +10,8 @@
                 <div class="w-10 h-10 bg-blue-800 rounded-lg flex items-center justify-center">
                     <i class="fas fa-university text-white text-lg"></i>
                 </div>
-                <h1 class="text-xl font-semibold text-gray-900 hidden sm:block">Tableau de bord | Chef de mention</h1>
-                <h1 class="text-lg font-semibold text-gray-900 sm:hidden">Chef de mention</h1>
+                <h1 class="text-xl font-semibold text-gray-900 hidden sm:block">Tableau de bord | Administrateur</h1>
+                <h1 class="text-lg font-semibold text-gray-900 sm:hidden">Admin</h1>
             </div>
         </div>
         
@@ -26,8 +26,8 @@
 
                     </div>
                     <div class="hidden md:block text-left">
-                        <p class="text-sm font-medium text-gray-900"><?php echo e(auth()->user()->name ?? 'Dean'); ?></p>
-                        <p class="text-xs text-gray-500"><?php echo e(auth()->user()->role); ?></p>
+                        <p class="text-sm font-medium text-gray-900"><?php echo e(auth()->user()->name ?? 'Admin'); ?></p>
+                        <p class="text-xs text-gray-500">Super Administrateur</p>
                     </div>
                     <i class="fas fa-chevron-down text-xs text-gray-400 hidden md:block"></i>
                 </button>
@@ -41,8 +41,8 @@
 
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-900"><?php echo e(auth()->user()->name ?? 'Dean'); ?></p>
-                                <p class="text-xs text-gray-500"><?php echo e(auth()->user()->email ?? 'dean@zurcher.edu.mg'); ?></p>
+                                <p class="text-sm font-medium text-gray-900"><?php echo e(auth()->user()->name ?? 'Admin'); ?></p>
+                                <p class="text-xs text-gray-500"><?php echo e(auth()->user()->email ?? 'registraroffice@zurcher.edu.mg'); ?></p>
                             </div>
                         </div>
                     </div>
@@ -157,4 +157,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/dean/components/header.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/superadmin/components/header.blade.php ENDPATH**/ ?>

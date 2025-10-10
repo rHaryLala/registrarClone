@@ -66,7 +66,7 @@
                                     <p class="font-semibold">{{ $course->nom }} <span class="text-gray-500">({{ $course->sigle }})</span></p>
                                     <p class="text-sm text-gray-500">{{ $course->students->count() }} étudiants</p>
                                 </div>
-                                <a href="#" class="text-blue-600 hover:underline">Voir</a>
+                                <a href="{{ route('teacher.courses.show', $course->id) }}" class="text-blue-600 hover:underline">Voir</a>
                             </div>
                         @endforeach
                     </div>

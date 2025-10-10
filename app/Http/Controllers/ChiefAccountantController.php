@@ -353,6 +353,36 @@ class ChiefAccountantController extends Controller
     }
 
     // FINANCES - copy/adapt from SuperAdminController so ChiefAccountant handles finances locally
+    // Backwards-compatible alias: some routes expect feesList, keep it delegating to financesList
+    public function feesList(Request $request)
+    {
+        // Show student_semester_fees table entries
+        $query = \App\Models\StudentSemesterFee::with(['student', 'academicYear', 'semester']);
+
+        if ($request->filled('student_id')) {
+            $query->where('student_id', $request->get('student_id'));
+        }
+
+        // Search by q: matricule, nom, prenom or account_code on related student
+        if ($request->filled('q')) {
+            $qstr = $request->get('q');
+            $query->whereHas('student', function($s) use ($qstr) {
+                $s->where('matricule', 'like', "%{$qstr}%")
+                  ->orWhere('nom', 'like', "%{$qstr}%")
+                  ->orWhere('prenom', 'like', "%{$qstr}%")
+                  ->orWhere('account_code', 'like', "%{$qstr}%");
+            });
+        }
+
+        if ($request->filled('academic_year_id')) {
+            $query->where('academic_year_id', $request->get('academic_year_id'));
+        }
+
+        $fees = $query->orderByDesc('computed_at')->get();
+
+        return view('chief_accountant.fees.list', compact('fees'));
+    }
+
     public function financesList(Request $request)
     {
         $with = [

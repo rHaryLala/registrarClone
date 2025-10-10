@@ -10,8 +10,8 @@
                 <div class="w-10 h-10 bg-blue-800 rounded-lg flex items-center justify-center">
                     <i class="fas fa-university text-white text-lg"></i>
                 </div>
-                <h1 class="text-xl font-semibold text-gray-900 hidden sm:block">Tableau de bord | Enseignant</h1>
-                <h1 class="text-lg font-semibold text-gray-900 sm:hidden">Enseignant</h1>
+                <h1 class="text-xl font-semibold text-gray-900 hidden sm:block">Tableau de bord | chef comptable</h1>
+                <h1 class="text-lg font-semibold text-gray-900 sm:hidden">Chef comptable</h1>
             </div>
         </div>
         
@@ -157,4 +157,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/teacher/components/header.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/chief_accountant/components/header.blade.php ENDPATH**/ ?>

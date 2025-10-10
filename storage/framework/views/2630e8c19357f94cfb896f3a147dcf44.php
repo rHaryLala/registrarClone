@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="{{ url('public/favicon.png') }}" type="image/png">
+    <link rel="icon" href="<?php echo e(url('public/favicon.png')); ?>" type="image/png">
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -44,12 +44,12 @@
 </head>
 <body class="bg-gray-100">
     <!-- Sidebar -->
-    @include('superadmin.components.sidebar')
+    <?php echo $__env->make('superadmin.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
     <!-- Main Content -->
     <div class="main-content min-h-screen">
         <!-- Header -->
-        @include('superadmin.components.header')
+        <?php echo $__env->make('superadmin.components.header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
         <!-- Content -->
         <main class="p-6">
@@ -219,7 +219,7 @@
                         </div>
                         <div>
                             <p class="text-gray-500 text-sm font-medium">Utilisateurs</p>
-                            <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $usersCount }}</h3>
+                            <h3 class="number-counter text-2xl font-bold text-gray-800"><?php echo e($usersCount); ?></h3>
                         </div>
                     </div>
                     <!-- Statistiques dynamiques à implémenter -->
@@ -232,12 +232,13 @@
                         </div>
                         <div>
                             <p class="text-gray-500 text-sm font-medium">Étudiants (1ère année)</p>
-                            <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $firstYearCount }}</h3>
+                            <h3 class="number-counter text-2xl font-bold text-gray-800"><?php echo e($firstYearCount); ?></h3>
                         </div>
                     </div>
                     <!-- Statistiques dynamiques : afficher le total des étudiants -->
                     <div class="mt-4 text-sm text-gray-600">
-                        <span class="font-medium">Total étudiants :</span> {{ $totalStudents }}
+                        <span class="font-medium">Total étudiants :</span> <?php echo e($totalStudents); ?>
+
                     </div>
                 </div>
 
@@ -248,7 +249,7 @@
                         </div>
                         <div>
                             <p class="text-gray-500 text-sm font-medium">Enseignants</p>
-                            <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $teachersCount }}</h3>
+                            <h3 class="number-counter text-2xl font-bold text-gray-800"><?php echo e($teachersCount); ?></h3>
                         </div>
                     </div>
                     <!-- Statistiques dynamiques à implémenter -->
@@ -261,7 +262,7 @@
                         </div>
                         <div>
                             <p class="text-gray-500 text-sm font-medium">Cours</p>
-                            <h3 class="number-counter text-2xl font-bold text-gray-800">{{ $coursesCount }}</h3>
+                            <h3 class="number-counter text-2xl font-bold text-gray-800"><?php echo e($coursesCount); ?></h3>
                         </div>
                     </div>
                     <!-- Statistiques dynamiques à implémenter -->
@@ -271,7 +272,7 @@
             <!-- Graphiques et tableaux -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <!-- Graphique d'inscriptions -->
-                @php
+                <?php
                     $days = [];
                     $counts = [];
                     $maxBarHeight = 150;
@@ -282,26 +283,26 @@
                         $counts[] = $dailyRegistrations[$date] ?? 0;
                         if (($dailyRegistrations[$date] ?? 0) > $maxCount) $maxCount = $dailyRegistrations[$date] ?? 0;
                     }
-                @endphp
+                ?>
                 <div class="chart-container bg-white rounded-xl shadow-lg p-6 border border-gray-100">
                     <h3 class="text-lg font-semibold mb-6 text-gray-800">Inscriptions des 7 derniers jours</h3>
                     <div class="h-64 flex justify-between items-end">
-                        @foreach($days as $i => $day)
-                            @php
+                        <?php $__currentLoopData = $days; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $day): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php
                                 $count = $counts[$i];
                                 $barHeight = ($count > 0 && $maxCount > 0) ? max(8, ($count / $maxCount) * $maxBarHeight) : 0;
-                            @endphp
+                            ?>
                             <div class="flex flex-col items-center" style="width: 24px;">
-                                @if($count > 0)
+                                <?php if($count > 0): ?>
                                     <div class="chart-bar bg-gradient-to-t from-blue-600 to-blue-400 w-3 rounded-t-lg shadow-sm" 
-                                        style="--bar-height: {{ $barHeight }}px; --bar-index: {{ $i }}; height: {{ $barHeight }}px; max-height: {{ $maxBarHeight }}px"></div>
-                                @else
+                                        style="--bar-height: <?php echo e($barHeight); ?>px; --bar-index: <?php echo e($i); ?>; height: <?php echo e($barHeight); ?>px; max-height: <?php echo e($maxBarHeight); ?>px"></div>
+                                <?php else: ?>
                                     <div style="height: 0px;"></div>
-                                @endif
-                                <span class="text-xs mt-2 font-medium text-gray-600">{{ $day }}</span>
-                                <span class="text-xs text-blue-600 font-semibold">{{ $count }}</span>
+                                <?php endif; ?>
+                                <span class="text-xs mt-2 font-medium text-gray-600"><?php echo e($day); ?></span>
+                                <span class="text-xs text-blue-600 font-semibold"><?php echo e($count); ?></span>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
 
@@ -309,21 +310,21 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
                     <h3 class="text-lg font-semibold mb-6 text-gray-800">Dernières inscriptions</h3>
                     <div class="space-y-4">
-                        @foreach($latestRegistrations as $index => $registration)
+                        <?php $__currentLoopData = $latestRegistrations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $registration): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div class="registration-item flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-100" 
-                                style="--item-index: {{ $index }};">
+                                style="--item-index: <?php echo e($index); ?>;">
                                 <div class="flex items-center space-x-4">
                                     <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center shadow-sm">
                                         <i class="fas fa-user-graduate text-blue-600"></i>
                                     </div>
                                     <div>
-                                        <p class="font-semibold text-gray-800">{{ $registration->name ?? $registration->nom ?? '' }}</p>
-                                        <p class="text-sm text-gray-600">{{ $registration->email ?? $registration->mention_envisagee ?? '' }}</p>
+                                        <p class="font-semibold text-gray-800"><?php echo e($registration->name ?? $registration->nom ?? ''); ?></p>
+                                        <p class="text-sm text-gray-600"><?php echo e($registration->email ?? $registration->mention_envisagee ?? ''); ?></p>
                                     </div>
                                 </div>
-                                <span class="text-sm text-blue-600 font-medium">{{ $registration->created_at->diffForHumans() }}</span>
+                                <span class="text-sm text-blue-600 font-medium"><?php echo e($registration->created_at->diffForHumans()); ?></span>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
             </div>
@@ -332,14 +333,14 @@
             <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
                 <h3 class="text-lg font-semibold mb-6 text-gray-800">Actions rapides</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <a href="{{ route('register')}}" class="quick-action p-6 border border-gray-200 rounded-xl text-center hover:border-blue-300 transition-all duration-300 group">
+                    <a href="<?php echo e(route('register')); ?>" class="quick-action p-6 border border-gray-200 rounded-xl text-center hover:border-blue-300 transition-all duration-300 group">
                         <div class="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:shadow-lg transition-all duration-300">
                             <i class="fas fa-user-plus text-blue-600 text-xl"></i>
                         </div>
                         <p class="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">Nouvel étudiant</p>
                     </a>
 
-                    <a href="{{ route('superadmin.students.list') }}" class="quick-action p-6 border border-gray-200 rounded-xl text-center hover:border-green-300 transition-all duration-300 group">
+                    <a href="<?php echo e(route('superadmin.students.list')); ?>" class="quick-action p-6 border border-gray-200 rounded-xl text-center hover:border-green-300 transition-all duration-300 group">
                         <div class="w-14 h-14 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:shadow-lg transition-all duration-300">
                             <i class="fas fa-user-graduate text-green-600 text-xl"></i>
                         </div>
@@ -352,13 +353,13 @@
                         </div>
                         <p class="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">Rapports</p>
                     </a>
-                    <a href="{{ route('superadmin.accesscodes.export_pdf') }}" target="_blank" class="quick-action p-6 border border-gray-200 rounded-xl text-center hover:border-purple-300 transition-all duration-300 group">
+                    <a href="<?php echo e(route('superadmin.accesscodes.export_pdf')); ?>" target="_blank" class="quick-action p-6 border border-gray-200 rounded-xl text-center hover:border-purple-300 transition-all duration-300 group">
                         <div class="w-14 h-14 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:shadow-lg transition-all duration-300">
                             <i class="fas fa-key text-purple-600 text-xl"></i>
                         </div>
                         <p class="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">Exporter Access Codes</p>
                     </a>
-                    <a href="{{ route('superadmin.settings') }}" class="quick-action p-6 border border-gray-200 rounded-xl text-center hover:border-orange-300 transition-all duration-300 group">
+                    <a href="<?php echo e(route('superadmin.settings')); ?>" class="quick-action p-6 border border-gray-200 rounded-xl text-center hover:border-orange-300 transition-all duration-300 group">
                         <div class="w-14 h-14 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:shadow-lg transition-all duration-300">
                             <i class="fas fa-cog text-orange-600 text-xl"></i>
                         </div>
@@ -506,8 +507,8 @@
             </div>
             
             <!-- Form -->
-            <form id="exportForm" method="POST" action="{{ url('/superadmin/students/export') }}" style="padding:24px;">
-                @csrf
+            <form id="exportForm" method="POST" action="<?php echo e(url('/superadmin/students/export')); ?>" style="padding:24px;">
+                <?php echo csrf_field(); ?>
                 
                 <!-- Année académique et Niveau -->
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
@@ -518,9 +519,9 @@
                         </label>
                         <select name="academic_year_id" class="modal-input" style="width:100%; border:2px solid #e5e7eb; border-radius:8px; padding:10px 12px; font-size:14px; transition:all 0.2s; background:#fff;">
                             <option value="">Toutes les années</option>
-                            @foreach(App\Models\AcademicYear::orderBy('libelle','desc')->get() as $ay)
-                                <option value="{{ $ay->id }}">{{ $ay->libelle }}</option>
-                            @endforeach
+                            <?php $__currentLoopData = App\Models\AcademicYear::orderBy('libelle','desc')->get(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ay): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($ay->id); ?>"><?php echo e($ay->libelle); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
                     
@@ -531,9 +532,9 @@
                         </label>
                         <select name="year_level_id" class="modal-input" style="width:100%; border:2px solid #e5e7eb; border-radius:8px; padding:10px 12px; font-size:14px; transition:all 0.2s; background:#fff;">
                             <option value="">Tous les niveaux</option>
-                            @foreach(App\Models\YearLevel::all() as $yl)
-                                <option value="{{ $yl->id }}">{{ $yl->label }}</option>
-                            @endforeach
+                            <?php $__currentLoopData = App\Models\YearLevel::all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $yl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($yl->id); ?>"><?php echo e($yl->label); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
                 </div>
@@ -546,9 +547,9 @@
                     </label>
                     <select name="mention_ids[]" multiple size="6" class="modal-input" style="width:100%; border:2px solid #e5e7eb; border-radius:8px; padding:8px 10px; font-size:14px; transition:all 0.2s; background:#fff;">
                         <option value="">-- Toutes les mentions (laisser vide) --</option>
-                        @foreach(App\Models\Mention::all() as $m)
-                            <option value="{{ $m->id }}">{{ $m->nom }}</option>
-                        @endforeach
+                        <?php $__currentLoopData = App\Models\Mention::all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $m): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($m->id); ?>"><?php echo e($m->nom); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                     <div style="font-size:12px; color:#6b7280; margin-top:6px;">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs mentions.</div>
                 </div>
@@ -626,3 +627,4 @@
     </div>
 </body>
 </html>
+<?php /**PATH D:\PROJET REGISTRAIRE\registrarClone\registrar\resources\views/superadmin/dashboard.blade.php ENDPATH**/ ?>

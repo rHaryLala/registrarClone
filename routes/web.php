@@ -131,6 +131,8 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
         Route::post('/{student}/add-course', [SuperAdminController::class, 'storeCourseToStudent'])->name('courses.store');
         Route::patch('/{student}/courses/{course}/remove', [SuperAdminController::class, 'removeCourseFromStudent'])->name('courses.remove');
         Route::get('/{student}/courses/history', [SuperAdminController::class, 'showStudentCourses'])->name('courses.history');
+    // Export a student's attendance sheet (fiche de présence) as PDF
+    Route::get('/{student}/attendance-pdf', [SuperAdminController::class, 'exportAttendancePdf'])->name('attendance.pdf');
     // AJAX endpoint: recompute a student's semester fee and return the record (before/after)
     Route::post('/{student}/recompute-semester-fee', [SuperAdminController::class, 'recomputeStudentSemesterFee'])->name('recomputeSemesterFee');
     // Export students CSV (filters: academic_year_id, year_level_id, mention_id)
@@ -232,7 +234,6 @@ Route::middleware(['auth', 'accountant'])->prefix('accountant')->name('accountan
 Route::middleware(['auth'])->group(function () {
     Route::get('/preview', [SuperAdminController::class, 'previewIndex'])->name('preview.index');
     Route::get('/preview/content', [SuperAdminController::class, 'previewContent'])->name('preview.content');
-
     // Recap PDF endpoint accessible to authenticated users (SuperAdmin, ChiefAccountant, etc.)
     Route::get('/recap/{id}/pdf', [SuperAdminController::class, 'exportStudentPdf'])->name('recap.pdf');
 });
@@ -240,31 +241,32 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'chief.accountant'])->prefix('chief-accountant')->name('chief.accountant.')->group(function () {
     Route::get('/dashboard', [ChiefAccountantController::class, 'dashboard'])->name('dashboard');
     Route::prefix('students')->name('students.')->group(function () {
-        Route::get('/', [ChiefAccountantController::class, 'studentsList'])->name('list');
+        Route::get('/', [ChiefAccountantController::class, 'studentsList'])->name('index');
         Route::get('/{student}', [ChiefAccountantController::class, 'showStudent'])->name('show');
-            // PDF recap export for chief accountant
-            Route::get('/{student}/recap/pdf', [ChiefAccountantController::class, 'exportStudentPdf'])->name('recap.pdf');
+        Route::get('/{student}/recap/pdf', [ChiefAccountantController::class, 'exportStudentPdf'])->name('recap.pdf');
         Route::delete('/{student}', [ChiefAccountantController::class, 'destroyStudent'])->name('destroy');
-            Route::match(['put','patch'], '/{student}', [ChiefAccountantController::class, 'updateStudent'])->name('update');
-            // Student courses management (history, add, store, remove) handled by ChiefAccountantController
-            Route::get('/{student}/courses/history', [ChiefAccountantController::class, 'showStudentCourses'])->name('courses.history');
-            Route::get('/{student}/add-course', [ChiefAccountantController::class, 'addCourseToStudent'])->name('courses.add');
-            Route::post('/{student}/add-course', [ChiefAccountantController::class, 'storeCourseToStudent'])->name('courses.store');
-            Route::patch('/{student}/courses/{course}/remove', [ChiefAccountantController::class, 'removeCourseFromStudent'])->name('courses.remove');
-            // AJAX endpoint to recompute a student's semester fee (view calls url('/chief-accountant/students/{id}/recompute-semester-fee'))
-            Route::post('/{student}/recompute-semester-fee', [ChiefAccountantController::class, 'recomputeStudentSemesterFee'])->name('recomputeSemesterFee');
+        Route::match(['put','patch'], '/{student}', [ChiefAccountantController::class, 'updateStudent'])->name('update');
+        Route::get('/{student}/courses/history', [ChiefAccountantController::class, 'showStudentCourses'])->name('courses.history');
+        Route::get('/{student}/add-course', [ChiefAccountantController::class, 'addCourseToStudent'])->name('courses.add');
+        Route::post('/{student}/add-course', [ChiefAccountantController::class, 'storeCourseToStudent'])->name('courses.store');
+        Route::patch('/{student}/courses/{course}/remove', [ChiefAccountantController::class, 'removeCourseFromStudent'])->name('courses.remove');
+        Route::post('/{student}/recompute-semester-fee', [ChiefAccountantController::class, 'recomputeStudentSemesterFee'])->name('recomputeSemesterFee');
     });
-        // Finances: handled by ChiefAccountantController locally
-        Route::prefix('finances')->name('finances.')->group(function () {
-            Route::get('/', [ChiefAccountantController::class, 'financesList'])->name('list');
-            Route::get('/create', [ChiefAccountantController::class, 'createFinance'])->name('create');
-            Route::post('/', [ChiefAccountantController::class, 'storeFinance'])->name('store');
-            Route::get('/{finance}/edit', [ChiefAccountantController::class, 'editFinance'])->name('edit');
-            Route::put('/{finance}', [ChiefAccountantController::class, 'updateFinance'])->name('update');
-            Route::delete('/{finance}', [ChiefAccountantController::class, 'destroyFinance'])->name('destroy');
-            // AJAX update plan
-            Route::patch('/{finance}/plan', [ChiefAccountantController::class, 'updateFinancePlan'])->name('updatePlan');
+    // Finances: handled by ChiefAccountantController locally
+    Route::prefix('finances')->name('finances.')->group(function () {
+        Route::get('/', [ChiefAccountantController::class, 'financesList'])->name('list');
+        Route::get('/create', [ChiefAccountantController::class, 'createFinance'])->name('create');
+        Route::post('/', [ChiefAccountantController::class, 'storeFinance'])->name('store');
+        Route::get('/{finance}/edit', [ChiefAccountantController::class, 'editFinance'])->name('edit');
+        Route::put('/{finance}', [ChiefAccountantController::class, 'updateFinance'])->name('update');
+        Route::delete('/{finance}', [ChiefAccountantController::class, 'destroyFinance'])->name('destroy');
+        Route::patch('/{finance}/plan', [ChiefAccountantController::class, 'updateFinancePlan'])->name('updatePlan');
         });
+    // fees details
+    Route::prefix('fees')->name('fees.')->group(function () {
+        Route::get('/', [ChiefAccountantController::class, 'feesList'])->name('list');
+});
+    // close chief-accountant group
 });
 
 // Multimedia routes
@@ -304,5 +306,3 @@ Route::get('/students', [StudentController::class, 'index'])->name('students.ind
 
 
 });
-
-
