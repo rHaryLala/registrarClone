@@ -256,11 +256,29 @@
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-trophy text-blue-600 mr-3"></i>Mention</span>
-                        <span class="font-bold text-gray-900 " data-field="mention_id">{{ $student->mention->nom ?? '-' }}</span>
+                        {{-- rendre la mention éditable inline; gérée par le second handler JS --}}
+                        <span class="font-bold text-gray-900 editable" data-field="mention_id">{{ $student->mention->nom ?? '-' }}</span>
                     </div>
                     <div class="info-item flex justify-between items-center py-4 px-3">
                         <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-route text-blue-600 mr-3"></i>Parcours</span>
                         <span class="font-bold text-gray-900 " data-field="parcours_id">{{ $student->parcours ? $student->parcours->nom : '-' }}</span>
+                    </div>
+
+                    <div class="info-item flex justify-between items-center py-4 px-3">
+                        <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-user-cog text-blue-600 mr-3"></i>Statut interne</span>
+                        @php
+                            $statutMap = [
+                                'interne' => 'Interne',
+                                'externe' => 'Externe'
+                            ];
+                            $displayStatut = $student->statut_interne ? ($statutMap[$student->statut_interne] ?? ucfirst($student->statut_interne)) : '-';
+                        @endphp
+                        <span class="font-bold text-gray-900 editable" data-field="statut_interne">{{ $displayStatut }}</span>
+                    </div>
+
+                    <div class="info-item flex justify-between items-center py-4 px-3">
+                        <span class="text-gray-600 font-semibold flex items-center"><i class="fas fa-ticket-alt text-blue-600 mr-3"></i>Abonné CAF</span>
+                        <span class="font-bold text-gray-900 editable" data-field="abonne_caf">{{ $student->abonne_caf ? 'Oui' : 'Non' }}</span>
                     </div>
 
                 </div>
@@ -664,6 +682,22 @@
             input = document.createElement('input');
             input.type = 'date';
             input.value = value;
+        } else if (field === 'statut_interne') {
+            input = document.createElement('select');
+            input.innerHTML = '<option value="interne">Interne</option><option value="externe">Externe</option>';
+            // normalize display values
+            if (value) {
+                const v = value.toLowerCase();
+                if (v === 'interne' || v === 'externe') input.value = v;
+                else input.value = value;
+            }
+        } else if (field === 'abonne_caf') {
+            input = document.createElement('select');
+            input.innerHTML = '<option value="1">Oui</option><option value="0">Non</option>';
+            if (value) {
+                const norm = (value.toString().toLowerCase() === 'oui' || value === '1' || value === 'true') ? '1' : '0';
+                input.value = norm;
+            }
         } else {
             input = document.createElement('input');
             input.type = 'text';
@@ -704,9 +738,14 @@
                 return r.json();
             })
             .then(data => {
-                if (data && data.success) {
+                    if (data && data.success) {
                     if (field === 'etat_civil') {
                         span.textContent = displayEtatLabel(newValue);
+                    } else if (field === 'statut_interne') {
+                        // show human friendly label
+                        span.textContent = (newValue === 'interne' ? 'Interne' : (newValue === 'externe' ? 'Externe' : newValue));
+                    } else if (field === 'abonne_caf') {
+                        span.textContent = (newValue === '1' || newValue === 'true' || newValue === true) ? 'Oui' : 'Non';
                     } else {
                         span.textContent = (newValue === '' ? '-' : newValue);
                     }
@@ -749,8 +788,12 @@
 });
     </script>
     <script>
-    // yearLevels from backend for inline select (id + label)
+    // data from backend for inline selects
     const YEAR_LEVELS = @json($yearLevels ?? []);
+    // mentions available (id + nom)
+    const MENTIONS = @json($mentions ?? []);
+    // current mention id for the student
+    let CURRENT_MENTION_ID = {{ $student->mention_id ?? 'null' }};
 
     // Helper to fetch parcours for a given mention id (returns [{id, nom}])
     async function fetchParcoursByMention(mentionId) {
@@ -776,7 +819,7 @@
         const value = (rawValue === '-' || rawValue === 'N/A') ? '' : rawValue;
         let input;
 
-        // Use styled select built from YEAR_LEVELS for year_level_id
+    // Use styled select built from YEAR_LEVELS for year_level_id
         if (field === 'year_level_id') {
             input = document.createElement('select');
             // Apply the same classes as the form select for consistent styling
@@ -818,7 +861,7 @@
                 placeholder.textContent = '-- Sélectionner --';
                 input.appendChild(placeholder);
 
-                const STUDENT_MENTION_ID = {{ $student->mention_id ?? 'null' }};
+                const STUDENT_MENTION_ID = CURRENT_MENTION_ID;
                 fetchParcoursByMention(STUDENT_MENTION_ID).then(list => {
                     list.forEach(p => {
                         const o = document.createElement('option');
@@ -832,6 +875,23 @@
                         if (found) input.value = found.value;
                     }
                 }).catch(err => console.error(err));
+            } else if (field === 'mention_id') {
+                // Build mention select from MENTIONS
+                input = document.createElement('select');
+                input.className = 'border rounded px-2 py-1';
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = '-- Sélectionner --';
+                input.appendChild(placeholder);
+                (MENTIONS || []).forEach(m => {
+                    const o = document.createElement('option');
+                    o.value = m.id;
+                    o.textContent = m.nom;
+                    input.appendChild(o);
+                });
+                // preselect current mention
+                if (CURRENT_MENTION_ID) input.value = CURRENT_MENTION_ID;
+            } else if (field === 'sexe') {
             } else if (field === 'sexe') {
                 input = document.createElement('select');
                 input.innerHTML = '<option value="M">M</option><option value="F">F</option>';
@@ -952,6 +1012,15 @@
                         const opt = input.querySelector(`option[value="${newValue}"]`);
                         if (opt) span.textContent = opt.textContent;
                         else span.textContent = (newValue === '' ? '-' : newValue);
+                    } else if (field === 'mention_id') {
+                        // Update current mention and ensure parcours list is refreshed
+                        CURRENT_MENTION_ID = newValue || null;
+                        span.textContent = (newValue === '' ? '-' : (MENTIONS.find(m => String(m.id) === String(newValue))||{}).nom || newValue);
+                        // If mention changed, clear parcours on server by sending null
+                        // Also attempt to update the displayed parcours span to '-'
+                        const parcoursSpan = document.querySelector('[data-field="parcours_id"]');
+                        if (parcoursSpan) parcoursSpan.textContent = '-';
+                        // No immediate extra AJAX here; the server-side student.update already persisted the mention.
                     } else {
                         span.textContent = (newValue === '' ? '-' : newValue);
                     }

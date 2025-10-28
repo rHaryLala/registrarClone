@@ -891,6 +891,12 @@ class SuperAdminController extends Controller
                 'sponsor_telephone' => 'nullable|string|max:255',
                 'sponsor_adresse' => 'nullable|string|max:255',
                 'taille' => 'nullable|string|in:S,M,L,XL,XXL,XXXL',
+                // Allow inline editing of student's internal status and CAF subscription
+                'statut_interne' => 'required|in:interne,externe',
+                'abonne_caf' => 'required|boolean',
+                // allow changing mention and parcours inline
+                'mention_id' => 'nullable|exists:mentions,id',
+                'parcours_id' => 'nullable|exists:parcours,id',
             ];
 
             if (!$field || !array_key_exists($field, $editableFields)) {
@@ -909,6 +915,27 @@ class SuperAdminController extends Controller
             }
 
             $student->update($validated);
+
+            // If inline mention change happened, ensure the student's parcours is still valid
+            if ($field === 'mention_id') {
+                $newMentionId = $validated['mention_id'] ?? null;
+                if ($newMentionId) {
+                    // if student has a parcours but it doesn't belong to the new mention, clear it
+                    if ($student->parcours_id) {
+                        $parcours = \App\Models\Parcours::find($student->parcours_id);
+                        if ($parcours && $parcours->mention_id != $newMentionId) {
+                            $student->parcours_id = null;
+                            $student->save();
+                        }
+                    }
+                } else {
+                    // mention set to null -> clear parcours as well
+                    if ($student->parcours_id) {
+                        $student->parcours_id = null;
+                        $student->save();
+                    }
+                }
+            }
 
             return response()->json(['success' => true]);
         }
@@ -1016,7 +1043,9 @@ class SuperAdminController extends Controller
     {
         $student = Student::with('lastChangedBy')->findOrFail($id);
         $yearLevels = YearLevel::all();
-        return view('superadmin.students.show', compact('student', 'yearLevels'));
+        // load mentions so the view can render mention select and related parcours
+        $mentions = Mention::orderBy('nom')->get();
+        return view('superadmin.students.show', compact('student', 'yearLevels', 'mentions'));
     }
     public function showStudentCourses($id)
     {

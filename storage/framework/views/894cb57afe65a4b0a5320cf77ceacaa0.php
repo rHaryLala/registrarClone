@@ -64,9 +64,9 @@
                 <thead>
                     <tr>
                         <th style="width:12%">Matricule</th>
-                        <th style="width:50%">Nom et prénom</th>
+                        <th style="width:36%; font-size:9px;">Nom et prénom</th>
                         <?php $__currentLoopData = $days; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <th class="center" style="width:9%"><?php echo e($d); ?></th>
+                            <th class="center" style="width:13%; font-size:10px;"><?php echo e($d); ?></th>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </tr>
                 </thead>
