@@ -29,6 +29,10 @@
         <?php if ($__env->exists('chief_accountant.components.header')) echo $__env->make('chief_accountant.components.header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
         
+        <?php
+            // Only consider fees with non-zero total for display and summaries
+            $visibleFees = collect($fees ?? [])->filter(function($f){ return (int) ($f->total_amount ?? 0) !== 0; });
+        ?>
         <div class="p-6 max-w-7xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
@@ -38,7 +42,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-slate-500 uppercase font-semibold">Enregistrements de frais</p>
-                            <h3 class="text-3xl font-bold text-slate-800 mt-1"><?php echo e(isset($fees) ? $fees->count() : 0); ?></h3>
+                            <h3 class="text-3xl font-bold text-slate-800 mt-1"><?php echo e($visibleFees->count()); ?></h3>
                         </div>
                     </div>
                 </div>
@@ -50,7 +54,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-slate-500 uppercase font-semibold">Montant total</p>
-                            <h3 class="text-3xl font-bold text-slate-800 mt-1"><?php echo e(isset($fees) ? number_format($fees->sum(fn($f) => $f->total_amount ?? 0), 0, ',', ' ') : '0'); ?> ar</h3>
+                            <h3 class="text-3xl font-bold text-slate-800 mt-1"><?php echo e(number_format($visibleFees->sum(fn($f) => $f->total_amount ?? 0), 0, ',', ' ')); ?> ar</h3>
                         </div>
                     </div>
                 </div>
@@ -80,29 +84,49 @@
                     <table class="min-w-full table-auto">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">Étudiant</th>
                                 <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">Matricule</th>
                                 <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">Code compte</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">Boursier par</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">Année</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">Étudiant</th>
+                                <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700 whitespace-nowrap">Frais généraux</th>
+                                <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700 whitespace-nowrap">Ecolage</th>
+                                <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700 whitespace-nowrap">Labo / Info</th>
+                                <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700 whitespace-nowrap">Voyage d'étude</th>
+                                <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700 whitespace-nowrap">Colloque</th>
+                                <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700 whitespace-nowrap">Frais costume</th>
                                 <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">Semestre</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">Année</th>
                                 <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700 whitespace-nowrap">Total</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            <?php $__currentLoopData = $fees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php $__currentLoopData = $visibleFees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <?php
                                     $sponsorName = trim((optional($fee->student)->sponsor_nom ?? '') . ' ' . (optional($fee->student)->sponsor_prenom ?? ''));
                                     // prefer student.account_code then fee.account_code
                                     $acct = optional($fee->student)->account_code ?? ($fee->account_code ?? null);
                                 ?>
-                                <tr data-amount="<?php echo e($fee->total_amount ?? 0); ?>" data-sponsor="<?php echo e($sponsorName); ?>">
-                                    <td class="px-4 py-3 whitespace-nowrap"><?php echo e(optional($fee->student)->prenom); ?> <?php echo e(optional($fee->student)->nom); ?></td>
+                                <tr 
+                                    data-amount="<?php echo e($fee->total_amount ?? 0); ?>" 
+                                    data-frais_generaux="<?php echo e($fee->frais_generaux ?? 0); ?>"
+                                    data-dortoir="<?php echo e($fee->dortoir ?? 0); ?>"
+                                    data-cantine="<?php echo e($fee->cantine ?? 0); ?>"
+                                    data-labo_info="<?php echo e($fee->labo_info ?? 0); ?>"
+                                    data-ecolage="<?php echo e($fee->ecolage ?? 0); ?>"
+                                    data-voyage_etude="<?php echo e($fee->voyage_etude ?? 0); ?>"
+                                    data-colloque="<?php echo e($fee->colloque ?? 0); ?>"
+                                    data-frais_costume="<?php echo e($fee->frais_costume ?? 0); ?>"
+                                    data-sponsor="<?php echo e($sponsorName); ?>">
                                     <td class="px-4 py-3 whitespace-nowrap"><?php echo e(optional($fee->student)->matricule ?? '-'); ?></td>
                                     <td class="px-4 py-3 whitespace-nowrap"><?php echo e($acct ?? '-'); ?></td>
-                                    <td class="px-4 py-3 whitespace-nowrap"><?php echo e($sponsorName ?: '-'); ?></td>
-                                    <td class="px-4 py-3 whitespace-nowrap"><?php echo e(optional($fee->academicYear)->libelle ?? $fee->academic_year_id); ?></td>
+                                    <td class="px-4 py-3 whitespace-nowrap"><?php echo e(optional($fee->student)->prenom); ?> <?php echo e(optional($fee->student)->nom); ?></td>
+                                    <td class="px-4 py-3 text-right whitespace-nowrap"><?php echo e(number_format($fee->frais_generaux ?? 0, 0, ',', ' ')); ?> ar</td>
+                                    <td class="px-4 py-3 text-right whitespace-nowrap"><?php echo e(number_format($fee->ecolage ?? 0, 0, ',', ' ')); ?> ar</td>
+                                    <td class="px-4 py-3 text-right whitespace-nowrap"><?php echo e(number_format($fee->labo_info ?? 0, 0, ',', ' ')); ?> ar</td>
+                                    <td class="px-4 py-3 text-right whitespace-nowrap"><?php echo e(number_format($fee->voyage_etude ?? 0, 0, ',', ' ')); ?> ar</td>
+                                    <td class="px-4 py-3 text-right whitespace-nowrap"><?php echo e(number_format($fee->colloque ?? 0, 0, ',', ' ')); ?> ar</td>
+                                    <td class="px-4 py-3 text-right whitespace-nowrap"><?php echo e(number_format($fee->frais_costume ?? 0, 0, ',', ' ')); ?> ar</td>
                                     <td class="px-4 py-3 whitespace-nowrap"><?php echo e(optional($fee->semester)->nom ?? $fee->semester_id); ?></td>
+                                    <td class="px-4 py-3 whitespace-nowrap"><?php echo e(optional($fee->academicYear)->libelle ?? $fee->academic_year_id); ?></td>
                                     <td class="px-4 py-3 text-right font-semibold whitespace-nowrap" data-amount-formatted="<?php echo e($fee->total_amount ?? 0); ?>"><?php echo e(number_format($fee->total_amount ?? 0, 0, ',', ' ')); ?> ar</td>
                                 </tr>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
@@ -113,19 +137,31 @@
 
             
             <div class="lg:hidden space-y-4">
-                <?php $__currentLoopData = $fees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php $__currentLoopData = $visibleFees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <?php $acct = optional($fee->student)->account_code ?? ($fee->account_code ?? null); ?>
                     <div class="bg-white rounded-2xl p-4 shadow">
                         <div class="flex items-start justify-between">
                             <div>
-                                <div class="font-semibold"><?php echo e(optional($fee->student)->prenom); ?> <?php echo e(optional($fee->student)->nom); ?></div>
-                                <div class="text-sm text-gray-500"><?php echo e(optional($fee->student)->matricule ?? '-'); ?> <?php if($acct): ?> • <?php echo e($acct); ?> <?php endif; ?> • <?php echo e(optional($fee->student)->sponsor_nom ?? '-'); ?></div>
+                                <div class="font-semibold"><?php echo e(optional($fee->student)->matricule ?? '-'); ?> <?php if($acct): ?> • <?php echo e($acct); ?> <?php endif; ?></div>
+                                <div class="text-sm text-gray-700"><?php echo e(optional($fee->student)->prenom); ?> <?php echo e(optional($fee->student)->nom); ?></div>
                             </div>
                             <div class="text-right">
                                 <div class="font-semibold text-lg"><?php echo e(number_format($fee->total_amount ?? 0, 0, ',', ' ')); ?> ar</div>
                                 <div class="text-sm text-gray-500"><?php echo e($fee->computed_at ? \Carbon\Carbon::parse($fee->computed_at)->locale('fr')->isoFormat('D MMM YYYY') : '-'); ?></div>
                             </div>
                         </div>
+                            <div class="mt-4 grid grid-cols-2 gap-2 text-sm text-gray-700">
+                                <div>Frais généraux</div><div class="text-right"><?php echo e(number_format($fee->frais_generaux ?? 0, 0, ',', ' ')); ?> ar</div>
+                                <div>Ecolage</div><div class="text-right"><?php echo e(number_format($fee->ecolage ?? 0, 0, ',', ' ')); ?> ar</div>
+                                <div>Labo / Info</div><div class="text-right"><?php echo e(number_format($fee->labo_info ?? 0, 0, ',', ' ')); ?> ar</div>
+                                <div>Voyage d'étude</div><div class="text-right"><?php echo e(number_format($fee->voyage_etude ?? 0, 0, ',', ' ')); ?> ar</div>
+                                <div>Colloque</div><div class="text-right"><?php echo e(number_format($fee->colloque ?? 0, 0, ',', ' ')); ?> ar</div>
+                                <div>Frais costume</div><div class="text-right"><?php echo e(number_format($fee->frais_costume ?? 0, 0, ',', ' ')); ?> ar</div>
+                            </div>
+                            <div class="mt-3 flex justify-between text-sm text-gray-600">
+                                <div>Semestre: <?php echo e(optional($fee->semester)->nom ?? $fee->semester_id); ?></div>
+                                <div>Année: <?php echo e(optional($fee->academicYear)->libelle ?? $fee->academic_year_id); ?></div>
+                            </div>
                     </div>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
@@ -143,25 +179,30 @@
                             return;
                         }
 
-                        // Build TSV: header then rows (added Code compte)
-                        const headers = ['Étudiant','Matricule','Code compte','Boursier par','Année','Semestre','Total'];
+                        // Build TSV: header then rows (including detailed fee columns)
+                        const headers = ['Matricule','Code compte','Étudiant','Frais généraux','Ecolage','Labo / Info','Voyage d\'étude','Colloque','Frais costume','Semestre','Année','Total'];
                         const lines = [headers.join('\t')];
 
                         rows.forEach(r => {
                             const cols = Array.from(r.querySelectorAll('td'));
                             if (!cols.length) return;
-                            const student = cols[0].innerText.trim();
-                            const matricule = cols[1].innerText.trim();
-                            // code compte is now column 2 (index 2)
-                            const codeCompte = cols[2] ? cols[2].innerText.trim() : '';
-                            const annee = cols[3].innerText.trim();
-                            const semestre = cols[4].innerText.trim();
-                            const sponsor = r.getAttribute('data-sponsor') || '';
-                            // numeric raw value is stored in data-amount attribute on the tr
-                            const rawAmount = r.getAttribute('data-amount') ?? '';
-                            const computed = cols[5] ? cols[5].innerText.trim() : '';
-                            // Use rawAmount without thousands separators so Excel recognizes it as number
-                            lines.push([student, matricule, codeCompte, sponsor, annee, semestre, rawAmount, computed].join('\t'));
+                            // New order: matricule(0), codeCompte(1), etudiant(2), frais... (data-attrs), semestre(9), année(10), total
+                            const matricule = cols[0] ? cols[0].innerText.trim() : '';
+                            const codeCompte = cols[1] ? cols[1].innerText.trim() : '';
+                            const student = cols[2] ? cols[2].innerText.trim() : '';
+                            const semestre = cols[9] ? cols[9].innerText.trim() : '';
+                            const annee = cols[10] ? cols[10].innerText.trim() : '';
+
+                            // Amounts from data attributes (raw numbers)
+                            const frais_generaux = r.getAttribute('data-frais_generaux') ?? '0';
+                            const ecolage = r.getAttribute('data-ecolage') ?? '0';
+                            const labo_info = r.getAttribute('data-labo_info') ?? '0';
+                            const voyage_etude = r.getAttribute('data-voyage_etude') ?? '0';
+                            const colloque = r.getAttribute('data-colloque') ?? '0';
+                            const frais_costume = r.getAttribute('data-frais_costume') ?? '0';
+                            const total = r.getAttribute('data-amount') ?? '0';
+
+                            lines.push([matricule, codeCompte, student, frais_generaux, ecolage, labo_info, voyage_etude, colloque, frais_costume, semestre, annee, total].join('\t'));
                         });
 
                         const tsv = lines.join('\n');

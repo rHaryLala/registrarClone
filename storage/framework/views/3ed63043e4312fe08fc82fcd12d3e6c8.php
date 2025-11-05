@@ -87,6 +87,16 @@
                 </a>
             </li>
             <li>
+                <a href="<?php echo e(route('superadmin.financedetails.index')); ?>"
+                   class="nav-item group flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-700/50 hover:translate-x-1 <?php echo e(request()->routeIs('superadmin.finances.financedetails.*') ? 'bg-blue-900/80 text-blue-100 shadow-lg' : 'hover:text-blue-100'); ?>">
+                    <div class="w-5 h-5 flex items-center justify-center">
+                        <i class="fas fa-money-bill-wave text-sm group-hover:scale-110 transition-transform duration-200"></i>
+                    </div>
+                    <span class="font-medium">Notes</span>
+                    <div class="ml-auto w-1 h-6 bg-blue-300 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 <?php echo e(request()->routeIs('superadmin.finances.financedetails.*') ? 'opacity-100' : ''); ?>"></div>
+                </a>
+            </li>
+            <li>
                 <a href="<?php echo e(route('superadmin.settings')); ?>"
                    class="nav-item group flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-700/50 hover:translate-x-1 <?php echo e(request()->routeIs('superadmin.settings') || request()->routeIs('superadmin.settings.update') ? 'bg-blue-900/80 text-blue-100 shadow-lg' : 'hover:text-blue-100'); ?>">
                     <div class="w-5 h-5 flex items-center justify-center">
